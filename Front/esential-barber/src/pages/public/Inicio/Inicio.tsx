@@ -99,20 +99,7 @@ const Inicio: React.FC = () => {
           Esential Barber
         </span>
       </div>
-      {userName && (
-        <div style={{
-          width: '100%',
-          background: '#181818',
-          color: '#FFD600',
-          textAlign: 'center',
-          fontWeight: 700,
-          fontSize: '1.5rem',
-          padding: '1.2rem 0 0.7rem 0',
-          letterSpacing: '1px',
-        }}>
-          Bienvenido, <span style={{color:'#FFD600'}}>{userName}</span>
-        </div>
-      )}
+
       <div style={{
         width: '100%',
         background: '#111',

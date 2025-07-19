@@ -89,9 +89,14 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
+  // Determinar si mostrar la barra superior
+  const shouldShowNavbar = !['/citas', '/perfil'].includes(location.pathname);
+
   return (
     <div className="main-container">
-      <Navbar section={section} setSection={setSection} onLoginSuccess={handleLoginSuccess} />
+      {shouldShowNavbar && (
+        <Navbar section={section} setSection={setSection} onLoginSuccess={handleLoginSuccess} />
+      )}
       <main className="content">
         <Routes>
           <Route path="/" element={<Inicio />} />

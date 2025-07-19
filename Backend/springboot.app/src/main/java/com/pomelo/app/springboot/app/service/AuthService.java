@@ -38,8 +38,10 @@ public class AuthService {
         authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
-        // Si la autenticación es correcta, genera el token JWT
-        String token = jwtUtils.generateJwtToken(request.getEmail());
+        // Si la autenticación es correcta, obtener el usuario y generar el token JWT
+        Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        String token = jwtUtils.generateJwtToken(request.getEmail(), usuario.getNombre());
         return new JwtResponse(token);
     }
 }

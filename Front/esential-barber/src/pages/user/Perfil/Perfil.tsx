@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styles from './Perfil.module.css';
 import { useNavigate } from 'react-router-dom';
+import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSave, FaTimes, FaSignOutAlt } from 'react-icons/fa';
 
 interface Usuario {
   nombre: string;
@@ -8,12 +9,23 @@ interface Usuario {
   telefono: string;
 }
 
+interface CampoEditando {
+  nombre: boolean;
+  email: boolean;
+  telefono: boolean;
+}
+
 const Perfil: React.FC = () => {
   const [usuario, setUsuario] = useState<Usuario>({ nombre: '', email: '', telefono: '' });
   const [loading, setLoading] = useState(true);
-  const [editando, setEditando] = useState(false);
+  const [campoEditando, setCampoEditando] = useState<CampoEditando>({
+    nombre: false,
+    email: false,
+    telefono: false
+  });
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
+  const [guardando, setGuardando] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,13 +49,35 @@ const Perfil: React.FC = () => {
     setUsuario({ ...usuario, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const iniciarEdicion = (campo: keyof CampoEditando) => {
+    setCampoEditando({ ...campoEditando, [campo]: true });
     setMensaje('');
     setError('');
-    setEditando(false);
+  };
+
+  const cancelarEdicion = (campo: keyof CampoEditando) => {
+    setCampoEditando({ ...campoEditando, [campo]: false });
+    // Recargar datos originales
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      fetch('http://localhost:8080/api/usuarios/perfil', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          setUsuario({ nombre: data.nombre, email: data.email, telefono: data.telefono || '' });
+        });
+    }
+  };
+
+  const guardarCampo = async (campo: keyof CampoEditando) => {
+    setGuardando(campo);
+    setMensaje('');
+    setError('');
+    
     const token = localStorage.getItem('authToken');
     if (!token) return;
+    
     try {
       const res = await fetch('http://localhost:8080/api/usuarios/perfil', {
         method: 'PUT',
@@ -53,78 +87,198 @@ const Perfil: React.FC = () => {
         },
         body: JSON.stringify(usuario)
       });
+      
       if (!res.ok) throw new Error('No se pudo actualizar el perfil');
-      setMensaje('Perfil actualizado correctamente');
+      
+      setMensaje(`${campo.charAt(0).toUpperCase() + campo.slice(1)} actualizado correctamente`);
+      setCampoEditando({ ...campoEditando, [campo]: false });
     } catch (err) {
-      setError('Error al actualizar el perfil');
+      setError(`Error al actualizar ${campo}`);
+    } finally {
+      setGuardando(null);
     }
   };
 
-  if (loading) return <div className={styles.perfilCont}>Cargando perfil...</div>;
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    navigate('/');
+    window.location.reload();
+  };
+
+  if (loading) return (
+    <div className={styles.perfilCont}>
+      <div className={styles.loadingSpinner}>Cargando perfil...</div>
+    </div>
+  );
 
   return (
     <div className={styles.perfilCont}>
-      <h2 className={styles.perfilTitulo}>Mi Perfil</h2>
-      <button className={styles.cerrarSesionBtn} onClick={() => {
-        localStorage.removeItem('authToken');
-        navigate('/');
-        window.location.reload();
-      }}>
-        Cerrar sesión
-      </button>
-      <form className={styles.perfilForm} onSubmit={handleSubmit}>
-        <label className={styles.perfilLabel}>
-          Nombre:
-          <input
-            className={styles.perfilInput}
-            type="text"
-            name="nombre"
-            value={usuario.nombre}
-            onChange={handleChange}
-            disabled={!editando}
-            required
-          />
-        </label>
-        <label className={styles.perfilLabel}>
-          Email:
-          <input
-            className={styles.perfilInput}
-            type="email"
-            name="email"
-            value={usuario.email}
-            onChange={handleChange}
-            disabled={!editando}
-            required
-          />
-        </label>
-        <label className={styles.perfilLabel}>
-          Teléfono:
-          <input
-            className={styles.perfilInput}
-            type="text"
-            name="telefono"
-            value={usuario.telefono}
-            onChange={handleChange}
-            disabled={!editando}
-          />
-        </label>
-        {mensaje && <div className={styles.perfilMsg}>{mensaje}</div>}
-        {error && <div className={styles.perfilError}>{error}</div>}
-        <div className={styles.perfilBotones}>
-          {!editando ? (
-            <button type="button" className={styles.perfilBtn} onClick={()=>setEditando(true)}>
-              Editar
-            </button>
-          ) : (
-            <>
-              <button type="submit" className={styles.perfilBtn}>Guardar</button>
-              <button type="button" className={styles.perfilBtnSec} onClick={()=>{setEditando(false); setMensaje(''); setError('');}}>
-                Cancelar
-              </button>
-            </>
-          )}
+      <div className={styles.perfilHeader}>
+        <h2 className={styles.perfilTitulo}>
+          <FaUser className={styles.perfilIcon} />
+          Mi Perfil
+        </h2>
+        <button className={styles.logoutBtn} onClick={handleLogout}>
+          <FaSignOutAlt />
+          Cerrar sesión
+        </button>
+      </div>
+
+      <div className={styles.perfilCampos}>
+        {/* Campo Nombre */}
+        <div className={styles.campoContainer}>
+          <div className={styles.campoHeader}>
+            <FaUser className={styles.campoIcon} />
+            <span className={styles.campoLabel}>Nombre</span>
+          </div>
+          <div className={styles.campoContent}>
+            {campoEditando.nombre ? (
+              <div className={styles.campoEditando}>
+                <input
+                  className={styles.campoInput}
+                  type="text"
+                  name="nombre"
+                  value={usuario.nombre}
+                  onChange={handleChange}
+                  required
+                />
+                <div className={styles.campoBotones}>
+                  <button 
+                    type="button" 
+                    className={styles.btnGuardar}
+                    onClick={() => guardarCampo('nombre')}
+                    disabled={guardando === 'nombre'}
+                  >
+                    {guardando === 'nombre' ? 'Guardando...' : <FaSave />}
+                  </button>
+                  <button 
+                    type="button" 
+                    className={styles.btnCancelar}
+                    onClick={() => cancelarEdicion('nombre')}
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.campoMostrar}>
+                <span className={styles.campoValor}>{usuario.nombre}</span>
+                <button 
+                  type="button" 
+                  className={styles.btnEditar}
+                  onClick={() => iniciarEdicion('nombre')}
+                >
+                  <FaEdit />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </form>
+
+        {/* Campo Email */}
+        <div className={styles.campoContainer}>
+          <div className={styles.campoHeader}>
+            <FaEnvelope className={styles.campoIcon} />
+            <span className={styles.campoLabel}>Email</span>
+          </div>
+          <div className={styles.campoContent}>
+            {campoEditando.email ? (
+              <div className={styles.campoEditando}>
+                <input
+                  className={styles.campoInput}
+                  type="email"
+                  name="email"
+                  value={usuario.email}
+                  onChange={handleChange}
+                  required
+                />
+                <div className={styles.campoBotones}>
+                  <button 
+                    type="button" 
+                    className={styles.btnGuardar}
+                    onClick={() => guardarCampo('email')}
+                    disabled={guardando === 'email'}
+                  >
+                    {guardando === 'email' ? 'Guardando...' : <FaSave />}
+                  </button>
+                  <button 
+                    type="button" 
+                    className={styles.btnCancelar}
+                    onClick={() => cancelarEdicion('email')}
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.campoMostrar}>
+                <span className={styles.campoValor}>{usuario.email}</span>
+                <button 
+                  type="button" 
+                  className={styles.btnEditar}
+                  onClick={() => iniciarEdicion('email')}
+                >
+                  <FaEdit />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Campo Teléfono */}
+        <div className={styles.campoContainer}>
+          <div className={styles.campoHeader}>
+            <FaPhone className={styles.campoIcon} />
+            <span className={styles.campoLabel}>Teléfono</span>
+          </div>
+          <div className={styles.campoContent}>
+            {campoEditando.telefono ? (
+              <div className={styles.campoEditando}>
+                <input
+                  className={styles.campoInput}
+                  type="text"
+                  name="telefono"
+                  value={usuario.telefono}
+                  onChange={handleChange}
+                />
+                <div className={styles.campoBotones}>
+                  <button 
+                    type="button" 
+                    className={styles.btnGuardar}
+                    onClick={() => guardarCampo('telefono')}
+                    disabled={guardando === 'telefono'}
+                  >
+                    {guardando === 'telefono' ? 'Guardando...' : <FaSave />}
+                  </button>
+                  <button 
+                    type="button" 
+                    className={styles.btnCancelar}
+                    onClick={() => cancelarEdicion('telefono')}
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.campoMostrar}>
+                <span className={styles.campoValor}>
+                  {usuario.telefono || 'No especificado'}
+                </span>
+                <button 
+                  type="button" 
+                  className={styles.btnEditar}
+                  onClick={() => iniciarEdicion('telefono')}
+                >
+                  <FaEdit />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {mensaje && <div className={styles.perfilMsg}>{mensaje}</div>}
+      {error && <div className={styles.perfilError}>{error}</div>}
     </div>
   );
 };

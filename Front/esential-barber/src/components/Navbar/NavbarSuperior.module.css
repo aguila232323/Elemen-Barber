@@ -186,4 +186,13 @@ button.active, button:hover {
 }
 .closeModal:hover {
   color: #FFD600;
+}
+.bienvenidaMsg {
+  color: #FFD600;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-left: 1.5rem;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
 } 

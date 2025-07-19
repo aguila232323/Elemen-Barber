@@ -1,10 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './NavbarSuperior.module.css';
 import { FaUserCircle } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import SeleccionarServicioModal from '../SeleccionarServicioModal';
 import CalendarBooking from '../CalendarBooking';
 import Login from '../../pages/auth/Login';
+
+function getUserName() {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) return null;
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    const payload = JSON.parse(jsonPayload);
+    return payload.nombre || payload.name || payload.email || 'Usuario';
+  } catch {
+    return null;
+  }
+}
 
 interface NavbarProps {
   section: string;
@@ -18,7 +34,29 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
   const [showCalendario, setShowCalendario] = useState(false);
   const [serviciosSeleccionados, setServiciosSeleccionados] = useState<string[]>([]);
   const [mensajeCita, setMensajeCita] = useState('');
+  const [userName, setUserName] = useState<string | null>(getUserName());
   const navigate = useNavigate();
+
+  // Actualizar el nombre del usuario cuando cambie el token
+  useEffect(() => {
+    const updateUserName = () => {
+      setUserName(getUserName());
+    };
+
+    // Escuchar cambios en localStorage
+    const handleStorageChange = () => {
+      updateUserName();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // También actualizar cuando el componente se monta
+    updateUserName();
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   function handleReservaCompletada() {
     setShowCalendario(false);
@@ -31,6 +69,12 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
     setShowCita(false);
     setShowCalendario(false);
   }
+
+  const handleLoginSuccess = () => {
+    setShowLogin(false);
+    setUserName(getUserName()); // Actualizar el nombre inmediatamente
+    onLoginSuccess();
+  };
 
   return (
     <>
@@ -70,9 +114,15 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
               </li>
             </ul>
             <button className={styles.btnCita} onClick={()=>setShowCita(true)}>Pedir Cita</button>
-            <span className={styles.profileIcon} title="Ir a Login" onClick={()=>setShowLogin(true)}>
-              <FaUserCircle size={30} />
-            </span>
+            {userName ? (
+              <span className={styles.bienvenidaMsg}>
+                Bienvenido, <b>{userName}</b>
+              </span>
+            ) : (
+              <span className={styles.profileIcon} title="Ir a Login" onClick={()=>setShowLogin(true)}>
+                <FaUserCircle size={30} />
+              </span>
+            )}
           </div>
         </div>
       </nav>
@@ -81,7 +131,7 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
         <div className={styles.modalOverlay} onClick={()=>setShowLogin(false)}>
           <div className={styles.modalContent} onClick={e=>e.stopPropagation()}>
             <button className={styles.closeModal} onClick={()=>setShowLogin(false)}>×</button>
-            <Login onLoginSuccess={() => { setShowLogin(false); onLoginSuccess(); }} />
+            <Login onLoginSuccess={handleLoginSuccess} />
           </div>
         </div>
       )}
