@@ -7,6 +7,18 @@
   width: 100%;
   margin: 3rem auto 0 auto;
   min-height: 350px;
+  animation: slideIn 0.5s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .perfilHeader {
@@ -16,6 +28,7 @@
   margin-bottom: 2.5rem;
   padding-bottom: 1.5rem;
   border-bottom: 2px solid #f0f0f0;
+  transition: all 0.3s ease;
 }
 
 .perfilTitulo {
@@ -26,11 +39,13 @@
   gap: 0.8rem;
   font-size: 1.8rem;
   font-weight: 700;
+  transition: all 0.3s ease;
 }
 
 .perfilIcon {
   color: #1976d2;
   font-size: 1.5rem;
+  transition: all 0.3s ease;
 }
 
 .logoutBtn {
@@ -42,14 +57,12 @@
   font-weight: 600;
   cursor: pointer;
   font-size: 1rem;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-}
-
-.logoutBtn:hover {
-  background: #c0392b;
+  position: relative;
+  overflow: hidden;
 }
 
 .perfilCampos {
@@ -64,11 +77,24 @@
   padding: 1.5rem;
   border: 1px solid #e9ecef;
   transition: all 0.3s ease;
+  animation: fadeInUp 0.6s ease;
+  animation-fill-mode: both;
 }
 
-.campoContainer:hover {
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-  border-color: #1976d2;
+.campoContainer:nth-child(1) { animation-delay: 0.1s; }
+.campoContainer:nth-child(2) { animation-delay: 0.2s; }
+.campoContainer:nth-child(3) { animation-delay: 0.3s; }
+.campoContainer:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .campoHeader {
@@ -81,12 +107,14 @@
 .campoIcon {
   color: #1976d2;
   font-size: 1.2rem;
+  transition: all 0.3s ease;
 }
 
 .campoLabel {
   font-weight: 600;
   color: #333;
   font-size: 1.1rem;
+  transition: color 0.3s ease;
 }
 
 .campoContent {
@@ -101,12 +129,14 @@
   background: #fff;
   border-radius: 8px;
   border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
 }
 
 .campoValor {
   font-size: 1.1rem;
   color: #333;
   font-weight: 500;
+  transition: color 0.3s ease;
 }
 
 .btnEditar {
@@ -116,22 +146,21 @@
   border-radius: 6px;
   padding: 0.5rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 36px;
   height: 36px;
-}
-
-.btnEditar:hover {
-  background: #1251a3;
+  position: relative;
+  overflow: hidden;
 }
 
 .campoEditando {
   display: flex;
   gap: 0.8rem;
   align-items: center;
+  animation: slideIn 0.3s ease;
 }
 
 .campoInput {
@@ -141,12 +170,14 @@
   padding: 0.8rem 1rem;
   font-size: 1.1rem;
   outline: none;
-  transition: border 0.2s;
+  transition: all 0.3s ease;
+  background: #fff;
 }
 
 .campoInput:focus {
   border-color: #1251a3;
   box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+  transform: scale(1.02);
 }
 
 .campoBotones {
@@ -161,22 +192,21 @@
   border-radius: 6px;
   padding: 0.8rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 40px;
   height: 40px;
   font-size: 1rem;
-}
-
-.btnGuardar:hover:not(:disabled) {
-  background: #38a038;
+  position: relative;
+  overflow: hidden;
 }
 
 .btnGuardar:disabled {
   background: #ccc;
   cursor: not-allowed;
+  transform: none;
 }
 
 .btnCancelar {
@@ -186,17 +216,71 @@
   border-radius: 6px;
   padding: 0.8rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 40px;
   height: 40px;
   font-size: 1rem;
+  position: relative;
+  overflow: hidden;
 }
 
-.btnCancelar:hover {
-  background: #c0392b;
+/* Estilos para campos de contraseña */
+.passwordFields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.passwordField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.passwordLabel {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
+  margin-bottom: 0.2rem;
+}
+
+.passwordInputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordInputContainer .campoInput {
+  padding-right: 3rem;
+  width: 100%;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.passwordToggle:hover {
+  color: #1976d2;
+  background: rgba(25, 118, 210, 0.1);
 }
 
 .loadingSpinner {
@@ -205,6 +289,12 @@
   font-size: 1.2rem;
   font-weight: 600;
   padding: 2rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 .perfilMsg {
@@ -216,6 +306,7 @@
   background: #f0f9f0;
   border-radius: 8px;
   border: 1px solid #d4edda;
+  animation: slideIn 0.3s ease;
 }
 
 .perfilError {
@@ -227,4 +318,183 @@
   background: #fdf2f2;
   border-radius: 8px;
   border: 1px solid #f5c6cb;
+  animation: slideIn 0.3s ease;
+}
+
+/* Responsive Design Mejorado para Perfil */
+@media (max-width: 768px) {
+  .perfilCont {
+    margin: 2rem 1rem 0 1rem;
+    padding: 2rem 1.5vw;
+    border-radius: 1rem;
+  }
+  
+  .perfilHeader {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  
+  .perfilTitulo {
+    font-size: 1.5rem;
+  }
+  
+  .logoutBtn {
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+  }
+  
+  .campoContainer {
+    padding: 1.2rem;
+  }
+  
+  .campoLabel {
+    font-size: 1rem;
+  }
+  
+  .campoValor {
+    font-size: 1rem;
+  }
+  
+  .campoInput {
+    font-size: 1rem;
+    padding: 0.7rem 0.8rem;
+  }
+  
+  .passwordLabel {
+    font-size: 0.9rem;
+  }
+  
+  .passwordInputContainer .campoInput {
+    padding-right: 2.5rem;
+  }
+  
+  .passwordToggle {
+    width: 28px;
+    height: 28px;
+    padding: 0.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .perfilCont {
+    margin: 1rem 0.5rem 0 0.5rem;
+    padding: 1.5rem 1vw;
+    border-radius: 0.8rem;
+  }
+  
+  .perfilTitulo {
+    font-size: 1.3rem;
+  }
+  
+  .perfilIcon {
+    font-size: 1.2rem;
+  }
+  
+  .logoutBtn {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.8rem;
+  }
+  
+  .campoContainer {
+    padding: 1rem;
+  }
+  
+  .campoHeader {
+    gap: 0.5rem;
+  }
+  
+  .campoIcon {
+    font-size: 1rem;
+  }
+  
+  .campoLabel {
+    font-size: 0.9rem;
+  }
+  
+  .campoValor {
+    font-size: 0.9rem;
+  }
+  
+  .campoInput {
+    font-size: 0.9rem;
+    padding: 0.6rem 0.7rem;
+  }
+  
+  .btnEditar, .btnGuardar, .btnCancelar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+  
+  .campoEditando {
+    gap: 0.5rem;
+  }
+  
+  .campoBotones {
+    gap: 0.3rem;
+  }
+  
+  .passwordFields {
+    gap: 0.8rem;
+  }
+  
+  .passwordLabel {
+    font-size: 0.85rem;
+  }
+  
+  .passwordInputContainer .campoInput {
+    padding-right: 2.2rem;
+    font-size: 0.9rem;
+  }
+  
+  .passwordToggle {
+    width: 24px;
+    height: 24px;
+    padding: 0.2rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Mejoras para dispositivos táctiles */
+@media (hover: none) and (pointer: coarse) {
+  .btnEditar, .btnGuardar, .btnCancelar, .logoutBtn, .passwordToggle {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .campoInput {
+    font-size: 16px; /* Evita zoom en iOS */
+  }
+}
+
+/* Soporte para modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .perfilCont {
+    background: #1a1a1a;
+    color: #fff;
+  }
+  
+  .campoContainer {
+    background: #2a2a2a;
+    border-color: #444;
+  }
+  
+  .campoMostrar {
+    background: #333;
+    border-color: #555;
+  }
+  
+  .campoValor {
+    color: #fff;
+  }
+  
+  .campoInput {
+    background: #333;
+    color: #fff;
+  }
+  
+  .passwordLabel {
+    color: #fff;
+  }
 } 

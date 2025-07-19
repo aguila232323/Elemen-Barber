@@ -19,27 +19,6 @@ const getStars = (rating: number) => '★'.repeat(rating) + '☆'.repeat(5 - rat
 
 const bannerImg = 'https://static.vecteezy.com/system/resources/previews/005/121/041/non_2x/hairdressers-cut-their-clients-in-barbershop-advertising-and-barber-shop-concept-free-photo.jpg'; // panorámica barbería
 
-const servicios = [
-  {
-    nombre: 'Corte',
-    precio: '12€',
-    icono: '💈',
-    descripcion: 'Corte de pelo profesional adaptado a tu estilo.'
-  },
-  {
-    nombre: 'Tinte',
-    precio: '18€',
-    icono: '🧴',
-    descripcion: 'Coloración y matiz para un look renovado.'
-  },
-  {
-    nombre: 'Barba',
-    precio: '8€',
-    icono: '🪒',
-    descripcion: 'Arreglo, perfilado y cuidado de barba.'
-  }
-];
-
 const getUserName = () => {
   try {
     const token = localStorage.getItem('authToken');
@@ -312,59 +291,12 @@ const Inicio: React.FC = () => {
             </div>
           </div>
         </div>
-        <section style={{marginTop: '2.5rem'}}>
-          <h2 style={{textAlign: 'center', marginBottom: '2rem', fontSize: '2rem'}}>Servicios</h2>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '2rem',
-            flexWrap: 'nowrap',
-            overflowX: 'auto',
-            width: '100%',
-            paddingBottom: '1rem',
-          }}>
-            {servicios.map((serv, idx) => (
-              <div key={idx} style={{
-                background: '#fff',
-                borderRadius: '16px',
-                boxShadow: '0 4px 24px rgba(25, 118, 210, 0.18), 0 -4px 24px rgba(25, 118, 210, 0.10), 0 1.5px 8px rgba(0,0,0,0.10), 0 -1.5px 8px rgba(0,0,0,0.07)',
-                padding: '2rem 1.5rem 1.5rem 1.5rem',
-                minWidth: 220,
-                maxWidth: 260,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                marginBottom: '1.5rem',
-                paddingTop: '1.5rem',
-              }}>
-                <span style={{fontSize: '2.5rem', marginBottom: '1rem'}}>{serv.icono}</span>
-                <h3 style={{margin: 0, fontSize: '1.3rem', fontWeight: 600}}>{serv.nombre}</h3>
-                <div style={{fontSize: '1.1rem', color: '#555', margin: '0.5rem 0 1rem 0', textAlign: 'center'}}>{serv.descripcion}</div>
-                <div style={{fontWeight: 700, fontSize: '1.2rem', marginBottom: '1.2rem'}}>{serv.precio}</div>
-                <button style={{
-                  background: '#1976d2',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '0.7rem 1.5rem',
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(25,118,210,0.08)',
-                  transition: 'background 0.2s',
-                }}
-                onClick={() => alert('Función de reserva próximamente')}
-                >Reservar</button>
-              </div>
-            ))}
-          </div>
-        </section>
       </div>
     </>
   )
 }
 
-export default Inicio 
+export default Inicio
 
 // Componente auxiliar para una fila de servicio
 function ServiceRow({name, price, desc}:{name:string, price:string, desc:string}) {

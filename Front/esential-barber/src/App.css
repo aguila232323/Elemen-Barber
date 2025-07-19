@@ -3,8 +3,12 @@ body, html, #root, .main-container {
   height: 100%;
   margin: 0;
   padding: 0;
-  width: 99vw;
+  width: 100vw;
   box-sizing: border-box;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
 }
 
 .main-container {
@@ -14,22 +18,97 @@ body, html, #root, .main-container {
   background: #fff;
   color: #111;
   font-family: 'Segoe UI', Arial, sans-serif;
+  position: relative;
 }
 
+.content {
+  flex: 1;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  position: relative;
+}
 
 .footer {
   background: black;
   color: #fff;
   text-align: center;
-  padding: 1.2rem 0 1.2rem 0;
+  padding: 1.2rem 0;
   font-size: 1rem;
   letter-spacing: 1px;
+  margin-top: auto;
+  position: relative;
+  z-index: 10;
 }
 
+/* Mejoras de accesibilidad y UX */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
 
-@media (max-width: 700px) {
+button, input, textarea {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Optimizaciones para dispositivos táctiles */
+@media (hover: none) and (pointer: coarse) {
+  button, .menuLink, .profileIcon {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Responsive Design Mejorado */
+@media (max-width: 1024px) {
   .content {
-    padding: 1rem;
-    margin: 5rem 0.5rem 1rem 0.5rem;
+    padding: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 0;
+    margin: 0;
+  }
+  
+  .footer {
+    padding: 1rem 0;
+    font-size: 0.9rem;
+  }
+  
+  /* Mejorar legibilidad en móviles */
+  body {
+    font-size: 16px; /* Evita zoom automático en iOS */
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 0.8rem 0;
+    font-size: 0.8rem;
+  }
+  
+  /* Optimizaciones para pantallas muy pequeñas */
+  .main-container {
+    font-size: 14px;
+  }
+}
+
+/* Soporte para modo oscuro del sistema */
+@media (prefers-color-scheme: dark) {
+  .main-container {
+    background: #121212;
+    color: #fff;
+  }
+}
+
+/* Mejoras de performance */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

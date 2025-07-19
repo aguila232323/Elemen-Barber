@@ -10,6 +10,9 @@
   padding: 0.5rem 0 0.2rem 0;
   background: #181818;
   box-shadow: 0 -2px 16px rgba(0,0,0,0.18);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
 }
 
 .bottomBtn {
@@ -23,6 +26,11 @@
   cursor: pointer;
   flex: 1;
   padding: 0.2rem 0;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  margin: 0 0.2rem;
 }
 
 .bottomIcon {
@@ -32,6 +40,9 @@
   display: block;
   margin: 0 auto 2px auto;
   filter: brightness(0) saturate(100%) invert(87%) sepia(99%) saturate(7499%) hue-rotate(1deg) brightness(104%) contrast(104%);
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
 }
 
 .bottomBtnLabel {
@@ -39,6 +50,92 @@
   color: #FFD600;
   font-weight: 600;
   margin-top: 2px;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+/* Animación de entrada */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.bottomNavbar {
+  animation: slideUp 0.5s ease;
+}
+
+/* Responsive Design Mejorado para Navbar Inferior */
+@media (max-width: 768px) {
+  .bottomNavbar {
+    padding: 0.4rem 0 0.1rem 0;
+    backdrop-filter: blur(15px);
+  }
+  
+  .bottomIcon {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .bottomBtnLabel {
+    font-size: 0.85rem;
+  }
+  
+  .bottomBtn {
+    margin: 0 0.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .bottomNavbar {
+    padding: 0.3rem 0 0.1rem 0;
+    box-shadow: 0 -1px 12px rgba(0,0,0,0.2);
+  }
+  
+  .bottomIcon {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .bottomBtnLabel {
+    font-size: 0.75rem;
+  }
+  
+  .bottomBtn {
+    margin: 0 0.05rem;
+  }
+}
+
+/* Mejoras para dispositivos táctiles */
+@media (hover: none) and (pointer: coarse) {
+  .bottomBtn {
+    min-height: 60px;
+    min-width: 60px;
+    padding: 0.5rem 0;
+  }
+  
+  .bottomIcon {
+    width: 26px;
+    height: 26px;
+  }
+  
+  .bottomBtnLabel {
+    font-size: 0.8rem;
+  }
+}
+
+/* Soporte para modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .bottomNavbar {
+    background: rgba(24, 24, 24, 0.95);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
 }
 
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styles from './Perfil.module.css';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSave, FaTimes, FaSignOutAlt } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSave, FaTimes, FaSignOutAlt, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 interface Usuario {
   nombre: string;
@@ -13,19 +13,37 @@ interface CampoEditando {
   nombre: boolean;
   email: boolean;
   telefono: boolean;
+  password: boolean;
+}
+
+interface PasswordData {
+  passwordActual: string;
+  passwordNueva: string;
+  passwordConfirmar: string;
 }
 
 const Perfil: React.FC = () => {
   const [usuario, setUsuario] = useState<Usuario>({ nombre: '', email: '', telefono: '' });
+  const [passwordData, setPasswordData] = useState<PasswordData>({
+    passwordActual: '',
+    passwordNueva: '',
+    passwordConfirmar: ''
+  });
   const [loading, setLoading] = useState(true);
   const [campoEditando, setCampoEditando] = useState<CampoEditando>({
     nombre: false,
     email: false,
-    telefono: false
+    telefono: false,
+    password: false
   });
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
   const [guardando, setGuardando] = useState<string | null>(null);
+  const [showPasswords, setShowPasswords] = useState({
+    actual: false,
+    nueva: false,
+    confirmar: false
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,12 +52,18 @@ const Perfil: React.FC = () => {
     fetch('http://localhost:8080/api/usuarios/perfil', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) {
+          throw new Error(`Error ${res.status}: ${res.statusText}`);
+        }
+        return res.json();
+      })
       .then(data => {
         setUsuario({ nombre: data.nombre, email: data.email, telefono: data.telefono || '' });
         setLoading(false);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Error al cargar perfil:', err);
         setError('Error al cargar el perfil');
         setLoading(false);
       });
@@ -49,25 +73,54 @@ const Perfil: React.FC = () => {
     setUsuario({ ...usuario, [e.target.name]: e.target.value });
   };
 
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+  };
+
   const iniciarEdicion = (campo: keyof CampoEditando) => {
     setCampoEditando({ ...campoEditando, [campo]: true });
     setMensaje('');
     setError('');
+    if (campo === 'password') {
+      setPasswordData({ passwordActual: '', passwordNueva: '', passwordConfirmar: '' });
+    }
   };
 
   const cancelarEdicion = (campo: keyof CampoEditando) => {
     setCampoEditando({ ...campoEditando, [campo]: false });
-    // Recargar datos originales
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      fetch('http://localhost:8080/api/usuarios/perfil', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-        .then(res => res.json())
-        .then(data => {
-          setUsuario({ nombre: data.nombre, email: data.email, telefono: data.telefono || '' });
-        });
+    if (campo === 'password') {
+      setPasswordData({ passwordActual: '', passwordNueva: '', passwordConfirmar: '' });
+      setShowPasswords({ actual: false, nueva: false, confirmar: false });
+    } else {
+      // Recargar datos originales
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        fetch('http://localhost:8080/api/usuarios/perfil', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+          .then(async res => {
+            if (!res.ok) {
+              throw new Error(`Error ${res.status}: ${res.statusText}`);
+            }
+            return res.json();
+          })
+          .then(data => {
+            setUsuario({ nombre: data.nombre, email: data.email, telefono: data.telefono || '' });
+          })
+          .catch((err) => {
+            console.error('Error al recargar datos:', err);
+            setError('Error al recargar los datos');
+          });
+      }
     }
+  };
+
+  const validarPassword = (): string | null => {
+    if (!passwordData.passwordActual) return 'La contraseña actual es requerida';
+    if (!passwordData.passwordNueva) return 'La nueva contraseña es requerida';
+    if (passwordData.passwordNueva.length < 6) return 'La nueva contraseña debe tener al menos 6 caracteres';
+    if (passwordData.passwordNueva !== passwordData.passwordConfirmar) return 'Las contraseñas no coinciden';
+    return null;
   };
 
   const guardarCampo = async (campo: keyof CampoEditando) => {
@@ -79,24 +132,92 @@ const Perfil: React.FC = () => {
     if (!token) return;
     
     try {
-      const res = await fetch('http://localhost:8080/api/usuarios/perfil', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(usuario)
-      });
-      
-      if (!res.ok) throw new Error('No se pudo actualizar el perfil');
-      
-      setMensaje(`${campo.charAt(0).toUpperCase() + campo.slice(1)} actualizado correctamente`);
-      setCampoEditando({ ...campoEditando, [campo]: false });
+      if (campo === 'password') {
+        const errorValidacion = validarPassword();
+        if (errorValidacion) {
+          setError(errorValidacion);
+          setGuardando(null);
+          return;
+        }
+
+        const res = await fetch('http://localhost:8080/api/usuarios/cambiar-password', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            passwordActual: passwordData.passwordActual,
+            passwordNueva: passwordData.passwordNueva
+          })
+        });
+        
+        if (!res.ok) {
+          let errorMessage = 'Error al cambiar la contraseña';
+          try {
+            const errorData = await res.json();
+            errorMessage = errorData.message || errorMessage;
+          } catch (jsonError) {
+            console.error('Error parsing JSON:', jsonError);
+            errorMessage = `Error ${res.status}: ${res.statusText}`;
+          }
+          throw new Error(errorMessage);
+        }
+        
+        let successMessage = 'Contraseña actualizada correctamente';
+        try {
+          const responseData = await res.json();
+          successMessage = responseData.message || successMessage;
+        } catch (jsonError) {
+          console.log('Response no es JSON, usando mensaje por defecto');
+        }
+        
+        setMensaje(successMessage);
+        setCampoEditando({ ...campoEditando, [campo]: false });
+        setPasswordData({ passwordActual: '', passwordNueva: '', passwordConfirmar: '' });
+        setShowPasswords({ actual: false, nueva: false, confirmar: false });
+      } else {
+        const res = await fetch('http://localhost:8080/api/usuarios/perfil', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(usuario)
+        });
+        
+        if (!res.ok) {
+          let errorMessage = 'No se pudo actualizar el perfil';
+          try {
+            const errorData = await res.json();
+            errorMessage = errorData.message || errorMessage;
+          } catch (jsonError) {
+            console.error('Error parsing JSON:', jsonError);
+            errorMessage = `Error ${res.status}: ${res.statusText}`;
+          }
+          throw new Error(errorMessage);
+        }
+        
+        let successMessage = `${campo.charAt(0).toUpperCase() + campo.slice(1)} actualizado correctamente`;
+        try {
+          const responseData = await res.json();
+          successMessage = responseData.message || successMessage;
+        } catch (jsonError) {
+          console.log('Response no es JSON, usando mensaje por defecto');
+        }
+        
+        setMensaje(successMessage);
+        setCampoEditando({ ...campoEditando, [campo]: false });
+      }
     } catch (err) {
-      setError(`Error al actualizar ${campo}`);
+      setError(err instanceof Error ? err.message : `Error al actualizar ${campo}`);
     } finally {
       setGuardando(null);
     }
+  };
+
+  const togglePasswordVisibility = (field: keyof typeof showPasswords) => {
+    setShowPasswords({ ...showPasswords, [field]: !showPasswords[field] });
   };
 
   const handleLogout = () => {
@@ -268,6 +389,118 @@ const Perfil: React.FC = () => {
                   type="button" 
                   className={styles.btnEditar}
                   onClick={() => iniciarEdicion('telefono')}
+                >
+                  <FaEdit />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Campo Contraseña */}
+        <div className={styles.campoContainer}>
+          <div className={styles.campoHeader}>
+            <FaLock className={styles.campoIcon} />
+            <span className={styles.campoLabel}>Contraseña</span>
+          </div>
+          <div className={styles.campoContent}>
+            {campoEditando.password ? (
+              <div className={styles.campoEditando}>
+                <div className={styles.passwordFields}>
+                  {/* Contraseña Actual */}
+                  <div className={styles.passwordField}>
+                    <label className={styles.passwordLabel}>Contraseña Actual</label>
+                    <div className={styles.passwordInputContainer}>
+                      <input
+                        className={styles.campoInput}
+                        type={showPasswords.actual ? "text" : "password"}
+                        name="passwordActual"
+                        value={passwordData.passwordActual}
+                        onChange={handlePasswordChange}
+                        placeholder="Ingresa tu contraseña actual"
+                        required
+                      />
+                      <button
+                        type="button"
+                        className={styles.passwordToggle}
+                        onClick={() => togglePasswordVisibility('actual')}
+                      >
+                        {showPasswords.actual ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Nueva Contraseña */}
+                  <div className={styles.passwordField}>
+                    <label className={styles.passwordLabel}>Nueva Contraseña</label>
+                    <div className={styles.passwordInputContainer}>
+                      <input
+                        className={styles.campoInput}
+                        type={showPasswords.nueva ? "text" : "password"}
+                        name="passwordNueva"
+                        value={passwordData.passwordNueva}
+                        onChange={handlePasswordChange}
+                        placeholder="Ingresa tu nueva contraseña"
+                        required
+                      />
+                      <button
+                        type="button"
+                        className={styles.passwordToggle}
+                        onClick={() => togglePasswordVisibility('nueva')}
+                      >
+                        {showPasswords.nueva ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Confirmar Nueva Contraseña */}
+                  <div className={styles.passwordField}>
+                    <label className={styles.passwordLabel}>Confirmar Nueva Contraseña</label>
+                    <div className={styles.passwordInputContainer}>
+                      <input
+                        className={styles.campoInput}
+                        type={showPasswords.confirmar ? "text" : "password"}
+                        name="passwordConfirmar"
+                        value={passwordData.passwordConfirmar}
+                        onChange={handlePasswordChange}
+                        placeholder="Confirma tu nueva contraseña"
+                        required
+                      />
+                      <button
+                        type="button"
+                        className={styles.passwordToggle}
+                        onClick={() => togglePasswordVisibility('confirmar')}
+                      >
+                        {showPasswords.confirmar ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.campoBotones}>
+                  <button 
+                    type="button" 
+                    className={styles.btnGuardar}
+                    onClick={() => guardarCampo('password')}
+                    disabled={guardando === 'password'}
+                  >
+                    {guardando === 'password' ? 'Guardando...' : <FaSave />}
+                  </button>
+                  <button 
+                    type="button" 
+                    className={styles.btnCancelar}
+                    onClick={() => cancelarEdicion('password')}
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.campoMostrar}>
+                <span className={styles.campoValor}>••••••••</span>
+                <button 
+                  type="button" 
+                  className={styles.btnEditar}
+                  onClick={() => iniciarEdicion('password')}
                 >
                   <FaEdit />
                 </button>
