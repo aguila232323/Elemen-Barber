@@ -10,6 +10,7 @@ import Citas from './pages/user/Citas/Citas';
 import Toast from './components/ui/Toast';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import Perfil from './pages/user/Perfil/Perfil';
+import Register from './pages/auth/Register';
 
 
 // Función para decodificar el payload del JWT
@@ -103,6 +104,7 @@ function App() {
           <Route path="/contacto" element={<ContactoResenas />} />
           <Route path="/portafolio" element={<Portafolio />} />
           <Route path="/auth/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/citas" element={<Citas onLoginSuccess={handleLoginSuccess} />} />
           <Route path="/perfil" element={<Perfil />} />
         </Routes>

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import SeleccionarServicioModal from '../SeleccionarServicioModal';
 import CalendarBooking from '../CalendarBooking';
 import Login from '../../pages/auth/Login';
+import Register from '../../pages/auth/Register';
 
 function getUserName() {
   try {
@@ -30,6 +31,7 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) => {
   const [showLogin, setShowLogin] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
   const [showCita, setShowCita] = useState(false);
   const [showCalendario, setShowCalendario] = useState(false);
   const [serviciosSeleccionados, setServiciosSeleccionados] = useState<string[]>([]);
@@ -42,19 +44,10 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
     const updateUserName = () => {
       setUserName(getUserName());
     };
-
-    // Escuchar cambios en localStorage
-    const handleStorageChange = () => {
-      updateUserName();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    
-    // También actualizar cuando el componente se monta
+    window.addEventListener('storage', updateUserName);
     updateUserName();
-
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('storage', updateUserName);
     };
   }, []);
 
@@ -72,8 +65,19 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
 
   const handleLoginSuccess = () => {
     setShowLogin(false);
-    setUserName(getUserName()); // Actualizar el nombre inmediatamente
+    setShowRegister(false);
+    setUserName(getUserName());
     onLoginSuccess();
+  };
+
+  // Cambiar entre login y registro
+  const handleSwitchToRegister = () => {
+    setShowLogin(false);
+    setShowRegister(true);
+  };
+  const handleSwitchToLogin = () => {
+    setShowRegister(false);
+    setShowLogin(true);
   };
 
   return (
@@ -131,7 +135,15 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
         <div className={styles.modalOverlay} onClick={()=>setShowLogin(false)}>
           <div className={styles.modalContent} onClick={e=>e.stopPropagation()}>
             <button className={styles.closeModal} onClick={()=>setShowLogin(false)}>×</button>
-            <Login onLoginSuccess={handleLoginSuccess} />
+            <Login onLoginSuccess={handleLoginSuccess} onSwitchToRegister={handleSwitchToRegister} onClose={()=>setShowLogin(false)} />
+          </div>
+        </div>
+      )}
+      {showRegister && (
+        <div className={styles.modalOverlay} onClick={()=>setShowRegister(false)}>
+          <div className={styles.modalContent} onClick={e=>e.stopPropagation()}>
+            <button className={styles.closeModal} onClick={()=>setShowRegister(false)}>×</button>
+            <Register onClose={()=>setShowRegister(false)} onSwitchToLogin={handleSwitchToLogin} />
           </div>
         </div>
       )}
@@ -140,7 +152,7 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
           serviciosSeleccionados={serviciosSeleccionados}
           setServiciosSeleccionados={setServiciosSeleccionados}
           onClose={()=>setShowCita(false)}
-          onContinuar={()=>{
+          onContinuar={() => {
             setShowCita(false);
             setShowCalendario(true);
           }}

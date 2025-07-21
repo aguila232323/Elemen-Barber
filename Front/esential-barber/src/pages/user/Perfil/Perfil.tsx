@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styles from './Perfil.module.css';
 import { useNavigate } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSave, FaTimes, FaSignOutAlt, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
+import defaultProfile from '../../../assets/images/usuario.png';
 
 interface Usuario {
   nombre: string;
@@ -44,6 +45,7 @@ const Perfil: React.FC = () => {
     nueva: false,
     confirmar: false
   });
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -60,6 +62,7 @@ const Perfil: React.FC = () => {
       })
       .then(data => {
         setUsuario({ nombre: data.nombre, email: data.email, telefono: data.telefono || '' });
+        setProfileImage(data.imagenUrl || null); // Set profile image from backend
         setLoading(false);
       })
       .catch((err) => {
@@ -75,6 +78,16 @@ const Perfil: React.FC = () => {
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+  };
+
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setProfileImage(ev.target?.result as string);
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
   };
 
   const iniciarEdicion = (campo: keyof CampoEditando) => {
@@ -106,6 +119,7 @@ const Perfil: React.FC = () => {
           })
           .then(data => {
             setUsuario({ nombre: data.nombre, email: data.email, telefono: data.telefono || '' });
+            setProfileImage(data.imagenUrl || null); // Recargar imagen
           })
           .catch((err) => {
             console.error('Error al recargar datos:', err);
@@ -234,6 +248,25 @@ const Perfil: React.FC = () => {
 
   return (
     <div className={styles.perfilCont}>
+      <div className={styles.profileImageSection}>
+        <div className={styles.profileImageContainer}>
+          <img
+            src={profileImage || defaultProfile}
+            alt="Imagen de perfil"
+            className={styles.profileImage}
+          />
+          <label htmlFor="profileImageInput" className={styles.profileImageEdit}>
+            <FaEdit />
+          </label>
+          <input
+            id="profileImageInput"
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handleProfileImageChange}
+          />
+        </div>
+      </div>
       <div className={styles.perfilHeader}>
         <h2 className={styles.perfilTitulo}>
           <FaUser className={styles.perfilIcon} />

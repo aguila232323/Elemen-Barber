@@ -29,6 +29,7 @@
   padding-bottom: 1.5rem;
   border-bottom: 2px solid #f0f0f0;
   transition: all 0.3s ease;
+  margin-top: 0;
 }
 
 .perfilTitulo {
@@ -111,9 +112,10 @@
 }
 
 .campoLabel {
-  font-weight: 600;
-  color: #333;
-  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+  font-size: 1.22rem;
+  letter-spacing: 0.5px;
   transition: color 0.3s ease;
 }
 
@@ -497,4 +499,56 @@
   .passwordLabel {
     color: #fff;
   }
+} 
+
+.profileImageSection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+.profileImageContainer {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1976d2 60%, #43b94a 100%);
+  border-radius: 50%;
+  box-shadow: 0 4px 24px rgba(25,118,210,0.18), 0 1.5px 8px 0 rgba(0,0,0,0.10);
+  padding: 6px;
+}
+.profileImage {
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #fff;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(25,118,210,0.10);
+}
+.profileImageEdit {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: #1976d2;
+  color: #fff;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(25,118,210,0.13);
+  font-size: 1.3rem;
+  transition: background 0.2s, transform 0.2s;
+  z-index: 2;
+}
+.profileImageEdit:hover {
+  background: #1251a3;
+  transform: scale(1.08);
 } 

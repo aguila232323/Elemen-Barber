@@ -45,6 +45,31 @@
   z-index: 1;
 }
 
+.bottomIconActive {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 2px auto;
+  filter: brightness(0) saturate(100%) invert(100%);
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.bottomIconInactive {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 2px auto;
+  filter: brightness(0) saturate(100%) invert(87%) sepia(99%) saturate(7499%) hue-rotate(1deg) brightness(104%) contrast(104%);
+  /* Amarillo */
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
 .bottomBtnLabel {
   font-size: 0.97rem;
   color: #FFD600;
@@ -69,6 +94,13 @@
 
 .bottomNavbar {
   animation: slideUp 0.5s ease;
+}
+
+.bottomBtn:focus, .bottomBtn:active {
+  outline: none;
+  border: none;
+  background: none;
+  box-shadow: none;
 }
 
 /* Responsive Design Mejorado para Navbar Inferior */
