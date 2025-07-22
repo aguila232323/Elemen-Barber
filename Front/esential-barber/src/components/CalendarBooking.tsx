@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Simulación de disponibilidad por día (0-100%)
 function getDisponibilidad(dia: number) {
@@ -27,6 +27,9 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
   const [anio, setAnio] = useState(today.getFullYear());
   const [diaSeleccionado, setDiaSeleccionado] = useState<number|null>(null);
   const [horaSeleccionada, setHoraSeleccionada] = useState<string|null>(null);
+  const [horasLibres, setHorasLibres] = useState<string[]>([]);
+  const [loadingHoras, setLoadingHoras] = useState(false);
+  const [disponibilidadMes, setDisponibilidadMes] = useState<{[dia: number]: number}>({}); // porcentaje de libre por día
 
   // Días del mes
   const diasEnMes = new Date(anio, mes + 1, 0).getDate();
@@ -42,16 +45,63 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
     setAnio(nuevoAnio);
     setDiaSeleccionado(null);
     setHoraSeleccionada(null);
+    setHorasLibres([]);
   }
+
+  // Consultar horas libres al seleccionar un día
+  useEffect(() => {
+    if (diaSeleccionado) {
+      setLoadingHoras(true);
+      const fecha = `${anio}-${String(mes+1).padStart(2,'0')}-${String(diaSeleccionado).padStart(2,'0')}`;
+      fetch(`http://localhost:8080/api/citas/disponibilidad?fecha=${fecha}`)
+        .then(res => res.json())
+        .then(data => {
+          setHorasLibres(data.horasLibres || []);
+          setLoadingHoras(false);
+        })
+        .catch(() => {
+          setHorasLibres([]);
+          setLoadingHoras(false);
+        });
+    } else {
+      setHorasLibres([]);
+    }
+  }, [diaSeleccionado, mes, anio]);
+
+  // Consultar disponibilidad de todo el mes al cambiar mes/año
+  useEffect(() => {
+    const fetchDisponibilidadMes = async () => {
+      const diasEnEsteMes = new Date(anio, mes + 1, 0).getDate();
+      const promises = Array.from({length: diasEnEsteMes}, (_, i) => {
+        const fecha = `${anio}-${String(mes+1).padStart(2,'0')}-${String(i+1).padStart(2,'0')}`;
+        return fetch(`http://localhost:8080/api/citas/disponibilidad?fecha=${fecha}`)
+          .then(res => res.json())
+          .then(data => {
+            const libres = data.horasLibres ? data.horasLibres.length : 0;
+            return { dia: i+1, libres };
+          })
+          .catch(() => ({ dia: i+1, libres: 0 }));
+      });
+      const resultados = await Promise.all(promises);
+      const map: {[dia: number]: number} = {};
+      resultados.forEach(({dia, libres}) => { map[dia] = libres; });
+      setDisponibilidadMes(map);
+    };
+    fetchDisponibilidadMes();
+  }, [mes, anio]);
 
   return (
     <div style={{width:'100vw',height:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#f5f5f5'}}>
-      <div style={{background:'#fff',padding:32,borderRadius:16,boxShadow:'0 4px 32px rgba(0,0,0,0.18)',minWidth:360, maxWidth:420}}>
+      <div style={{background:'#fff',padding:32,borderRadius:16,boxShadow:'0 4px 32px rgba(0,0,0,0.18)',minWidth:360, maxWidth:420, color:'#222'}}>
         <h2 style={{color:'#1976d2',marginTop:0,marginBottom:8}}>Selecciona día y hora</h2>
-        <div style={{fontWeight:500,marginBottom:16}}>Servicios: <span style={{color:'#1976d2'}}>{servicio.join(', ')}</span></div>
+        <div style={{fontWeight:500,marginBottom:16, color:'#222'}}>Servicios: <span style={{color:'#1976d2'}}>{servicio.join(', ')}</span></div>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
-          <button onClick={()=>cambiarMes(-1)} style={{background:'none',border:'none',fontSize:22,cursor:'pointer',color:'#1976d2'}}>&lt;</button>
-          <span style={{fontWeight:600,fontSize:'1.1rem'}}>{new Date(anio, mes).toLocaleString('es-ES',{month:'long',year:'numeric'})}</span>
+          <button 
+            onClick={()=>cambiarMes(-1)} 
+            style={{background:'none',border:'none',fontSize:22,cursor: (anio > today.getFullYear() || (anio === today.getFullYear() && mes > today.getMonth())) ? 'pointer' : 'not-allowed',color:'#1976d2', opacity: (anio > today.getFullYear() || (anio === today.getFullYear() && mes > today.getMonth())) ? 1 : 0.4}}
+            disabled={anio < today.getFullYear() || (anio === today.getFullYear() && mes <= today.getMonth())}
+          >&lt;</button>
+          <span style={{fontWeight:600,fontSize:'1.1rem', textTransform:'capitalize', color:'#1976d2'}}>{new Date(anio, mes).toLocaleString('es-ES',{month:'long',year:'numeric'})}</span>
           <button onClick={()=>cambiarMes(1)} style={{background:'none',border:'none',fontSize:22,cursor:'pointer',color:'#1976d2'}}>&gt;</button>
         </div>
         <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:4,marginBottom:8}}>
@@ -59,8 +109,10 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
           {Array(primerDiaSemana===0?6:primerDiaSemana-1).fill(null).map((_,i)=>(<div key={'empty'+i}></div>))}
           {Array.from({length:diasEnMes},(_,i)=>{
             const dia = i+1;
-            const disp = getDisponibilidad(dia);
-            let colorBarra = disp>70?'#43b94a':disp>30?'#ffe066':'#e74c3c';
+            const libres = disponibilidadMes[dia] ?? 0;
+            const total = 10; // total de slots estándar
+            const porcentaje = Math.round((libres/total)*100);
+            let colorBarra = porcentaje>70?'#43b94a':porcentaje>30?'#ffe066':'#e74c3c';
             return (
               <div key={dia} style={{display:'flex',flexDirection:'column',alignItems:'center',cursor:'pointer'}} onClick={()=>{setDiaSeleccionado(dia);setHoraSeleccionada(null);}}>
                 <div style={{
@@ -78,8 +130,13 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
         {diaSeleccionado && (
           <div style={{margin:'18px 0'}}>
             <div style={{fontWeight:500,marginBottom:8}}>Horas disponibles para el {diaSeleccionado}:</div>
+            {loadingHoras ? (
+              <div style={{color:'#1976d2'}}>Cargando horas...</div>
+            ) : horasLibres.length === 0 ? (
+              <div style={{color:'#e74c3c'}}>No hay horas libres para este día.</div>
+            ) : (
             <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-              {getHorasDisponibles(diaSeleccionado).map(hora=>(
+              {horasLibres.map(hora=>(
                 <button key={hora} onClick={()=>setHoraSeleccionada(hora)}
                   style={{
                     background:horaSeleccionada===hora?'#1976d2':'#fff',
@@ -90,6 +147,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
                 >{hora}</button>
               ))}
             </div>
+            )}
           </div>
         )}
         <button

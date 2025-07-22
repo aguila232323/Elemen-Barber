@@ -6,6 +6,7 @@ import SeleccionarServicioModal from '../SeleccionarServicioModal';
 import CalendarBooking from '../CalendarBooking';
 import Login from '../../pages/auth/Login';
 import Register from '../../pages/auth/Register';
+import logoElemental from '../../assets/images/logoElemental.png';
 
 function getUserName() {
   try {
@@ -104,7 +105,9 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
             </li>
           </ul>
           {/* Centro: Logo */}
-          <span className={styles.logo}>Esential Barber</span>
+          <span className={styles.logo}>
+            <img src={logoElemental} alt="Logo Elemental Barber" className={styles.logoImg} />
+          </span>
           {/* Derecha: Portafolio y Perfil */}
           <div className={styles.menuRightGroup}>
             <ul className={styles.menuListRight}>

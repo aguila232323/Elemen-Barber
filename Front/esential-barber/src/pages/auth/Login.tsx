@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styles from './Login.module.css';
 import { login as loginService } from '../../services/authService';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
+import { useAuth } from '../../context/AuthContext';
 
 interface LoginProps {
   onLoginSuccess?: () => void;
@@ -14,6 +15,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { setUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,6 +25,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
       const data = await loginService(email, password);
       if (data.token) {
         localStorage.setItem('authToken', data.token);
+        setUser('reload');
         if (onLoginSuccess) onLoginSuccess();
         if (onClose) onClose();
       } else {

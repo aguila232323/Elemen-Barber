@@ -47,7 +47,6 @@ const Inicio: React.FC = () => {
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: '2.5rem',
-        // borderRadius: '0 0 32px 32px',
         overflow: 'hidden',
         boxShadow: '0 4px 32px rgba(0,0,0,0.09)',
       }}>
@@ -65,18 +64,40 @@ const Inicio: React.FC = () => {
             zIndex: 1,
           }}
         />
-        <span style={{
+        <div style={{
           position: 'relative',
           zIndex: 2,
-          color: '#fff',
-          fontSize: '2.7rem',
-          fontWeight: 'bold',
-          letterSpacing: '2px',
-          textShadow: '0 4px 24px #000, 0 1px 2px #000',
-          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
         }}>
-          Esential Barber
-        </span>
+          <span style={{
+            color: '#fff',
+            fontSize: '4.2rem',
+            fontWeight: 'bold',
+            letterSpacing: '2px',
+            textShadow: '0 4px 24px #000, 0 1px 2px #000',
+            fontFamily: 'serif',
+            lineHeight: 1.05,
+            textAlign: 'center',
+          }}>
+            ELEMEN
+          </span>
+          <span style={{
+            color: '#fff',
+            fontSize: '1.45rem',
+            fontWeight: 400,
+            letterSpacing: '2.5px',
+            textShadow: '0 2px 12px #000, 0 1px 2px #000',
+            fontFamily: 'sans-serif',
+            marginTop: '0.3rem',
+            textAlign: 'center',
+          }}>
+            BARBER STUDIO
+          </span>
+        </div>
       </div>
 
       <div style={{
@@ -106,8 +127,8 @@ const Inicio: React.FC = () => {
             <FaClock style={{color: '#FFD600', fontSize: '1.2rem'}} />
           </span>
           <span style={{display: 'flex', flexDirection: 'column', lineHeight: 1.1}}>
-            <span style={{fontWeight: 600, fontSize: '0.93em'}}>Lunes - Sábado</span>
-            <span style={{fontSize: '0.85em', color: '#ccc'}}>10:00 - 20:00</span>
+            <span style={{fontWeight: 600, fontSize: '0.93em'}}>Martes - Sábado</span>
+            <span style={{fontSize: '0.85em', color: '#ccc'}}>9:00 - 21:15</span>
           </span>
         </span>
         {/* Peluquero */}
@@ -124,7 +145,7 @@ const Inicio: React.FC = () => {
             <FaUser style={{color: '#FFD600', fontSize: '1.2rem'}} />
           </span>
           <span style={{display: 'flex', flexDirection: 'column', lineHeight: 1.1}}>
-            <span style={{fontWeight: 600, fontSize: '0.93em'}}>Juan García</span>
+            <span style={{fontWeight: 600, fontSize: '0.93em'}}>Luis</span>
             <span style={{fontSize: '0.85em', color: '#ccc'}}>Barbero principal</span>
           </span>
         </span>
@@ -142,8 +163,8 @@ const Inicio: React.FC = () => {
             <FaMapMarkerAlt style={{color: '#FFD600', fontSize: '1.2rem'}} />
           </span>
           <span style={{display: 'flex', flexDirection: 'column', lineHeight: 1.1}}>
-            <span style={{fontWeight: 600, fontSize: '0.93em'}}>Calle Falsa 123</span>
-            <span style={{fontSize: '0.85em', color: '#ccc'}}>Madrid</span>
+            <span style={{fontWeight: 600, fontSize: '0.93em'}}>4 Paseo Dr. Revuelta</span>
+            <span style={{fontSize: '0.85em', color: '#ccc'}}>Begíjar, Andalucía</span>
           </span>
         </span>
       </div>

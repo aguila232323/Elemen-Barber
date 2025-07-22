@@ -1,37 +1,27 @@
-import { useState, useEffect } from 'react'
-import './App.css'
-import Navbar from './components/Navbar/NavbarSuperior'
-import NavbarInferior from './components/Navbar/NavbarInferior'
-import Inicio from './pages/public/Inicio/Inicio'
-import Portafolio from './pages/public/Portfolio/Portafolio'
-import ContactoResenas from './pages/public/ContactoResenas/ContactoResenas'
-import Login from './pages/auth/Login'
+import { useEffect, useState } from 'react';
+import './App.css';
+import Navbar from './components/Navbar/NavbarSuperior';
+import NavbarInferior from './components/Navbar/NavbarInferior';
+import AdminNavbar from './components/Navbar/AdminNavbar';
+import Inicio from './pages/public/Inicio/Inicio';
+import Portafolio from './pages/public/Portfolio/Portafolio';
+import ContactoResenas from './pages/public/ContactoResenas/ContactoResenas';
+import Login from './pages/auth/Login';
 import Citas from './pages/user/Citas/Citas';
 import Toast from './components/ui/Toast';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import Perfil from './pages/user/Perfil/Perfil';
 import Register from './pages/auth/Register';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import CitasAdmin from './pages/admin/CitasAdmin';
+import Configuracion from './pages/admin/Configuracion';
 
-
-// Función para decodificar el payload del JWT
-function parseJwt(token: string) {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-    return JSON.parse(jsonPayload);
-  } catch {
-    return null;
-  }
-}
-
-function App() {
+function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
 
-  // Determinar sección activa para el navbar
+  // Determinar sección activa para el navbar superior
   let section = 'inicio';
   if (location.pathname === '/contacto') section = 'contactoResenas';
   else if (location.pathname === '/portafolio') section = 'portafolio';
@@ -46,52 +36,25 @@ function App() {
   // Estado para Toast de login exitoso
   const [showLoginToast, setShowLoginToast] = useState(false);
 
-  // Estado de autenticación
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    const token = localStorage.getItem('authToken');
-    if (!token) return false;
-    const payload = parseJwt(token);
-    if (payload && payload.exp) {
-      const now = Math.floor(Date.now() / 1000);
-      if (payload.exp < now) {
-        localStorage.removeItem('authToken');
-        return false;
-      }
-    }
-    return true;
-  });
-
   // Función global para manejar login exitoso
   const handleLoginSuccess = () => {
-    setIsAuthenticated(true);
     setShowLoginToast(true);
   };
 
-  // Funciones para la NavbarInferior
+  // Funciones para la NavbarInferior/AdminNavbar
   const goToCitas = () => navigate('/citas');
   const goToPerfil = () => navigate('/perfil');
   const goToInicio = () => navigate('/');
-
-  // Efecto para comprobar expiración del token periódicamente
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        const payload = parseJwt(token);
-        if (payload && payload.exp) {
-          const now = Math.floor(Date.now() / 1000);
-          if (payload.exp < now) {
-            localStorage.removeItem('authToken');
-            setIsAuthenticated(false);
-          }
-        }
-      }
-    }, 5000); // Comprobar cada 5 segundos
-    return () => clearInterval(interval);
-  }, []);
+  const goToConfig = () => navigate('/admin/configuracion');
 
   // Determinar si mostrar la barra superior
   const shouldShowNavbar = !['/citas', '/perfil'].includes(location.pathname);
+
+  // Determinar pestaña activa para la navbar inferior
+  let activeTab: 'inicio' | 'citas' | 'perfil' | 'config' = 'inicio';
+  if (location.pathname.startsWith('/citas')) activeTab = 'citas';
+  else if (location.pathname.startsWith('/perfil')) activeTab = 'perfil';
+  else if (location.pathname.startsWith('/admin/configuracion')) activeTab = 'config';
 
   return (
     <div className="main-container">
@@ -105,12 +68,28 @@ function App() {
           <Route path="/portafolio" element={<Portafolio />} />
           <Route path="/auth/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/citas" element={<Citas onLoginSuccess={handleLoginSuccess} />} />
+          <Route path="/citas" element={user && user.rol === 'ADMIN' ? <CitasAdmin /> : <Citas onLoginSuccess={handleLoginSuccess} />} />
           <Route path="/perfil" element={<Perfil />} />
+          <Route path="/admin/configuracion" element={<Configuracion />} />
         </Routes>
       </main>
-      {isAuthenticated && (
-        <NavbarInferior onCitas={goToCitas} onPerfil={goToPerfil} onInicio={goToInicio} />
+      {!loading && user && (
+        user.rol === 'ADMIN' ? (
+          <AdminNavbar
+            onCitas={goToCitas}
+            onPerfil={goToPerfil}
+            onInicio={goToInicio}
+            onConfig={goToConfig}
+            activeTab={activeTab}
+          />
+        ) : (
+          <NavbarInferior
+            onCitas={goToCitas}
+            onPerfil={goToPerfil}
+            onInicio={goToInicio}
+            activeTab={activeTab as 'inicio' | 'citas' | 'perfil'}
+          />
+        )
       )}
       {showLoginToast && (
         <Toast message="¡Inicio de sesión exitoso!" type="success" onClose={() => setShowLoginToast(false)} />
@@ -119,7 +98,15 @@ function App() {
         © {new Date().getFullYear()} Esential Barber. Todos los derechos reservados.
       </footer>
     </div>
-  )
+  );
 }
 
-export default App
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
+
+export default App;

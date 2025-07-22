@@ -88,6 +88,14 @@
   white-space: nowrap;
   transition: transform 0.3s ease;
 }
+.logoImg {
+  max-height: 56px;
+  width: auto;
+  display: block;
+  margin: 0 auto;
+  object-fit: contain;
+  padding: 2px 0;
+}
 .spacer {
   height: 64px; /* Igual que la altura de la navbar */
 }
@@ -230,8 +238,11 @@ button.active, button:hover {
   }
   
   .logo {
-    font-size: 1.2rem;
-    margin: 0 1rem;
+    height: 48px;
+    margin: 0 0.5rem;
+  }
+  .logoImg {
+    max-height: 38px;
   }
   
   .menuList, .menuListRight {

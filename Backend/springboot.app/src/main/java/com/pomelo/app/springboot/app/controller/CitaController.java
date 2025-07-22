@@ -11,6 +11,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/citas")
 @CrossOrigin(origins = "*")
@@ -61,5 +69,35 @@ public class CitaController {
     public ResponseEntity<Void> borrarCitaFija(@PathVariable Long id) {
         citaService.borrarCitaFija(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Horario estándar: martes a sábado, 9-14 y 16-21:15 (citas cada hora)
+    private static final List<String> HORAS_TRABAJO = Arrays.asList(
+        "09:00", "10:00", "11:00", "12:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"
+    );
+
+    @GetMapping("/disponibilidad")
+    @Operation(summary = "Disponibilidad de citas", description = "Devuelve las horas libres para un día concreto")
+    public ResponseEntity<?> disponibilidad(@RequestParam String fecha) {
+        LocalDate dia = LocalDate.parse(fecha, DateTimeFormatter.ISO_DATE);
+        // Buscar todas las citas de ese día
+        List<Cita> citasDia = citaService.listarTodasLasCitas().stream()
+            .filter(c -> c.getFechaHora() != null && c.getFechaHora().toLocalDate().equals(dia))
+            .collect(Collectors.toList());
+        List<String> horasLibres;
+        if (citasDia.isEmpty()) {
+            horasLibres = HORAS_TRABAJO;
+        } else {
+            Set<String> horasOcupadas = citasDia.stream()
+                .map(c -> c.getFechaHora().toLocalTime().toString().substring(0,5)) // "HH:mm"
+                .collect(Collectors.toSet());
+            horasLibres = HORAS_TRABAJO.stream()
+                .filter(hora -> !horasOcupadas.contains(hora))
+                .collect(Collectors.toList());
+        }
+        Map<String, Object> respuesta = new java.util.HashMap<>();
+        respuesta.put("fecha", fecha);
+        respuesta.put("horasLibres", horasLibres);
+        return ResponseEntity.ok(respuesta);
     }
 }

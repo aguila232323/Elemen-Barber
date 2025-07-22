@@ -1,0 +1,65 @@
+.citas-admin-container {
+  max-width: 950px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background: #23272f;
+  border-radius: 18px;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.13);
+}
+.citas-admin-title {
+  color: #1976d2;
+  font-size: 2rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.rbc-calendar {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  border-radius: 16px;
+  overflow: hidden;
+}
+.rbc-toolbar {
+  background: #181b22;
+  color: #fff;
+  border-radius: 12px 12px 0 0;
+  padding: 1rem 1.2rem;
+}
+.rbc-btn-group button {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  margin: 0 0.2rem;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  transition: background 0.18s;
+}
+.rbc-btn-group button:hover, .rbc-btn-group button:focus {
+  background: #1251a3;
+}
+.rbc-event {
+  background: #43b94a;
+  color: #fff;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+}
+.rbc-today {
+  background: #e3f2fd !important;
+}
+.rbc-off-range-bg {
+  background: #f5f5f5;
+}
+@media (max-width: 700px) {
+  .citas-admin-container {
+    padding: 0.5rem;
+  }
+  .rbc-calendar {
+    font-size: 0.92rem;
+  }
+  .citas-admin-title {
+    font-size: 1.2rem;
+  }
+} 

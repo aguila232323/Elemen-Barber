@@ -1,3 +1,80 @@
+.bottomNavbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1002;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0.5rem 0 0.2rem 0;
+  background: #181818;
+  box-shadow: 0 -2px 16px rgba(0,0,0,0.18);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.bottomBtn {
+  background: none;
+  border: none;
+  outline: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: 1;
+  padding: 0.2rem 0;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  margin: 0 0.2rem;
+}
+
+.bottomIconActive {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 2px auto;
+  filter: brightness(0) saturate(100%) invert(100%);
+  color: #fff !important;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.bottomIconInactive {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 2px auto;
+  filter: brightness(0) saturate(100%) invert(87%) sepia(99%) saturate(7499%) hue-rotate(1deg) brightness(104%) contrast(104%);
+  color: #FFD600 !important;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.bottomBtnLabel {
+  font-size: 0.97rem;
+  color: #FFD600;
+  font-weight: 600;
+  margin-top: 2px;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.bottomBtn:focus, .bottomBtn:active {
+  outline: none;
+  border: none;
+  background: none;
+  box-shadow: none;
+}
 
 
 
