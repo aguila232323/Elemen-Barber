@@ -38,6 +38,7 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
   const [serviciosSeleccionados, setServiciosSeleccionados] = useState<string[]>([]);
   const [mensajeCita, setMensajeCita] = useState('');
   const [userName, setUserName] = useState<string | null>(getUserName());
+  const [serviciosDisponibles, setServiciosDisponibles] = useState<any[]>([]);
   const navigate = useNavigate();
 
   // Actualizar el nombre del usuario cuando cambie el token
@@ -50,6 +51,14 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
     return () => {
       window.removeEventListener('storage', updateUserName);
     };
+  }, []);
+
+  // Cargar servicios disponibles al montar
+  useEffect(() => {
+    fetch('http://localhost:8080/api/servicios')
+      .then(res => res.json())
+      .then(data => setServiciosDisponibles(data))
+      .catch(() => setServiciosDisponibles([]));
   }, []);
 
   function handleReservaCompletada() {
@@ -120,7 +129,10 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
                 </span>
               </li>
             </ul>
-            <button className={styles.btnCita} onClick={()=>setShowCita(true)}>Pedir Cita</button>
+            <button className={styles.btnCita} onClick={() => {
+              setServiciosSeleccionados([]); // Limpiar selección al abrir el modal
+              setShowCita(true);
+            }}>Pedir Cita</button>
             {userName ? (
               <span className={styles.bienvenidaMsg}>
                 Bienvenido, <b>{userName}</b>
@@ -166,9 +178,11 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
           <div className={styles.modalContent} onClick={e=>e.stopPropagation()}>
             <button className={styles.closeModal} onClick={()=>setShowCalendario(false)}>×</button>
             <CalendarBooking
-              servicio={serviciosSeleccionados}
+              servicio={serviciosSeleccionados.map(nombre => serviciosDisponibles.find(s => s.nombre === nombre)).filter(Boolean)}
               onClose={()=>setShowCalendario(false)}
               onReservaCompletada={handleReservaCompletada}
+              // Mostrar nombres de servicios seleccionados
+              nombresServicios={serviciosSeleccionados.join(', ')}
             />
           </div>
         </div>

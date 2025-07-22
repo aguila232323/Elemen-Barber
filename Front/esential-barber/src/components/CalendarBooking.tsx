@@ -16,12 +16,13 @@ function getHorasDisponibles(dia: number) {
 }
 
 interface Props {
-  servicio: string[];
+  servicio: { nombre: string; duracionMinutos: number }[];
   onClose: () => void;
   onReservaCompletada: () => void;
+  nombresServicios: string;
 }
 
-const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompletada }) => {
+const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompletada, nombresServicios }) => {
   const today = new Date();
   const [mes, setMes] = useState(today.getMonth());
   const [anio, setAnio] = useState(today.getFullYear());
@@ -30,6 +31,9 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
   const [horasLibres, setHorasLibres] = useState<string[]>([]);
   const [loadingHoras, setLoadingHoras] = useState(false);
   const [disponibilidadMes, setDisponibilidadMes] = useState<{[dia: number]: number}>({}); // porcentaje de libre por día
+
+  // Obtener la mayor duración de los servicios seleccionados (por si se seleccionan varios)
+  const duracion = servicio.length > 0 ? Math.max(...servicio.map(s => s.duracionMinutos)) : 45;
 
   // Días del mes
   const diasEnMes = new Date(anio, mes + 1, 0).getDate();
@@ -53,7 +57,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
     if (diaSeleccionado) {
       setLoadingHoras(true);
       const fecha = `${anio}-${String(mes+1).padStart(2,'0')}-${String(diaSeleccionado).padStart(2,'0')}`;
-      fetch(`http://localhost:8080/api/citas/disponibilidad?fecha=${fecha}`)
+      fetch(`http://localhost:8080/api/citas/disponibilidad?fecha=${fecha}&duracion=${duracion}`)
         .then(res => res.json())
         .then(data => {
           setHorasLibres(data.horasLibres || []);
@@ -66,7 +70,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
     } else {
       setHorasLibres([]);
     }
-  }, [diaSeleccionado, mes, anio]);
+  }, [diaSeleccionado, mes, anio, duracion]);
 
   // Consultar disponibilidad de todo el mes al cambiar mes/año
   useEffect(() => {
@@ -74,7 +78,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
       const diasEnEsteMes = new Date(anio, mes + 1, 0).getDate();
       const promises = Array.from({length: diasEnEsteMes}, (_, i) => {
         const fecha = `${anio}-${String(mes+1).padStart(2,'0')}-${String(i+1).padStart(2,'0')}`;
-        return fetch(`http://localhost:8080/api/citas/disponibilidad?fecha=${fecha}`)
+        return fetch(`http://localhost:8080/api/citas/disponibilidad?fecha=${fecha}&duracion=${duracion}`)
           .then(res => res.json())
           .then(data => {
             const libres = data.horasLibres ? data.horasLibres.length : 0;
@@ -88,13 +92,13 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
       setDisponibilidadMes(map);
     };
     fetchDisponibilidadMes();
-  }, [mes, anio]);
+  }, [mes, anio, duracion]);
 
   return (
     <div style={{width:'100vw',height:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#f5f5f5'}}>
       <div style={{background:'#fff',padding:32,borderRadius:16,boxShadow:'0 4px 32px rgba(0,0,0,0.18)',minWidth:360, maxWidth:420, color:'#222'}}>
         <h2 style={{color:'#1976d2',marginTop:0,marginBottom:8}}>Selecciona día y hora</h2>
-        <div style={{fontWeight:500,marginBottom:16, color:'#222'}}>Servicios: <span style={{color:'#1976d2'}}>{servicio.join(', ')}</span></div>
+        <div style={{fontWeight:500,marginBottom:16, color:'#222'}}>Servicios: <span style={{color:'#1976d2'}}>{nombresServicios}</span></div>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
           <button 
             onClick={()=>cambiarMes(-1)} 

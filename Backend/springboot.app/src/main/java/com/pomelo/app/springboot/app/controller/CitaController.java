@@ -12,12 +12,15 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.Map;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/citas")
@@ -77,24 +80,44 @@ public class CitaController {
     );
 
     @GetMapping("/disponibilidad")
-    @Operation(summary = "Disponibilidad de citas", description = "Devuelve las horas libres para un día concreto")
-    public ResponseEntity<?> disponibilidad(@RequestParam String fecha) {
+    @Operation(summary = "Disponibilidad de citas", description = "Devuelve los slots libres para un día y duración concreta")
+    public ResponseEntity<?> disponibilidad(
+        @RequestParam String fecha,
+        @RequestParam int duracion // en minutos
+    ) {
         LocalDate dia = LocalDate.parse(fecha, DateTimeFormatter.ISO_DATE);
-        // Buscar todas las citas de ese día
+
+        // Generar slots de 45 min desde 09:00 a 14:00 y 16:00 a 21:15
+        List<LocalTime> slots = new ArrayList<>();
+        LocalTime[] inicios = {LocalTime.of(9,0), LocalTime.of(16,0)};
+        LocalTime[] fines = {LocalTime.of(14,0), LocalTime.of(21,15)};
+        for (int j = 0; j < inicios.length; j++) {
+            for (LocalTime t = inicios[j]; !t.isAfter(fines[j].minusMinutes(duracion-45)); t = t.plusMinutes(45)) {
+                slots.add(t);
+            }
+        }
+
+        // Obtener citas reservadas para ese día
         List<Cita> citasDia = citaService.listarTodasLasCitas().stream()
             .filter(c -> c.getFechaHora() != null && c.getFechaHora().toLocalDate().equals(dia))
             .collect(Collectors.toList());
-        List<String> horasLibres;
-        if (citasDia.isEmpty()) {
-            horasLibres = HORAS_TRABAJO;
-        } else {
-            Set<String> horasOcupadas = citasDia.stream()
-                .map(c -> c.getFechaHora().toLocalTime().toString().substring(0,5)) // "HH:mm"
-                .collect(Collectors.toSet());
-            horasLibres = HORAS_TRABAJO.stream()
-                .filter(hora -> !horasOcupadas.contains(hora))
-                .collect(Collectors.toList());
+
+        // Para cada slot, comprobar si hay hueco suficiente
+        List<String> horasLibres = new ArrayList<>();
+        for (LocalTime slot : slots) {
+            LocalDateTime inicio = LocalDateTime.of(dia, slot);
+            LocalDateTime fin = inicio.plusMinutes(duracion);
+            boolean solapado = citasDia.stream().anyMatch(cita -> {
+                LocalDateTime cIni = cita.getFechaHora();
+                int dur = cita.getServicio().getDuracionMinutos();
+                LocalDateTime cFin = cIni.plusMinutes(dur);
+                return !(fin.isBefore(cIni) || inicio.isAfter(cFin.minusMinutes(1)));
+            });
+            if (!solapado) {
+                horasLibres.add(slot.toString().substring(0,5));
+            }
         }
+
         Map<String, Object> respuesta = new java.util.HashMap<>();
         respuesta.put("fecha", fecha);
         respuesta.put("horasLibres", horasLibres);
