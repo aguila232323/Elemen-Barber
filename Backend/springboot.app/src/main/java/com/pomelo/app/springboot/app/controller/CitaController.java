@@ -87,12 +87,16 @@ public class CitaController {
     ) {
         LocalDate dia = LocalDate.parse(fecha, DateTimeFormatter.ISO_DATE);
 
-        // Generar slots de 45 min desde 09:00 a 14:00 y 16:00 a 21:15
+        // Generar todos los slots de inicio cada 45 min
+        List<LocalTime[]> tramos = List.of(
+            new LocalTime[]{LocalTime.of(9,0), LocalTime.of(14,0)},
+            new LocalTime[]{LocalTime.of(16,0), LocalTime.of(21,15)}
+        );
         List<LocalTime> slots = new ArrayList<>();
-        LocalTime[] inicios = {LocalTime.of(9,0), LocalTime.of(16,0)};
-        LocalTime[] fines = {LocalTime.of(14,0), LocalTime.of(21,15)};
-        for (int j = 0; j < inicios.length; j++) {
-            for (LocalTime t = inicios[j]; !t.isAfter(fines[j].minusMinutes(duracion-45)); t = t.plusMinutes(45)) {
+        for (LocalTime[] tramo : tramos) {
+            LocalTime apertura = tramo[0];
+            LocalTime cierre = tramo[1];
+            for (LocalTime t = apertura; t.compareTo(cierre) < 0; t = t.plusMinutes(45)) {
                 slots.add(t);
             }
         }
@@ -102,19 +106,36 @@ public class CitaController {
             .filter(c -> c.getFechaHora() != null && c.getFechaHora().toLocalDate().equals(dia))
             .collect(Collectors.toList());
 
-        // Para cada slot, comprobar si hay hueco suficiente
+        // Para cada slot, comprobar si hay hueco consecutivo suficiente para la duración solicitada
+        int slotsNecesarios = (int)Math.ceil(duracion / 45.0);
         List<String> horasLibres = new ArrayList<>();
-        for (LocalTime slot : slots) {
-            LocalDateTime inicio = LocalDateTime.of(dia, slot);
-            LocalDateTime fin = inicio.plusMinutes(duracion);
-            boolean solapado = citasDia.stream().anyMatch(cita -> {
-                LocalDateTime cIni = cita.getFechaHora();
-                int dur = cita.getServicio().getDuracionMinutos();
-                LocalDateTime cFin = cIni.plusMinutes(dur);
-                return !(fin.isBefore(cIni) || inicio.isAfter(cFin.minusMinutes(1)));
-            });
-            if (!solapado) {
-                horasLibres.add(slot.toString().substring(0,5));
+        for (int i = 0; i <= slots.size() - slotsNecesarios; i++) {
+            boolean hueco = true;
+            LocalTime slotInicio = slots.get(i);
+            LocalTime slotFin = slotInicio.plusMinutes(45 * slotsNecesarios);
+            // Comprobar que el rango completo cabe dentro de algún tramo
+            boolean dentroHorario = false;
+            for (LocalTime[] tramo : tramos) {
+                if (!slotInicio.isBefore(tramo[0]) && !slotFin.isAfter(tramo[1])) {
+                    dentroHorario = true;
+                    break;
+                }
+            }
+            if (!dentroHorario) continue;
+            // Comprobar que todos los slots consecutivos están libres
+            for (int j = 0; j < slotsNecesarios; j++) {
+                LocalDateTime inicio = LocalDateTime.of(dia, slots.get(i + j));
+                LocalDateTime fin = inicio.plusMinutes(45);
+                boolean solapado = citasDia.stream().anyMatch(cita -> {
+                    LocalDateTime cIni = cita.getFechaHora();
+                    int dur = cita.getServicio().getDuracionMinutos();
+                    LocalDateTime cFin = cIni.plusMinutes(dur);
+                    return !(fin.isBefore(cIni) || inicio.isAfter(cFin.minusMinutes(1)));
+                });
+                if (solapado) { hueco = false; break; }
+            }
+            if (hueco) {
+                horasLibres.add(slotInicio.toString().substring(0,5));
             }
         }
 

@@ -7,6 +7,14 @@ import CalendarBooking from '../CalendarBooking';
 import Login from '../../pages/auth/Login';
 import Register from '../../pages/auth/Register';
 import logoElemental from '../../assets/images/logoElemental.png';
+// Definir el tipo Servicio localmente para evitar error de importación
+interface Servicio {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  duracionMinutos: number;
+}
 
 function getUserName() {
   try {
@@ -35,7 +43,7 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
   const [showRegister, setShowRegister] = useState(false);
   const [showCita, setShowCita] = useState(false);
   const [showCalendario, setShowCalendario] = useState(false);
-  const [serviciosSeleccionados, setServiciosSeleccionados] = useState<string[]>([]);
+  const [serviciosSeleccionados, setServiciosSeleccionados] = useState<Servicio[]>([]);
   const [mensajeCita, setMensajeCita] = useState('');
   const [userName, setUserName] = useState<string | null>(getUserName());
   const [serviciosDisponibles, setServiciosDisponibles] = useState<any[]>([]);
@@ -130,7 +138,7 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
               </li>
             </ul>
             <button className={styles.btnCita} onClick={() => {
-              setServiciosSeleccionados([]); // Limpiar selección al abrir el modal
+              setServiciosSeleccionados([] as Servicio[]); // Limpiar selección al abrir el modal
               setShowCita(true);
             }}>Pedir Cita</button>
             {userName ? (
@@ -178,11 +186,10 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
           <div className={styles.modalContent} onClick={e=>e.stopPropagation()}>
             <button className={styles.closeModal} onClick={()=>setShowCalendario(false)}>×</button>
             <CalendarBooking
-              servicio={serviciosSeleccionados.map(nombre => serviciosDisponibles.find(s => s.nombre === nombre)).filter(Boolean)}
+              servicio={serviciosSeleccionados}
               onClose={()=>setShowCalendario(false)}
               onReservaCompletada={handleReservaCompletada}
-              // Mostrar nombres de servicios seleccionados
-              nombresServicios={serviciosSeleccionados.join(', ')}
+              nombresServicios={serviciosSeleccionados.map(s => s.nombre).join(', ')}
             />
           </div>
         </div>

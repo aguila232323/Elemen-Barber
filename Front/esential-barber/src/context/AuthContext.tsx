@@ -40,6 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setLoading(false);
         })
         .catch(() => {
+          localStorage.removeItem('authToken'); // Eliminar token si es inválido
           setUserState(null);
           setLoading(false);
         });

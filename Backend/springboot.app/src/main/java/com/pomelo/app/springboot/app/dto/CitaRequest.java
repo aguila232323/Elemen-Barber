@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 public class CitaRequest {
     private Long servicioId;
     private LocalDateTime fecha;
+    private String comentario;
 
 
     public Long getServicioId() {
@@ -12,5 +13,8 @@ public class CitaRequest {
     }
     public LocalDateTime getFecha() {
         return fecha;
+    }
+    public String getComentario() {
+        return comentario;
     }
 }

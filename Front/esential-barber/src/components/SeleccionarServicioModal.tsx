@@ -13,8 +13,8 @@ interface Servicio {
 }
 
 interface Props {
-  serviciosSeleccionados: string[];
-  setServiciosSeleccionados: React.Dispatch<React.SetStateAction<string[]>>;
+  serviciosSeleccionados: Servicio[];
+  setServiciosSeleccionados: React.Dispatch<React.SetStateAction<Servicio[]>>;
   onClose: () => void;
   onContinuar: () => void;
 }
@@ -53,7 +53,7 @@ const SeleccionarServicioModal: React.FC<Props> = ({ serviciosSeleccionados, set
         ) : (
         <div className={styles.citasServicios}>
           {servicios.map((serv) => {
-            const seleccionado = serviciosSeleccionados.includes(serv.nombre);
+            const seleccionado = serviciosSeleccionados.some(s => s.nombre === serv.nombre);
             return (
               <div key={serv.id} className={styles.citasServicio}>
                 <div style={{display:'flex', flexDirection:'column', gap:2}}>
@@ -72,7 +72,7 @@ const SeleccionarServicioModal: React.FC<Props> = ({ serviciosSeleccionados, set
                       : styles.citasServicioBtn
                   }
                   onClick={() => {
-                    setServiciosSeleccionados(sel => seleccionado ? sel.filter(s=>s!==serv.nombre) : [...sel, serv.nombre]);
+                    setServiciosSeleccionados(sel => seleccionado ? sel.filter(s=>s.nombre!==serv.nombre) : [...sel, serv]);
                   }}
                 >
                   {seleccionado ? 'Añadido' : 'Añadir'}
