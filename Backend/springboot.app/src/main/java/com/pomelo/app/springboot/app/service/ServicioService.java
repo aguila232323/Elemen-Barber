@@ -5,6 +5,7 @@ import com.pomelo.app.springboot.app.repository.ServicioRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ServicioService {
@@ -16,6 +17,11 @@ public class ServicioService {
 
     public List<Servicio> listarServicios() {
         return servicioRepository.findAll();
+    }
+
+    public Servicio findById(Long id) {
+        return servicioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
     }
 
     public Servicio crearServicio(Servicio servicio) {

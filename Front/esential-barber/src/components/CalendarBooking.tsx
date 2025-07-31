@@ -96,21 +96,20 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
   // Consultar disponibilidad de todo el mes al cambiar mes/año
   useEffect(() => {
     const fetchDisponibilidadMes = async () => {
-      const diasEnEsteMes = new Date(anio, mes + 1, 0).getDate();
-      const promises = Array.from({length: diasEnEsteMes}, (_, i) => {
-        const fecha = `${anio}-${String(mes+1).padStart(2,'0')}-${String(i+1).padStart(2,'0')}`;
-        return fetch(`http://localhost:8080/api/citas/disponibilidad?fecha=${fecha}&duracion=${duracion}`)
-          .then(res => res.json())
-          .then(data => {
-            const libres = data.horasLibres ? data.horasLibres.length : 0;
-            return { dia: i+1, libres };
-          })
-          .catch(() => ({ dia: i+1, libres: 0 }));
-      });
-      const resultados = await Promise.all(promises);
-      const map: {[dia: number]: number} = {};
-      resultados.forEach(({dia, libres}) => { map[dia] = libres; });
-      setDisponibilidadMes(map);
+      try {
+        const res = await fetch(`http://localhost:8080/api/citas/disponibilidad-mes?anio=${anio}&mes=${mes+1}&duracion=${duracion}`);
+        const data = await res.json();
+        const map: {[dia: number]: number} = {};
+        if (data.dias && Array.isArray(data.dias)) {
+          data.dias.forEach((d: any) => {
+            const diaNum = parseInt(d.fecha.split('-')[2], 10);
+            map[diaNum] = d.slotsLibres;
+          });
+        }
+        setDisponibilidadMes(map);
+      } catch {
+        setDisponibilidadMes({});
+      }
     };
     fetchDisponibilidadMes();
   }, [mes, anio, duracion]);
@@ -223,9 +222,9 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
           {Array.from({length:diasEnMes},(_,i)=>{
             const dia = i+1;
             const libres = disponibilidadMes[dia] ?? 0;
-            const total = 10; // total de slots estándar
-            const porcentaje = Math.round((libres/total)*100);
-            let colorBarra = porcentaje>70?'#43b94a':porcentaje>30?'#ffe066':'#e74c3c';
+            const total: number = 10; // Debe coincidir con el backend
+            const porcentaje = total === 0 ? 0 : Math.round((libres/total)*100);
+            let colorBarra = porcentaje > 70 ? '#43b94a' : porcentaje > 30 ? '#ffe066' : '#e74c3c';
             // Deshabilitar días en el pasado
             const esPasado = (anio < anioActual) || (anio === anioActual && mes < mesActual) || (anio === anioActual && mes === mesActual && dia < hoy);
             return (

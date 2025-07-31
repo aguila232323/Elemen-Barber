@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styles from '../pages/user/Citas/Citas.module.css';
+import { FaCut, FaPaintBrush, FaMagic, FaUserTie, FaQuestion } from 'react-icons/fa';
 
 // Eliminar el array de servicios inventados
 // const servicios = [...]
@@ -18,6 +19,15 @@ interface Props {
   onClose: () => void;
   onContinuar: () => void;
 }
+
+const iconForService = (nombre: string) => {
+  const lower = nombre.toLowerCase();
+  if (lower.includes('corte')) return <FaCut style={{color:'#1976d2', fontSize:'1.6rem'}} />;
+  if (lower.includes('tinte')) return <FaPaintBrush style={{color:'#FFD600', fontSize:'1.6rem'}} />;
+  if (lower.includes('mecha')) return <FaMagic style={{color:'#43b94a', fontSize:'1.6rem'}} />;
+  if (lower.includes('barba') || lower.includes('bigote')) return <FaUserTie style={{color:'#8d5524', fontSize:'1.6rem'}} />;
+  return <FaQuestion style={{color:'#888', fontSize:'1.6rem'}} />;
+};
 
 const SeleccionarServicioModal: React.FC<Props> = ({ serviciosSeleccionados, setServiciosSeleccionados, onClose, onContinuar }) => {
   const [servicios, setServicios] = useState<Servicio[]>([]);
@@ -55,14 +65,18 @@ const SeleccionarServicioModal: React.FC<Props> = ({ serviciosSeleccionados, set
           {servicios.map((serv) => {
             const seleccionado = serviciosSeleccionados.some(s => s.nombre === serv.nombre);
             return (
-              <div key={serv.id} className={styles.citasServicio}>
-                <div style={{display:'flex', flexDirection:'column', gap:2}}>
-                  <div className={styles.citasServicioNombre} style={{fontWeight:700, fontSize:'1.13rem', color:'#222'}}>{serv.nombre}</div>
-                  <div style={{display:'flex', alignItems:'center', gap:8}}>
-                    <span style={{fontWeight:900, color:'#1976d2', fontSize:'1.15rem', background:'#fff', borderRadius:4, padding:'0 6px'}}>{serv.precio}€</span>
-                    {serv.duracionMinutos > 0 && (
-                      <span style={{color:'#888', fontSize:'0.98rem', background:'#fff', borderRadius:4, padding:'0 6px'}}>{serv.duracionMinutos} min</span>
-                    )}
+              <div key={serv.id} className={styles.citasServicio + ' ' + (seleccionado ? styles.citasServicioSeleccionado : '')}>
+                <div style={{display:'flex', flexDirection:'row', alignItems:'center', gap:16}}>
+                  <div>{iconForService(serv.nombre)}</div>
+                  <div style={{display:'flex', flexDirection:'column', gap:2}}>
+                    <div className={styles.citasServicioNombre} style={{fontWeight:700, fontSize:'1.13rem', color:'#222'}}>{serv.nombre}</div>
+                    <div className={styles.citasServicioDetalle}>{serv.descripcion}</div>
+                    <div style={{display:'flex', alignItems:'center', gap:8, marginTop:4}}>
+                      <span style={{fontWeight:900, color:'#1976d2', fontSize:'1.08rem', background:'#fff', borderRadius:4, padding:'0 6px', border:'1.5px solid #1976d2'}}>{serv.precio}€</span>
+                      {serv.duracionMinutos > 0 && (
+                        <span style={{color:'#888', fontSize:'0.98rem', background:'#fff', borderRadius:4, padding:'0 6px', border:'1.5px solid #bbb'}}>{serv.duracionMinutos} min</span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <button

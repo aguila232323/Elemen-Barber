@@ -7,6 +7,7 @@ import CalendarBooking from '../CalendarBooking';
 import Login from '../../pages/auth/Login';
 import Register from '../../pages/auth/Register';
 import logoElemental from '../../assets/images/logoElemental.png';
+import { useAuth } from '../../context/AuthContext';
 // Definir el tipo Servicio localmente para evitar error de importación
 interface Servicio {
   id: number;
@@ -48,6 +49,7 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
   const [userName, setUserName] = useState<string | null>(getUserName());
   const [serviciosDisponibles, setServiciosDisponibles] = useState<any[]>([]);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // Actualizar el nombre del usuario cuando cambie el token
   useEffect(() => {
@@ -139,7 +141,11 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
             </ul>
             <button className={styles.btnCita} onClick={() => {
               setServiciosSeleccionados([] as Servicio[]); // Limpiar selección al abrir el modal
-              setShowCita(true);
+              if (!user) {
+                setShowLogin(true);
+              } else {
+                setShowCita(true);
+              }
             }}>Pedir Cita</button>
             {userName ? (
               <span className={styles.bienvenidaMsg}>

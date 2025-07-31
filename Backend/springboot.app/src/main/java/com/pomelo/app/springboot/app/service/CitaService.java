@@ -1,112 +1,158 @@
 package com.pomelo.app.springboot.app.service;
 
-import com.pomelo.app.springboot.app.dto.CitaRequest;
 import com.pomelo.app.springboot.app.entity.Cita;
 import com.pomelo.app.springboot.app.entity.Servicio;
 import com.pomelo.app.springboot.app.entity.Usuario;
 import com.pomelo.app.springboot.app.repository.CitaRepository;
 import com.pomelo.app.springboot.app.repository.ServicioRepository;
 import com.pomelo.app.springboot.app.repository.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CitaService {
 
-    private final CitaRepository citaRepository;
-    private final UsuarioRepository usuarioRepository;
-    private final ServicioRepository servicioRepository;
+    @Autowired
+    private CitaRepository citaRepository;
 
-    public CitaService(CitaRepository citaRepository,
-                       UsuarioRepository usuarioRepository,
-                       ServicioRepository servicioRepository) {
-        this.citaRepository = citaRepository;
-        this.usuarioRepository = usuarioRepository;
-        this.servicioRepository = servicioRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private ServicioRepository servicioRepository;
+
+    public Cita crearCita(Cita cita) {
+        try {
+            // Validar que la fecha sea futura
+            if (cita.getFechaHora().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("No se pueden crear citas en el pasado");
+            }
+
+            // Verificar disponibilidad
+            verificarDisponibilidad(cita.getFechaHora(), cita.getServicio().getId());
+
+            return citaRepository.save(cita);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al crear la cita: " + e.getMessage(), e);
+        }
     }
 
-    public Cita crearCita(String emailUsuario, CitaRequest citaRequest) {
-        // Buscar usuario por email
-        Usuario usuario = usuarioRepository.findByEmail(emailUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        // Buscar servicio por id
-        Servicio servicio = servicioRepository.findById(citaRequest.getServicioId())
-                .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
-
-        // Crear y guardar la cita
-        Cita cita = new Cita();
-        cita.setUsuario(usuario);
-        cita.setServicio(servicio);
-        cita.setFechaHora(citaRequest.getFecha());
-
-        return citaRepository.save(cita);
+    public List<Cita> obtenerCitasPorUsuario(Long usuarioId) {
+        try {
+            Usuario usuario = usuarioRepository.findById(usuarioId)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            return citaRepository.findByCliente(usuario);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener citas del usuario: " + e.getMessage(), e);
+        }
     }
 
-    public List<Cita> obtenerCitasPorUsuario(String emailUsuario) {
-        Usuario usuario = usuarioRepository.findByEmail(emailUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        return citaRepository.findByCliente(usuario);
+    public List<Cita> listarCitasPorUsuario(Long usuarioId) {
+        try {
+            Usuario usuario = usuarioRepository.findById(usuarioId)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            return citaRepository.findByClienteAndFechaHoraAfter(usuario, LocalDateTime.now());
+        } catch (Exception e) {
+            throw new RuntimeException("Error al listar citas del usuario: " + e.getMessage(), e);
+        }
+    }
+
+    public void cancelarCita(Long citaId) {
+        try {
+            Cita cita = citaRepository.findById(citaId)
+                    .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
+
+            if (cita.getFechaHora().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("No se pueden cancelar citas pasadas");
+            }
+
+            cita.setEstado("cancelada");
+            citaRepository.save(cita);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al cancelar la cita: " + e.getMessage(), e);
+        }
+    }
+
+    public Cita crearCitaFija(Cita cita, int periodicidadDias) {
+        try {
+            cita.setFija(true);
+            cita.setPeriodicidadDias(periodicidadDias);
+            return citaRepository.save(cita);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al crear cita fija: " + e.getMessage(), e);
+        }
+    }
+
+    public void borrarCitaFija(Long citaId) {
+        try {
+            Cita cita = citaRepository.findById(citaId)
+                    .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
+
+            if (!cita.isFija()) {
+                throw new RuntimeException("La cita no es fija");
+            }
+
+            citaRepository.delete(cita);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al borrar cita fija: " + e.getMessage(), e);
+        }
+    }
+
+    public List<Cita> disponibilidad(LocalDate fecha) {
+        try {
+            return citaRepository.findByFechaHora(fecha);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener disponibilidad: " + e.getMessage(), e);
+        }
+    }
+
+    public List<Cita> disponibilidadMes(LocalDateTime fechaInicio, LocalDateTime fechaFin) {
+        try {
+            return citaRepository.findByFechaHoraBetween(fechaInicio, fechaFin);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener disponibilidad del mes: " + e.getMessage(), e);
+        }
     }
 
     public List<Cita> listarTodasLasCitas() {
-        return citaRepository.findAll();
-    }
-
-    public List<Cita> listarCitasPorUsuario(String username) {
-        Usuario usuario = usuarioRepository.findByEmail(username)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        return citaRepository.findByCliente(usuario);
-    }
-
-
-    public void cancelarCita(Long id, String username) {
-        Cita cita = citaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
-
-        // Validar que la cita pertenece al usuario que la quiere cancelar
-        if (!cita.getUsuario().getEmail().equals(username)) {
-            throw new RuntimeException("No tienes permiso para cancelar esta cita");
+        try {
+            return citaRepository.findAll();
+        } catch (Exception e) {
+            throw new RuntimeException("Error al listar todas las citas: " + e.getMessage(), e);
         }
-
-        citaRepository.delete(cita);
     }
 
-    public List<Cita> crearCitaFija(Cita cita, Long idCliente) {
-        cita.setFija(true);
-        cita.setConfirmada(true);
-        cita.setUsuario(usuarioRepository.findById(idCliente).orElseThrow(() -> new RuntimeException("Cliente no encontrado")));
-        int repeticiones = 6; // Número de repeticiones automáticas
-        List<Cita> citasCreadas = new ArrayList<>();
-        if (cita.getPeriodicidadDias() > 0) {
-            LocalDateTime fecha = cita.getFechaHora();
-            for (int i = 0; i < repeticiones; i++) {
-                Cita nuevaCita = new Cita();
-                nuevaCita.setFija(true);
-                nuevaCita.setConfirmada(true);
-                nuevaCita.setUsuario(cita.getUsuario());
-                nuevaCita.setServicio(cita.getServicio());
-                nuevaCita.setComentario(cita.getComentario());
-                nuevaCita.setFechaHora(fecha.plusDays((long) i * cita.getPeriodicidadDias()));
-                nuevaCita.setPeriodicidadDias(cita.getPeriodicidadDias());
-                citasCreadas.add(citaRepository.save(nuevaCita));
+    private void verificarDisponibilidad(LocalDateTime fechaHora, Long servicioId) {
+        try {
+            Servicio servicio = servicioRepository.findById(servicioId)
+                    .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
+
+            LocalDateTime inicio = fechaHora;
+            LocalDateTime fin = fechaHora.plusMinutes(servicio.getDuracionMinutos());
+
+            // Buscar citas que se solapen con el horario solicitado
+            List<Cita> citasExistentes = citaRepository.findByFechaHoraBetween(
+                inicio.minusMinutes(servicio.getDuracionMinutos()), 
+                fin.plusMinutes(servicio.getDuracionMinutos())
+            );
+
+            for (Cita cita : citasExistentes) {
+                if (!cita.getEstado().equals("cancelada")) {
+                    LocalDateTime inicioExistente = cita.getFechaHora();
+                    LocalDateTime finExistente = cita.getFechaHora().plusMinutes(cita.getServicio().getDuracionMinutos());
+
+                    // Verificar si hay solapamiento
+                    if (inicio.isBefore(finExistente) && fin.isAfter(inicioExistente)) {
+                        throw new RuntimeException("Ya existe una cita en ese horario");
+                    }
+                }
             }
-        } else {
-            citasCreadas.add(citaRepository.save(cita));
-        }
-        return citasCreadas;
-    }
-
-    public void borrarCitaFija(Long id) {
-        Optional<Cita> cita = citaRepository.findById(id);
-        if (cita.isPresent() && cita.get().isFija()) {
-            citaRepository.deleteById(id);
-        } else {
-            throw new RuntimeException("Cita fija no encontrada");
+        } catch (Exception e) {
+            throw new RuntimeException("Error al verificar disponibilidad: " + e.getMessage(), e);
         }
     }
 }

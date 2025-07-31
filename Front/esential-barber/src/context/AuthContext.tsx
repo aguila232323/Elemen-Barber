@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUserState({
             email: data.email,
             nombre: data.nombre,
-            rol: data.rol || data.role || 'USER',
+            rol: data.rol || data.role || 'CLIENTE',
           });
           setLoading(false);
         })

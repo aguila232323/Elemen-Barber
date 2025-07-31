@@ -195,137 +195,230 @@
   overflow: hidden;
 }
 
+/* Estilos principales para el historial de citas */
 .citasHistorialBg {
   min-height: 100vh;
-  background: #f5f5f5;
-  padding: 2.5rem 0;
+  background: #f8f9fa;
+  padding: 2rem 0 3rem 0;
   display: flex;
-  justify-content: center;
   align-items: flex-start;
-  animation: fadeIn 0.5s ease;
+  justify-content: center;
 }
 
 .citasHistorialCont {
   background: #fff;
-  border-radius: 1.2rem;
-  padding: 2.5rem 2vw;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.10);
-  max-width: 500px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  max-width: 600px;
   width: 100%;
-  animation: slideIn 0.5s ease;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  padding: 2rem 2rem 2rem 2rem;
+  margin: 0 auto;
 }
 
 .citasHistorialTitle {
-  color: #1976d2;
-  margin-top: 0;
-  margin-bottom: 2rem;
-  text-align: center;
+  color: #333;
   font-size: 1.8rem;
   font-weight: 700;
-  transition: all 0.3s ease;
+  text-align: center;
+  margin-bottom: 2rem;
+  letter-spacing: 0.5px;
 }
 
 .citasHistorialVacio {
   color: #888;
+  font-size: 1.15rem;
   text-align: center;
-  font-size: 1.1rem;
-  margin-top: 2rem;
-  padding: 2rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border: 2px dashed #ddd;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  margin: 2.5rem 0 1.5rem 0;
+  font-weight: 500;
 }
 
 .citasHistorialLista {
   list-style: none;
   padding: 0;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .citasHistorialItem {
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
-  align-items: center;
-  background: #f7faff;
-  border-radius: 8px;
-  padding: 1rem 1.2rem;
+  align-items: stretch;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 1.5rem 1.5rem 1.5rem 1.5rem;
   margin-bottom: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  transition: all 0.3s ease;
-  border: 1px solid transparent;
-  animation: fadeInUp 0.6s ease;
-  animation-fill-mode: both;
+  min-height: 140px;
+  position: relative;
+  transition: box-shadow 0.2s ease;
+  border: 1px solid #e9ecef;
 }
 
-.citasHistorialItem:nth-child(1) { animation-delay: 0.1s; }
-.citasHistorialItem:nth-child(2) { animation-delay: 0.2s; }
-.citasHistorialItem:nth-child(3) { animation-delay: 0.3s; }
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.citasHistorialItem:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
 }
 
-.citasHistorialServicio {
-  font-weight: 600;
-  color: #1976d2;
-  transition: color 0.3s ease;
+.citaColInfo {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  flex: 2;
+  gap: 0.8rem;
 }
 
-.citasHistorialFechaHora {
-  color: #444;
-  font-size: 1rem;
-  transition: color 0.3s ease;
+.citaColFecha {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  flex: 1;
+  min-width: 80px;
+  padding-left: 1.5rem;
+  border-left: 1px solid #e9ecef;
+  margin-left: 1.5rem;
 }
 
 .citasHistorialEstado {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3em 0.8em;
+  border-radius: 20px;
+  font-size: 0.85rem;
   font-weight: 600;
-  text-transform: capitalize;
-  padding: 0.3rem 0.8rem;
-  border-radius: 6px;
-  font-size: 0.97rem;
-  transition: all 0.3s ease;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.5px;
+  background: #6c757d;
+  color: #fff;
+  border: none;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.1;
+  width: auto;
 }
 
-.estado_pendiente {
-  background: #ffe066;
-  color: #a67c00;
+.estadoPendiente {
+  background: #ffc107;
+  color: #000;
 }
 
-.estado_completada {
-  background: #43b94a;
+.estadoCompletada {
+  background: #28a745;
   color: #fff;
 }
 
-.estado_cancelada {
-  background: #e74c3c;
+.estadoFinalizada {
+  background: #28a745;
   color: #fff;
 }
 
-/* Responsive Design Mejorado para Citas */
+.estadoCancelada {
+  background: #dc3545;
+  color: #fff;
+}
+
+.citasHistorialServicio {
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.3px;
+}
+
+.citasHistorialFechaHora {
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.1rem;
+  letter-spacing: 0.2px;
+  text-align: right;
+}
+
+.citasHistorialFechaMes {
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-align: right;
+}
+
+.citasHistorialFechaDia {
+  color: #333;
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: right;
+}
+
+.citasHistorialComentario {
+  color: #444;
+  font-size: 1.01rem;
+  background: rgba(30, 136, 229, 0.08);
+  border-radius: 9px;
+  padding: 0.6rem 1rem;
+  margin-top: 0.2rem;
+  font-style: italic;
+  border-left: 3px solid #1976d2;
+  box-shadow: 0 1px 6px rgba(25,118,210,0.04);
+  max-width: 90%;
+}
+
+/* Nuevos estilos para el diseño moderno */
+.citaInfoBarberia {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0.5rem 0;
+}
+
+.citaLogoBarberia {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+}
+
+.citaInfoText {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.citaNombreBarberia {
+  font-weight: 700;
+  color: #333;
+  font-size: 1rem;
+}
+
+.citaNombrePeluquero {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.citaReservarBtn {
+  background: #20c997;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.citaReservarBtn:hover {
+  background: #1ba085;
+  transform: translateY(-1px);
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
   .citasHistorialBg {
     padding: 2rem 0;

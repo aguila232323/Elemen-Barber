@@ -49,11 +49,11 @@ const ContactoResenas: React.FC = () => (
           <table style={{width:'100%', color:'#fff', fontSize:'1.08rem', borderCollapse:'collapse'}}>
             <tbody>
               <tr><td style={{color:'#aaa', padding:'0.3em 0'}}>Lun:</td><td style={{textAlign:'right', fontWeight:600, padding:'0.3em 0'}}>Cerrado</td></tr>
-              <tr><td style={{color:'#aaa', padding:'0.3em 0'}}>Mar:</td><td style={{textAlign:'right', fontWeight:600, padding:'0.3em 0'}}>9:00 – 14:00 / 16:00 – 21:15</td></tr>
-              <tr><td style={{color:'#aaa', padding:'0.3em 0'}}>Mié:</td><td style={{textAlign:'right', fontWeight:600, padding:'0.3em 0'}}>9:00 – 14:00 / 16:00 – 21:15</td></tr>
-              <tr><td style={{color:'#aaa', padding:'0.3em 0'}}>Jue:</td><td style={{textAlign:'right', fontWeight:600, padding:'0.3em 0'}}>9:00 – 14:00 / 16:00 – 21:15</td></tr>
-              <tr><td style={{color:'#aaa', padding:'0.3em 0'}}>Vie:</td><td style={{textAlign:'right', fontWeight:600, padding:'0.3em 0'}}>9:00 – 14:00 / 16:00 – 21:15</td></tr>
-              <tr><td style={{color:'#aaa', padding:'0.3em 0'}}>Sáb:</td><td style={{textAlign:'right', fontWeight:600, padding:'0.3em 0'}}>9:00 – 14:00 / 16:00 – 21:15</td></tr>
+              <tr><td style={{color:'#aaa', padding:'0.3em 0'}}>Mar:</td><td style={{textAlign:'right', fontWeight:600, padding:'0.3em 0'}}>9:00 - 21:15</td></tr>
+              <tr><td style={{color:'#aaa', padding:'0.3em 0'}}>Mié:</td><td style={{textAlign:'right', fontWeight:600, padding:'0.3em 0'}}>9:00 - 21:15</td></tr>
+              <tr><td style={{color:'#aaa', padding:'0.3em 0'}}>Jue:</td><td style={{textAlign:'right', fontWeight:600, padding:'0.3em 0'}}>9:00 - 21:15</td></tr>
+              <tr><td style={{color:'#aaa', padding:'0.3em 0'}}>Vie:</td><td style={{textAlign:'right', fontWeight:600, padding:'0.3em 0'}}>9:00 - 21:15</td></tr>
+              <tr><td style={{color:'#aaa', padding:'0.3em 0'}}>Sáb:</td><td style={{textAlign:'right', fontWeight:600, padding:'0.3em 0'}}>9:00 - 21:15</td></tr>
               <tr><td style={{color:'#aaa', padding:'0.3em 0'}}>Dom:</td><td style={{textAlign:'right', fontWeight:600, padding:'0.3em 0'}}>Cerrado</td></tr>
             </tbody>
           </table>

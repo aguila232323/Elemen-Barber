@@ -28,7 +28,13 @@ public class UsuarioController {
     @Operation(summary = "Obtener perfil", description = "Obtiene el perfil del usuario autenticado")
     public ResponseEntity<Usuario> obtenerPerfil(@AuthenticationPrincipal UserDetails userDetails) {
         try {
-            Usuario perfil = usuarioService.obtenerPerfil(userDetails.getUsername());
+            // Buscar usuario por email para obtener el ID
+            Usuario usuario = usuarioService.findByEmail(userDetails.getUsername());
+            if (usuario == null) {
+                throw new RuntimeException("Usuario no encontrado");
+            }
+            
+            Usuario perfil = usuarioService.obtenerPerfil(usuario.getId());
             return ResponseEntity.ok(perfil);
         } catch (Exception e) {
             throw new RuntimeException("Error al obtener el perfil: " + e.getMessage());
@@ -39,8 +45,13 @@ public class UsuarioController {
     @Operation(summary = "Modificar perfil", description = "Modifica el perfil del usuario autenticado")
     public ResponseEntity<Map<String, Object>> modificarPerfil(@AuthenticationPrincipal UserDetails userDetails, @RequestBody Usuario datosActualizados) {
         try {
-            String email = userDetails.getUsername();
-            Usuario usuarioActualizado = usuarioService.modificarPerfil(email, datosActualizados);
+            // Buscar usuario por email para obtener el ID
+            Usuario usuario = usuarioService.findByEmail(userDetails.getUsername());
+            if (usuario == null) {
+                throw new RuntimeException("Usuario no encontrado");
+            }
+            
+            Usuario usuarioActualizado = usuarioService.modificarPerfil(usuario.getId(), datosActualizados);
             
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Perfil actualizado correctamente");
@@ -57,22 +68,26 @@ public class UsuarioController {
     @PutMapping("/cambiar-password")
     @Operation(summary = "Cambiar contraseña", description = "Cambia la contraseña del usuario autenticado")
     public ResponseEntity<Map<String, String>> cambiarPassword(@AuthenticationPrincipal UserDetails userDetails, @RequestBody Map<String, String> request) {
-        String email = userDetails.getUsername();
-        String passwordActual = request.get("passwordActual");
-        String passwordNueva = request.get("passwordNueva");
-        
-        Map<String, String> response = new HashMap<>();
-        
-        if (passwordActual == null || passwordNueva == null) {
-            response.put("message", "Contraseña actual y nueva contraseña son requeridas");
-            return ResponseEntity.badRequest().body(response);
-        }
-        
         try {
-            usuarioService.cambiarPassword(email, passwordActual, passwordNueva);
+            // Buscar usuario por email para obtener el ID
+            Usuario usuario = usuarioService.findByEmail(userDetails.getUsername());
+            if (usuario == null) {
+                throw new RuntimeException("Usuario no encontrado");
+            }
+            
+            String passwordNueva = request.get("passwordNueva");
+            
+            if (passwordNueva == null || passwordNueva.trim().isEmpty()) {
+                throw new RuntimeException("La nueva contraseña es requerida");
+            }
+            
+            usuarioService.cambiarPassword(usuario.getId(), passwordNueva);
+            
+            Map<String, String> response = new HashMap<>();
             response.put("message", "Contraseña actualizada correctamente");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
             response.put("message", e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }

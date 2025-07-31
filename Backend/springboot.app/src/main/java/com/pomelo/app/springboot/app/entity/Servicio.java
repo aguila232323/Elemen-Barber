@@ -1,26 +1,27 @@
 package com.pomelo.app.springboot.app.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
+@Table(name = "servicio")
 public class Servicio {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 100)
     private String nombre;
 
+    @Column(length = 500)
     private String descripcion;
 
-    private double precio;
+    @Column(nullable = false)
+    private Double precio;
 
-    private int duracionMinutos;
+    @Column(nullable = false)
+    private Integer duracionMinutos;
 
-    // Getters y Setters
     public Long getId() {
         return id;
     }
@@ -45,19 +46,19 @@ public class Servicio {
         this.descripcion = descripcion;
     }
 
-    public double getPrecio() {
+    public Double getPrecio() {
         return precio;
     }
 
-    public void setPrecio(double precio) {
+    public void setPrecio(Double precio) {
         this.precio = precio;
     }
 
-    public int getDuracionMinutos() {
+    public Integer getDuracionMinutos() {
         return duracionMinutos;
     }
 
-    public void setDuracionMinutos(int duracionMinutos) {
+    public void setDuracionMinutos(Integer duracionMinutos) {
         this.duracionMinutos = duracionMinutos;
     }
 }
