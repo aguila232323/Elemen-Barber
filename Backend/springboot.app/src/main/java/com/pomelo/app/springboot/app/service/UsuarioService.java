@@ -87,4 +87,13 @@ public class UsuarioService {
             throw new RuntimeException("Error al buscar usuario por email: " + e.getMessage(), e);
         }
     }
+
+    public Usuario findById(Long id) {
+        try {
+            Optional<Usuario> usuario = usuarioRepository.findById(id);
+            return usuario.orElse(null);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al buscar usuario por ID: " + e.getMessage(), e);
+        }
+    }
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styles from './Login.module.css';
-import { FaEnvelope, FaLock, FaUser } from 'react-icons/fa';
+import { FaEnvelope, FaLock, FaUser, FaPhone } from 'react-icons/fa';
 import { register as registerService } from '../../services/authService';
 
 interface RegisterProps {
@@ -11,6 +11,7 @@ interface RegisterProps {
 const Register: React.FC<RegisterProps> = ({ onClose, onSwitchToLogin }) => {
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
+  const [telefono, setTelefono] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -27,7 +28,7 @@ const Register: React.FC<RegisterProps> = ({ onClose, onSwitchToLogin }) => {
     }
     setLoading(true);
     try {
-      await registerService(nombre, email, password);
+      await registerService(nombre, email, password, telefono);
       setSuccess('¡Registro exitoso! Ahora puedes iniciar sesión.');
       setTimeout(() => {
         if (onClose) onClose();
@@ -50,6 +51,10 @@ const Register: React.FC<RegisterProps> = ({ onClose, onSwitchToLogin }) => {
       <div style={{position:'relative'}}>
         <FaEnvelope className={styles.inputIcon} />
         <input type='email' placeholder='Correo electrónico' value={email} onChange={e=>setEmail(e.target.value)} required className={styles.loginInput} />
+      </div>
+      <div style={{position:'relative'}}>
+        <FaPhone className={styles.inputIcon} />
+        <input type='tel' placeholder='Número de teléfono' value={telefono} onChange={e=>setTelefono(e.target.value)} required className={styles.loginInput} />
       </div>
       <div style={{position:'relative'}}>
         <FaLock className={styles.inputIcon} />

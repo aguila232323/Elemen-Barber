@@ -66,7 +66,11 @@ public class CitaController {
             cita.setComentario(citaRequest.getComentario());
             cita.setEstado("pendiente");
             
-            Cita nuevaCita = citaService.crearCita(cita);
+            // Obtener el rol del usuario
+            String rolUsuario = user.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN")) ? "ADMIN" : "USER";
+            
+            Cita nuevaCita = citaService.crearCita(cita, rolUsuario);
             return ResponseEntity.ok(nuevaCita);
         } catch (Exception e) {
             Map<String, String> errorResponse = new java.util.HashMap<>();
@@ -150,6 +154,7 @@ public class CitaController {
                 
                 // Servicio
                 Map<String, Object> servicioMap = new java.util.HashMap<>();
+                servicioMap.put("id", cita.getServicio().getId());
                 servicioMap.put("nombre", cita.getServicio().getNombre());
                 servicioMap.put("descripcion", cita.getServicio().getDescripcion());
                 servicioMap.put("precio", cita.getServicio().getPrecio());
@@ -158,8 +163,10 @@ public class CitaController {
                 
                 // Usuario (cliente)
                 Map<String, Object> usuarioMap = new java.util.HashMap<>();
+                usuarioMap.put("id", cita.getCliente().getId());
                 usuarioMap.put("nombre", cita.getCliente().getNombre());
                 usuarioMap.put("email", cita.getCliente().getEmail());
+                usuarioMap.put("telefono", cita.getCliente().getTelefono());
                 citaMap.put("usuario", usuarioMap);
                 
                 citasFormateadas.add(citaMap);
@@ -177,8 +184,54 @@ public class CitaController {
     @PostMapping("/fija")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Crear cita fija", description = "Crea una cita fija con periodicidad especificada")
-    public ResponseEntity<?> crearCitaFija(@RequestBody Cita cita, @RequestParam int periodicidadDias) {
+    public ResponseEntity<?> crearCitaFija(@RequestBody Map<String, Object> request, @RequestParam int periodicidadDias) {
         try {
+            // Log para debugging
+            System.out.println("Request recibido: " + request);
+            System.out.println("Periodicidad días: " + periodicidadDias);
+            // Extraer datos del request con validaciones
+            Object clienteIdObj = request.get("clienteId");
+            Object servicioIdObj = request.get("servicioId");
+            Object fechaHoraObj = request.get("fechaHora");
+            Object comentarioObj = request.get("comentario");
+            Object confirmadaObj = request.get("confirmada");
+            
+            // Validar campos obligatorios
+            if (clienteIdObj == null) {
+                throw new RuntimeException("clienteId es obligatorio");
+            }
+            if (servicioIdObj == null) {
+                throw new RuntimeException("servicioId es obligatorio");
+            }
+            if (fechaHoraObj == null) {
+                throw new RuntimeException("fechaHora es obligatorio");
+            }
+            
+            Long clienteId = Long.valueOf(clienteIdObj.toString());
+            Long servicioId = Long.valueOf(servicioIdObj.toString());
+            String fechaHoraStr = fechaHoraObj.toString();
+            String comentario = comentarioObj != null ? comentarioObj.toString() : "";
+            Boolean confirmada = confirmadaObj != null ? Boolean.valueOf(confirmadaObj.toString()) : false;
+            
+            // Buscar cliente y servicio
+            Usuario cliente = usuarioService.findById(clienteId);
+            if (cliente == null) {
+                throw new RuntimeException("Cliente no encontrado");
+            }
+            
+            Servicio servicio = servicioService.findById(servicioId);
+            if (servicio == null) {
+                throw new RuntimeException("Servicio no encontrado");
+            }
+            
+            // Crear la cita
+            Cita cita = new Cita();
+            cita.setCliente(cliente);
+            cita.setServicio(servicio);
+            cita.setFechaHora(java.time.LocalDateTime.parse(fechaHoraStr));
+            cita.setComentario(comentario);
+            cita.setConfirmada(confirmada != null ? confirmada : false);
+            
             Cita nuevaCita = citaService.crearCitaFija(cita, periodicidadDias);
             return ResponseEntity.ok(nuevaCita);
         } catch (Exception e) {

@@ -25,15 +25,16 @@ export async function login(email, password) {
  * @param {string} nombre
  * @param {string} email
  * @param {string} password
+ * @param {string} telefono
  * @returns {Promise<any>}
  */
-export async function register(nombre, email, password) {
+export async function register(nombre, email, password, telefono) {
   const response = await fetch('http://localhost:8080/api/auth/register', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ nombre, email, password }),
+    body: JSON.stringify({ nombre, email, password, telefono }),
   });
   if (!response.ok) {
     let msg = 'Error al registrar usuario';

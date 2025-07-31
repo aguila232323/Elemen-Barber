@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FaPlus, FaEdit, FaTrash, FaCog, FaSave, FaTimes, FaCalendarAlt, FaUserPlus, FaCalendarCheck } from 'react-icons/fa';
 import styles from './Configuracion.module.css';
 
 interface Servicio {
@@ -7,6 +8,24 @@ interface Servicio {
   descripcion: string;
   precio: number;
   duracionMinutos: number;
+}
+
+interface Usuario {
+  id: number;
+  nombre: string;
+  email: string;
+  telefono?: string;
+}
+
+interface Cita {
+  id: number;
+  fechaHora: string;
+  comentario?: string;
+  confirmada?: boolean;
+  fija?: boolean;
+  periodicidadDias?: number;
+  servicio: Servicio;
+  usuario: Usuario;
 }
 
 const Configuracion: React.FC = () => {
@@ -26,6 +45,40 @@ const Configuracion: React.FC = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteMsg, setDeleteMsg] = useState<string | null>(null);
 
+  // Estados para gestión de citas
+  const [citasModal, setCitasModal] = useState<'eliminar' | 'modificar' | 'añadir' | null>(null);
+  const [citas, setCitas] = useState<Cita[]>([]);
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [citasLoading, setCitasLoading] = useState(false);
+  
+  // Estados para eliminar cita periódica
+  const [deleteCitaId, setDeleteCitaId] = useState<number | null>(null);
+  const [deleteCitaLoading, setDeleteCitaLoading] = useState(false);
+  const [deleteCitaMsg, setDeleteCitaMsg] = useState<string | null>(null);
+  
+  // Estados para modificar cita periódica
+  const [editCitaId, setEditCitaId] = useState<number | null>(null);
+  const [editCitaForm, setEditCitaForm] = useState({ periodicidadDias: '', fechaInicio: '' });
+  const [editCitaLoading, setEditCitaLoading] = useState(false);
+  const [editCitaMsg, setEditCitaMsg] = useState<string | null>(null);
+  
+  // Estados para añadir cita periódica
+  const [addCitaForm, setAddCitaForm] = useState({ 
+    usuarioId: '', 
+    servicioId: '', 
+    periodicidadDias: '7', 
+    fechaInicio: '', 
+    hora: '09:00' 
+  });
+  const [addCitaLoading, setAddCitaLoading] = useState(false);
+  const [addCitaMsg, setAddCitaMsg] = useState<string | null>(null);
+
+  // Estados para configuración de tiempo mínimo de reserva
+  const [tiempoMinimoModal, setTiempoMinimoModal] = useState(false);
+  const [tiempoMinimoForm, setTiempoMinimoForm] = useState({ horas: '24' });
+  const [tiempoMinimoLoading, setTiempoMinimoLoading] = useState(false);
+  const [tiempoMinimoMsg, setTiempoMinimoMsg] = useState<string | null>(null);
+
   // Fetch servicios al abrir modales de editar/eliminar
   const fetchServicios = async () => {
     setServiciosLoading(true);
@@ -40,8 +93,55 @@ const Configuracion: React.FC = () => {
     }
   };
 
+  // Fetch citas periódicas - solo una por usuario
+  const fetchCitasPeriodicas = async () => {
+    setCitasLoading(true);
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch('http://localhost:8080/api/citas/todas', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      const data = await res.json();
+      // Filtrar solo citas periódicas y agrupar por usuario
+      const citasPeriodicas = data.filter((cita: Cita) => cita.fija && (cita.periodicidadDias || 0) > 0);
+      
+      // Agrupar por usuario y tomar solo la primera cita de cada usuario
+      const citasUnicas = citasPeriodicas.reduce((acc: Cita[], cita: Cita) => {
+        const existeUsuario = acc.find(c => c.usuario.id === cita.usuario.id);
+        if (!existeUsuario) {
+          acc.push(cita);
+        }
+        return acc;
+      }, []);
+      
+      setCitas(citasUnicas);
+    } catch {
+      setCitas([]);
+    } finally {
+      setCitasLoading(false);
+    }
+  };
+
+  // Fetch usuarios
+  const fetchUsuarios = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch('http://localhost:8080/api/usuarios', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      const data = await res.json();
+      setUsuarios(data);
+    } catch {
+      setUsuarios([]);
+    }
+  };
+
   // Abrir modal y cargar servicios si es necesario
   const openModal = (type: 'add' | 'edit' | 'delete') => {
+    // Cerrar otros modales antes de abrir uno nuevo
+    setCitasModal(null);
+    setTiempoMinimoModal(false);
+    
     setModal(type);
     if (type === 'edit' || type === 'delete') fetchServicios();
     if (type === 'edit') {
@@ -53,6 +153,50 @@ const Configuracion: React.FC = () => {
       setDeleteId(null);
       setDeleteMsg(null);
     }
+  };
+
+  // Abrir modal de citas y cargar datos si es necesario
+  const openCitasModal = (type: 'eliminar' | 'modificar' | 'añadir') => {
+    // Cerrar otros modales antes de abrir uno nuevo
+    setModal(null);
+    setTiempoMinimoModal(false);
+    
+    setCitasModal(type);
+    if (type === 'eliminar' || type === 'modificar') {
+      fetchCitasPeriodicas();
+    }
+    if (type === 'añadir') {
+      fetchUsuarios();
+      fetchServicios();
+    }
+    if (type === 'eliminar') {
+      setDeleteCitaId(null);
+      setDeleteCitaMsg(null);
+    }
+    if (type === 'modificar') {
+      setEditCitaId(null);
+      setEditCitaForm({ periodicidadDias: '', fechaInicio: '' });
+      setEditCitaMsg(null);
+    }
+    if (type === 'añadir') {
+      setAddCitaForm({ 
+        usuarioId: '', 
+        servicioId: '', 
+        periodicidadDias: '7', 
+        fechaInicio: '', 
+        hora: '09:00' 
+      });
+      setAddCitaMsg(null);
+    }
+  };
+
+  // Función para abrir modal de tiempo mínimo
+  const openTiempoMinimoModal = () => {
+    // Cerrar otros modales antes de abrir uno nuevo
+    setModal(null);
+    setCitasModal(null);
+    
+    setTiempoMinimoModal(true);
   };
 
   // Al seleccionar servicio en modificar, rellenar campos
@@ -82,6 +226,31 @@ const Configuracion: React.FC = () => {
 
   const handleAddChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setAddForm({ ...addForm, [e.target.name]: e.target.value });
+  };
+
+  // Handlers para formularios de citas
+  const handleAddCitaChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setAddCitaForm({ ...addCitaForm, [e.target.name]: e.target.value });
+  };
+
+  const handleEditCitaChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setEditCitaForm({ ...editCitaForm, [e.target.name]: e.target.value });
+  };
+
+  const handleDeleteCitaSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setDeleteCitaId(Number(e.target.value));
+  };
+
+  const handleEditCitaSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const id = Number(e.target.value);
+    setEditCitaId(id);
+    const cita = citas.find(c => c.id === id);
+    if (cita) {
+      setEditCitaForm({
+        periodicidadDias: cita.periodicidadDias?.toString() || '',
+        fechaInicio: new Date(cita.fechaHora).toISOString().split('T')[0]
+      });
+    }
   };
 
   const handleAddSubmit = async (e: React.FormEvent) => {
@@ -181,33 +350,264 @@ const Configuracion: React.FC = () => {
     }
   };
 
+  // Funciones de submit para citas
+  const handleDeleteCitaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!deleteCitaId) return;
+    
+    setDeleteCitaLoading(true);
+    setDeleteCitaMsg(null);
+    try {
+      const token = localStorage.getItem('authToken');
+      
+      // Obtener la cita seleccionada para identificar al usuario
+      const citaSeleccionada = citas.find(c => c.id === deleteCitaId);
+      if (!citaSeleccionada) {
+        throw new Error('Cita no encontrada');
+      }
+      
+      // Obtener todas las citas periódicas del usuario
+      const res = await fetch('http://localhost:8080/api/citas/todas', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      const todasLasCitas = await res.json();
+      const citasDelUsuario = todasLasCitas.filter((cita: Cita) => 
+        cita.usuario.id === citaSeleccionada.usuario.id && 
+        cita.fija && 
+        (cita.periodicidadDias || 0) > 0
+      );
+      
+      // Eliminar todas las citas periódicas del usuario
+      const deletePromises = citasDelUsuario.map((cita: Cita) =>
+        fetch(`http://localhost:8080/api/citas/${cita.id}`, {
+          method: 'DELETE',
+          headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          }
+        })
+      );
+      
+      const results = await Promise.all(deletePromises);
+      const hasError = results.some(res => !res.ok);
+      
+      if (hasError) throw new Error('Error al eliminar citas periódicas');
+      
+      setDeleteCitaMsg(`¡Todas las citas periódicas de ${citaSeleccionada.usuario.nombre} han sido eliminadas!`);
+      setTimeout(() => {
+        setCitasModal(null);
+        setDeleteCitaMsg(null);
+        setDeleteCitaId(null);
+      }, 1200);
+    } catch (err: any) {
+      setDeleteCitaMsg(err.message || 'Error al eliminar citas periódicas');
+    } finally {
+      setDeleteCitaLoading(false);
+    }
+  };
+
+  const handleEditCitaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editCitaId) return;
+    
+    setEditCitaLoading(true);
+    setEditCitaMsg(null);
+    try {
+      const token = localStorage.getItem('authToken');
+      
+      // Obtener la cita seleccionada para identificar al usuario
+      const citaSeleccionada = citas.find(c => c.id === editCitaId);
+      if (!citaSeleccionada) {
+        throw new Error('Cita no encontrada');
+      }
+      
+      // Obtener todas las citas periódicas del usuario
+      const res = await fetch('http://localhost:8080/api/citas/todas', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      const todasLasCitas = await res.json();
+      const citasDelUsuario = todasLasCitas.filter((cita: Cita) => 
+        cita.usuario.id === citaSeleccionada.usuario.id && 
+        cita.fija && 
+        (cita.periodicidadDias || 0) > 0
+      );
+      
+      // Modificar todas las citas periódicas del usuario
+      const updatePromises = citasDelUsuario.map((cita: Cita) =>
+        fetch(`http://localhost:8080/api/citas/${cita.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({
+            periodicidadDias: parseInt(editCitaForm.periodicidadDias),
+            fechaHora: editCitaForm.fechaInicio
+          })
+        })
+      );
+      
+      const results = await Promise.all(updatePromises);
+      const hasError = results.some(res => !res.ok);
+      
+      if (hasError) throw new Error('Error al modificar citas periódicas');
+      
+      setEditCitaMsg(`¡Todas las citas periódicas de ${citaSeleccionada.usuario.nombre} han sido modificadas!`);
+      setTimeout(() => {
+        setCitasModal(null);
+        setEditCitaMsg(null);
+        setEditCitaId(null);
+        setEditCitaForm({ periodicidadDias: '', fechaInicio: '' });
+      }, 1200);
+    } catch (err: any) {
+      setEditCitaMsg(err.message || 'Error al modificar citas periódicas');
+    } finally {
+      setEditCitaLoading(false);
+    }
+  };
+
+  const handleAddCitaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    setAddCitaLoading(true);
+    setAddCitaMsg(null);
+    try {
+      const token = localStorage.getItem('authToken');
+      
+      // Combinar fecha y hora
+      const fechaHora = `${addCitaForm.fechaInicio}T${addCitaForm.hora}:00`;
+      
+      const requestBody = {
+        clienteId: parseInt(addCitaForm.usuarioId),
+        servicioId: parseInt(addCitaForm.servicioId),
+        fechaHora: fechaHora,
+        comentario: '',
+        confirmada: false
+      };
+      
+      const res = await fetch(`http://localhost:8080/api/citas/fija?periodicidadDias=${addCitaForm.periodicidadDias}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(requestBody)
+      });
+      
+      if (!res.ok) throw new Error('Error al crear cita periódica');
+      setAddCitaMsg('¡Cita periódica creada correctamente!');
+      setTimeout(() => {
+        setCitasModal(null);
+        setAddCitaMsg(null);
+        setAddCitaForm({ 
+          usuarioId: '', 
+          servicioId: '', 
+          periodicidadDias: '7', 
+          fechaInicio: '', 
+          hora: '09:00' 
+        });
+      }, 1200);
+    } catch (err: any) {
+      setAddCitaMsg(err.message || 'Error al crear cita periódica');
+    } finally {
+      setAddCitaLoading(false);
+    }
+  };
+
+  // Funciones para configuración de tiempo mínimo
+  const handleTiempoMinimoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTiempoMinimoForm({ ...tiempoMinimoForm, [e.target.name]: e.target.value });
+  };
+
+  const handleTiempoMinimoSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    setTiempoMinimoLoading(true);
+    setTiempoMinimoMsg(null);
+    try {
+      const token = localStorage.getItem('authToken');
+      
+      const res = await fetch('http://localhost:8080/api/configuracion/tiempo-minimo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          horasMinimas: parseInt(tiempoMinimoForm.horas)
+        })
+      });
+      
+      if (!res.ok) throw new Error('Error al configurar tiempo mínimo');
+      setTiempoMinimoMsg('¡Tiempo mínimo configurado correctamente!');
+      setTimeout(() => {
+        setTiempoMinimoModal(false);
+        setTiempoMinimoMsg(null);
+        setTiempoMinimoForm({ horas: '24' });
+      }, 1200);
+    } catch (err: any) {
+      setTiempoMinimoMsg(err.message || 'Error al configurar tiempo mínimo');
+    } finally {
+      setTiempoMinimoLoading(false);
+    }
+  };
+
   return (
     <div className={styles.configContainer}>
-      <h2>Configuración de Servicios</h2>
-      <div className={styles.buttonGroup}>
-        <button className={styles.configBtn} onClick={() => openModal('add')}>Añadir servicio</button>
-        <button className={styles.configBtn} onClick={() => openModal('edit')}>Modificar servicio</button>
-        <button className={styles.configBtn} onClick={() => openModal('delete')}>Eliminar servicio</button>
+      {/* Sección de Gestión de Servicios */}
+      <div className={styles.serviciosSection}>
+        <div className={styles.header}>
+          <FaCog className={styles.gearIcon} />
+          <h2>Gestión de Servicios</h2>
+        </div>
+        
+        <div className={styles.buttonGroup}>
+          <button className={`${styles.configBtn} ${styles.addBtn}`} onClick={() => openModal('add')}>
+            <FaPlus className={styles.btnIcon} />
+            <span>Añadir Servicio</span>
+          </button>
+          <button className={`${styles.configBtn} ${styles.editBtn}`} onClick={() => openModal('edit')}>
+            <FaEdit className={styles.btnIcon} />
+            <span>Modificar Servicio</span>
+          </button>
+          <button className={`${styles.configBtn} ${styles.deleteBtn}`} onClick={() => openModal('delete')}>
+            <FaTrash className={styles.btnIcon} />
+            <span>Eliminar Servicio</span>
+          </button>
+        </div>
       </div>
+      
       {modal === 'add' && (
         <div className={styles.modal}>
-          <h3>Añadir servicio</h3>
+          <div className={styles.modalHeader}>
+            <FaPlus className={styles.modalIcon} />
+            <h3>Añadir Nuevo Servicio</h3>
+          </div>
           <form className={styles.formModal} onSubmit={handleAddSubmit}>
             <input className={styles.input} name="nombre" type="text" placeholder="Nombre del servicio" value={addForm.nombre} onChange={handleAddChange} required />
-            <textarea className={styles.input} name="descripcion" placeholder="Descripción" value={addForm.descripcion} onChange={handleAddChange} required />
+            <textarea className={styles.input} name="descripcion" placeholder="Descripción del servicio" value={addForm.descripcion} onChange={handleAddChange} required />
             <input className={styles.input} name="precio" type="number" placeholder="Precio (€)" min="0" step="0.01" value={addForm.precio} onChange={handleAddChange} required />
             <input className={styles.input} name="duracion" type="number" placeholder="Duración (minutos)" min="1" value={addForm.duracion} onChange={handleAddChange} required />
             <div className={styles.modalBtnGroup}>
-              <button className={styles.saveBtn} type="submit" disabled={addLoading}>{addLoading ? 'Guardando...' : 'Guardar'}</button>
-              <button className={styles.cancelBtn} type="button" onClick={() => setModal(null)} disabled={addLoading}>Cancelar</button>
+              <button className={styles.saveBtn} type="submit" disabled={addLoading}>
+                <FaSave className={styles.btnIcon} />
+                {addLoading ? 'Guardando...' : 'Guardar Servicio'}
+              </button>
+              <button className={styles.cancelBtn} type="button" onClick={() => setModal(null)} disabled={addLoading}>
+                <FaTimes className={styles.btnIcon} />
+                Cancelar
+              </button>
             </div>
-            {addMsg && <div style={{marginTop:8, color: addMsg.startsWith('¡') ? '#43b94a' : '#e74c3c'}}>{addMsg}</div>}
+            {addMsg && <div className={`${styles.message} ${addMsg.startsWith('¡') ? styles.success : styles.error}`}>{addMsg}</div>}
           </form>
         </div>
       )}
+      
       {modal === 'edit' && (
         <div className={styles.modal}>
-          <h3>Modificar servicio</h3>
+          <div className={styles.modalHeader}>
+            <FaEdit className={styles.modalIcon} />
+            <h3>Modificar Servicio</h3>
+          </div>
           <form className={styles.formModal} onSubmit={handleEditSubmit}>
             <select className={styles.input} value={editId ?? ''} onChange={handleEditSelect} required>
               <option value="">Selecciona un servicio</option>
@@ -220,16 +620,26 @@ const Configuracion: React.FC = () => {
             <input className={styles.input} name="precio" type="number" placeholder="Nuevo precio (€)" min="0" step="0.01" value={editForm.precio} onChange={handleEditChange} required />
             <input className={styles.input} name="duracion" type="number" placeholder="Nueva duración (minutos)" min="1" value={editForm.duracion} onChange={handleEditChange} required />
             <div className={styles.modalBtnGroup}>
-              <button className={styles.saveBtn} type="submit" disabled={editLoading}>{editLoading ? 'Guardando...' : 'Guardar cambios'}</button>
-              <button className={styles.cancelBtn} type="button" onClick={() => setModal(null)} disabled={editLoading}>Cancelar</button>
+              <button className={styles.saveBtn} type="submit" disabled={editLoading}>
+                <FaSave className={styles.btnIcon} />
+                {editLoading ? 'Guardando...' : 'Guardar Cambios'}
+              </button>
+              <button className={styles.cancelBtn} type="button" onClick={() => setModal(null)} disabled={editLoading}>
+                <FaTimes className={styles.btnIcon} />
+                Cancelar
+              </button>
             </div>
-            {editMsg && <div style={{marginTop:8, color: editMsg.startsWith('¡') ? '#43b94a' : '#e74c3c'}}>{editMsg}</div>}
+            {editMsg && <div className={`${styles.message} ${editMsg.startsWith('¡') ? styles.success : styles.error}`}>{editMsg}</div>}
           </form>
         </div>
       )}
+      
       {modal === 'delete' && (
         <div className={styles.modal}>
-          <h3>Eliminar servicio</h3>
+          <div className={styles.modalHeader}>
+            <FaTrash className={styles.modalIcon} />
+            <h3>Eliminar Servicio</h3>
+          </div>
           <form className={styles.formModal} onSubmit={handleDeleteSubmit}>
             <select className={styles.input} value={deleteId ?? ''} onChange={handleDeleteSelect} required>
               <option value="">Selecciona un servicio</option>
@@ -238,15 +648,193 @@ const Configuracion: React.FC = () => {
               ))}
             </select>
             <div className={styles.modalBtnGroup}>
-              <button className={styles.deleteBtn} type="submit" disabled={deleteLoading}>{deleteLoading ? 'Eliminando...' : 'Eliminar'}</button>
-              <button className={styles.cancelBtn} type="button" onClick={() => setModal(null)} disabled={deleteLoading}>Cancelar</button>
+              <button className={styles.deleteBtn} type="submit" disabled={deleteLoading}>
+                <FaTrash className={styles.btnIcon} />
+                {deleteLoading ? 'Eliminando...' : 'Eliminar Servicio'}
+              </button>
+              <button className={styles.cancelBtn} type="button" onClick={() => setModal(null)} disabled={deleteLoading}>
+                <FaTimes className={styles.btnIcon} />
+                Cancelar
+              </button>
             </div>
-            {deleteMsg && <div style={{marginTop:8, color: deleteMsg.startsWith('¡') ? '#43b94a' : '#e74c3c'}}>{deleteMsg}</div>}
+            {deleteMsg && <div className={`${styles.message} ${deleteMsg.startsWith('¡') ? styles.success : styles.error}`}>{deleteMsg}</div>}
           </form>
         </div>
       )}
-    </div>
-  );
-};
+
+      {/* Sección de Gestión de Citas */}
+      <div className={styles.citasSection}>
+        <div className={styles.header}>
+          <FaCalendarAlt className={styles.calendarIcon} />
+          <h2>Gestión de Citas Periódicas</h2>
+        </div>
+        
+        <div className={styles.buttonGroup}>
+          <button className={`${styles.configBtn} ${styles.addBtn}`} onClick={() => openCitasModal('añadir')}>
+            <FaUserPlus className={styles.btnIcon} />
+            <span>Añadir Cita Periódica</span>
+          </button>
+          <button className={`${styles.configBtn} ${styles.editBtn}`} onClick={() => openCitasModal('modificar')}>
+            <FaEdit className={styles.btnIcon} />
+            <span>Modificar Cita Periódica</span>
+          </button>
+          <button className={`${styles.configBtn} ${styles.deleteBtn}`} onClick={() => openCitasModal('eliminar')}>
+            <FaTrash className={styles.btnIcon} />
+            <span>Eliminar Cita Periódica</span>
+          </button>
+          <button className={`${styles.configBtn} ${styles.editBtn} ${styles.tiempoMinimoBtn}`} onClick={openTiempoMinimoModal}>
+            <FaCog className={styles.btnIcon} />
+            <span>Configurar Tiempo Mínimo</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Modal para eliminar cita periódica */}
+      {citasModal === 'eliminar' && (
+        <div className={styles.modal}>
+          <div className={styles.modalHeader}>
+            <FaTrash className={styles.modalIcon} />
+                         <h3>Eliminar Citas Periódicas del Usuario</h3>
+          </div>
+          <form className={styles.formModal} onSubmit={handleDeleteCitaSubmit}>
+                         <select className={styles.input} value={deleteCitaId ?? ''} onChange={handleDeleteCitaSelect} required>
+               <option value="">Selecciona un usuario para eliminar sus citas periódicas</option>
+               {citas.map(cita => (
+                 <option key={cita.id} value={cita.id}>
+                   {cita.usuario.nombre} - {cita.servicio.nombre} ({cita.periodicidadDias || 0} días)
+                 </option>
+               ))}
+             </select>
+            <div className={styles.modalBtnGroup}>
+                             <button className={styles.deleteBtn} type="submit" disabled={deleteCitaLoading}>
+                 <FaTrash className={styles.btnIcon} />
+                 {deleteCitaLoading ? 'Eliminando...' : 'Eliminar Citas Periódicas'}
+               </button>
+              <button className={styles.cancelBtn} type="button" onClick={() => setCitasModal(null)} disabled={deleteCitaLoading}>
+                <FaTimes className={styles.btnIcon} />
+                Cancelar
+              </button>
+            </div>
+            {deleteCitaMsg && <div className={`${styles.message} ${deleteCitaMsg.startsWith('¡') ? styles.success : styles.error}`}>{deleteCitaMsg}</div>}
+          </form>
+        </div>
+      )}
+
+      {/* Modal para modificar cita periódica */}
+      {citasModal === 'modificar' && (
+        <div className={styles.modal}>
+          <div className={styles.modalHeader}>
+            <FaEdit className={styles.modalIcon} />
+                         <h3>Modificar Citas Periódicas del Usuario</h3>
+          </div>
+          <form className={styles.formModal} onSubmit={handleEditCitaSubmit}>
+                         <select className={styles.input} value={editCitaId ?? ''} onChange={handleEditCitaSelect} required>
+               <option value="">Selecciona un usuario para modificar sus citas periódicas</option>
+               {citas.map(cita => (
+                 <option key={cita.id} value={cita.id}>
+                   {cita.usuario.nombre} - {cita.servicio.nombre} ({cita.periodicidadDias || 0} días)
+                 </option>
+               ))}
+             </select>
+            <input className={styles.input} name="periodicidadDias" type="number" placeholder="Nueva periodicidad (días)" min="1" max="365" value={editCitaForm.periodicidadDias} onChange={handleEditCitaChange} required />
+            <input className={styles.input} name="fechaInicio" type="date" placeholder="Nueva fecha de inicio" value={editCitaForm.fechaInicio} onChange={handleEditCitaChange} required />
+            <div className={styles.modalBtnGroup}>
+                             <button className={styles.saveBtn} type="submit" disabled={editCitaLoading}>
+                 <FaSave className={styles.btnIcon} />
+                 {editCitaLoading ? 'Guardando...' : 'Guardar Cambios en Todas las Citas'}
+               </button>
+              <button className={styles.cancelBtn} type="button" onClick={() => setCitasModal(null)} disabled={editCitaLoading}>
+                <FaTimes className={styles.btnIcon} />
+                Cancelar
+              </button>
+            </div>
+            {editCitaMsg && <div className={`${styles.message} ${editCitaMsg.startsWith('¡') ? styles.success : styles.error}`}>{editCitaMsg}</div>}
+          </form>
+        </div>
+      )}
+
+      {/* Modal para añadir cita periódica */}
+      {citasModal === 'añadir' && (
+        <div className={styles.modal}>
+          <div className={styles.modalHeader}>
+            <FaUserPlus className={styles.modalIcon} />
+            <h3>Añadir Cita Periódica</h3>
+          </div>
+          <form className={styles.formModal} onSubmit={handleAddCitaSubmit}>
+            <select className={styles.input} name="usuarioId" value={addCitaForm.usuarioId} onChange={handleAddCitaChange} required>
+              <option value="">Selecciona un usuario</option>
+              {usuarios.map(usuario => (
+                <option key={usuario.id} value={usuario.id}>{usuario.nombre} ({usuario.email})</option>
+              ))}
+            </select>
+            <select className={styles.input} name="servicioId" value={addCitaForm.servicioId} onChange={handleAddCitaChange} required>
+              <option value="">Selecciona un servicio</option>
+              {servicios.map(servicio => (
+                <option key={servicio.id} value={servicio.id}>{servicio.nombre} - {servicio.precio}€</option>
+              ))}
+            </select>
+            <input className={styles.input} name="periodicidadDias" type="number" placeholder="Periodicidad (días)" min="1" max="365" value={addCitaForm.periodicidadDias} onChange={handleAddCitaChange} required />
+            <input className={styles.input} name="fechaInicio" type="date" placeholder="Fecha de inicio" value={addCitaForm.fechaInicio} onChange={handleAddCitaChange} required />
+            <input className={styles.input} name="hora" type="time" placeholder="Hora" value={addCitaForm.hora} onChange={handleAddCitaChange} required />
+            <div className={styles.modalBtnGroup}>
+              <button className={styles.saveBtn} type="submit" disabled={addCitaLoading}>
+                <FaSave className={styles.btnIcon} />
+                {addCitaLoading ? 'Creando...' : 'Crear Cita Periódica'}
+              </button>
+              <button className={styles.cancelBtn} type="button" onClick={() => setCitasModal(null)} disabled={addCitaLoading}>
+                <FaTimes className={styles.btnIcon} />
+                Cancelar
+              </button>
+            </div>
+                         {addCitaMsg && <div className={`${styles.message} ${addCitaMsg.startsWith('¡') ? styles.success : styles.error}`}>{addCitaMsg}</div>}
+           </form>
+         </div>
+       )}
+
+       {/* Modal para configuración de tiempo mínimo */}
+       {tiempoMinimoModal && (
+         <div className={styles.modal}>
+           <div className={styles.modalHeader}>
+             <FaCog className={styles.modalIcon} />
+             <h3>Configurar Tiempo Mínimo de Reserva</h3>
+           </div>
+           <form className={styles.formModal} onSubmit={handleTiempoMinimoSubmit}>
+             <div style={{ textAlign: 'left', marginBottom: '1.5rem', padding: '1rem', backgroundColor: 'rgba(255,193,7,0.1)', borderRadius: '8px', border: '1px solid rgba(255,193,7,0.3)' }}>
+               <h4 style={{ margin: '0 0 0.5rem 0', color: '#ffc107', fontSize: '1rem' }}>¿Qué hace esta función?</h4>
+               <ul style={{ margin: '0', paddingLeft: '1.2rem', fontSize: '0.9rem', color: '#ccc', lineHeight: '1.4' }}>
+                 <li>Establece cuántas horas antes debe reservar un usuario normal una cita</li>
+                 <li>Si un usuario intenta reservar con menos tiempo, recibirá un error</li>
+                 <li>Los administradores pueden reservar en cualquier momento (sin restricción)</li>
+                 <li>Ejemplo: Si configuras 24 horas, los usuarios solo podrán reservar citas para mañana o después</li>
+               </ul>
+             </div>
+             <input 
+               className={styles.input} 
+               name="horas" 
+               type="number" 
+               placeholder="Horas mínimas (ej: 24)" 
+               min="1" 
+               max="168" 
+               value={tiempoMinimoForm.horas} 
+               onChange={handleTiempoMinimoChange} 
+               required 
+             />
+             <div className={styles.modalBtnGroup}>
+               <button className={styles.saveBtn} type="submit" disabled={tiempoMinimoLoading}>
+                 <FaSave className={styles.btnIcon} />
+                 {tiempoMinimoLoading ? 'Guardando...' : 'Guardar Configuración'}
+               </button>
+               <button className={styles.cancelBtn} type="button" onClick={() => setTiempoMinimoModal(false)} disabled={tiempoMinimoLoading}>
+                 <FaTimes className={styles.btnIcon} />
+                 Cancelar
+               </button>
+             </div>
+             {tiempoMinimoMsg && <div className={`${styles.message} ${tiempoMinimoMsg.startsWith('¡') ? styles.success : styles.error}`}>{tiempoMinimoMsg}</div>}
+           </form>
+         </div>
+       )}
+     </div>
+   );
+ };
 
 export default Configuracion; 

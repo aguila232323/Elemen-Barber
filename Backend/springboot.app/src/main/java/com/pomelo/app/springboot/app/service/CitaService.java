@@ -6,11 +6,13 @@ import com.pomelo.app.springboot.app.entity.Usuario;
 import com.pomelo.app.springboot.app.repository.CitaRepository;
 import com.pomelo.app.springboot.app.repository.ServicioRepository;
 import com.pomelo.app.springboot.app.repository.UsuarioRepository;
+import com.pomelo.app.springboot.app.service.ConfiguracionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -25,11 +27,25 @@ public class CitaService {
     @Autowired
     private ServicioRepository servicioRepository;
 
-    public Cita crearCita(Cita cita) {
+    @Autowired
+    private ConfiguracionService configuracionService;
+
+    public Cita crearCita(Cita cita, String rolUsuario) {
         try {
             // Validar que la fecha sea futura
             if (cita.getFechaHora().isBefore(LocalDateTime.now())) {
                 throw new RuntimeException("No se pueden crear citas en el pasado");
+            }
+
+            // Calcular horas antes de la cita
+            long horasAntes = ChronoUnit.HOURS.between(LocalDateTime.now(), cita.getFechaHora());
+            
+            // Verificar tiempo mínimo para usuarios no admin
+            if (!"ADMIN".equals(rolUsuario)) {
+                int tiempoMinimo = configuracionService.obtenerTiempoMinimo();
+                if (horasAntes < tiempoMinimo) {
+                    throw new RuntimeException("Debes reservar al menos " + tiempoMinimo + " horas antes de la cita");
+                }
             }
 
             // Verificar disponibilidad
@@ -70,8 +86,15 @@ public class CitaService {
                 throw new RuntimeException("No se pueden cancelar citas pasadas");
             }
 
-            cita.setEstado("cancelada");
-            citaRepository.save(cita);
+            // Si es una cita periódica, borrar todas las citas periódicas del usuario
+            if (cita.isFija() && cita.getPeriodicidadDias() != null && cita.getPeriodicidadDias() > 0) {
+                List<Cita> citasPeriodicas = citaRepository.findByClienteAndFijaTrueAndPeriodicidadDiasIsNotNull(cita.getCliente());
+                citaRepository.deleteAll(citasPeriodicas);
+            } else {
+                // Si no es periódica, solo cambiar el estado
+                cita.setEstado("cancelada");
+                citaRepository.save(cita);
+            }
         } catch (Exception e) {
             throw new RuntimeException("Error al cancelar la cita: " + e.getMessage(), e);
         }
@@ -79,9 +102,33 @@ public class CitaService {
 
     public Cita crearCitaFija(Cita cita, int periodicidadDias) {
         try {
+            // Crear la cita inicial
             cita.setFija(true);
             cita.setPeriodicidadDias(periodicidadDias);
-            return citaRepository.save(cita);
+            Cita citaGuardada = citaRepository.save(cita);
+            
+            // Crear citas adicionales para los próximos 6 meses (aproximadamente 26 semanas)
+            LocalDateTime fechaActual = cita.getFechaHora();
+            for (int i = 1; i <= 26; i++) {
+                LocalDateTime nuevaFecha = fechaActual.plusDays(periodicidadDias * i);
+                
+                // Solo crear citas futuras
+                if (nuevaFecha.isAfter(LocalDateTime.now())) {
+                    Cita nuevaCita = new Cita();
+                    nuevaCita.setCliente(cita.getCliente());
+                    nuevaCita.setServicio(cita.getServicio());
+                    nuevaCita.setFechaHora(nuevaFecha);
+                    nuevaCita.setComentario(cita.getComentario());
+                    nuevaCita.setConfirmada(cita.isConfirmada());
+                    nuevaCita.setFija(true);
+                    nuevaCita.setPeriodicidadDias(periodicidadDias);
+                    nuevaCita.setEstado(cita.getEstado());
+                    
+                    citaRepository.save(nuevaCita);
+                }
+            }
+            
+            return citaGuardada;
         } catch (Exception e) {
             throw new RuntimeException("Error al crear cita fija: " + e.getMessage(), e);
         }
