@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaCog, FaSave, FaTimes, FaCalendarAlt, FaUserPlus, FaCalendarCheck } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaCog, FaSave, FaTimes, FaCalendarAlt, FaUserPlus, FaCalendarCheck, FaUmbrellaBeach } from 'react-icons/fa';
 import styles from './Configuracion.module.css';
 
 interface Servicio {
@@ -75,9 +75,20 @@ const Configuracion: React.FC = () => {
 
   // Estados para configuración de tiempo mínimo de reserva
   const [tiempoMinimoModal, setTiempoMinimoModal] = useState(false);
+  const [tiempoMinimo, setTiempoMinimo] = useState(24);
   const [tiempoMinimoForm, setTiempoMinimoForm] = useState({ horas: '24' });
   const [tiempoMinimoLoading, setTiempoMinimoLoading] = useState(false);
   const [tiempoMinimoMsg, setTiempoMinimoMsg] = useState<string | null>(null);
+  
+  // Estados para gestión de vacaciones
+  const [vacacionesModal, setVacacionesModal] = useState(false);
+  const [cancelarVacacionesModal, setCancelarVacacionesModal] = useState(false);
+  const [vacacionesList, setVacacionesList] = useState<any[]>([]);
+  const [vacacionesForm, setVacacionesForm] = useState({
+    fechaInicio: '',
+    fechaFin: '',
+    descripcion: ''
+  });
 
   // Fetch servicios al abrir modales de editar/eliminar
   const fetchServicios = async () => {
@@ -197,6 +208,79 @@ const Configuracion: React.FC = () => {
     setCitasModal(null);
     
     setTiempoMinimoModal(true);
+  };
+
+  const openVacacionesModal = () => {
+    setModal(null);
+    setCitasModal(null);
+    setTiempoMinimoModal(false);
+    setCancelarVacacionesModal(false);
+    setVacacionesModal(true);
+    fetchVacaciones();
+  };
+
+  const openCancelarVacacionesModal = () => {
+    setModal(null);
+    setCitasModal(null);
+    setTiempoMinimoModal(false);
+    setVacacionesModal(false);
+    setCancelarVacacionesModal(true);
+    fetchVacaciones();
+  };
+
+  const fetchVacaciones = async () => {
+    try {
+      const res = await fetch('http://localhost:8080/api/vacaciones');
+      const data = await res.json();
+      setVacacionesList(data);
+    } catch (error) {
+      console.error('Error al obtener vacaciones:', error);
+    }
+  };
+
+  const handleVacacionesSubmit = async () => {
+    try {
+      const res = await fetch('http://localhost:8080/api/vacaciones', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        },
+        body: JSON.stringify(vacacionesForm)
+      });
+
+      if (res.ok) {
+        setVacacionesForm({ fechaInicio: '', fechaFin: '', descripcion: '' });
+        fetchVacaciones();
+        setVacacionesModal(false);
+      } else {
+        const errorData = await res.json();
+        alert('Error: ' + (errorData.message || 'Error al crear vacaciones'));
+      }
+    } catch (error) {
+      alert('Error al crear vacaciones');
+    }
+  };
+
+  const handleEliminarVacaciones = async (id: number) => {
+    if (confirm('¿Estás seguro de que quieres eliminar este período de vacaciones?')) {
+      try {
+        const res = await fetch(`http://localhost:8080/api/vacaciones/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        });
+
+        if (res.ok) {
+          fetchVacaciones();
+        } else {
+          alert('Error al eliminar vacaciones');
+        }
+      } catch (error) {
+        alert('Error al eliminar vacaciones');
+      }
+    }
   };
 
   // Al seleccionar servicio en modificar, rellenar campos
@@ -668,10 +752,9 @@ const Configuracion: React.FC = () => {
           <FaCalendarAlt className={styles.calendarIcon} />
           <h2>Gestión de Citas Periódicas</h2>
         </div>
-        
         <div className={styles.buttonGroup}>
           <button className={`${styles.configBtn} ${styles.addBtn}`} onClick={() => openCitasModal('añadir')}>
-            <FaUserPlus className={styles.btnIcon} />
+            <FaPlus className={styles.btnIcon} />
             <span>Añadir Cita Periódica</span>
           </button>
           <button className={`${styles.configBtn} ${styles.editBtn}`} onClick={() => openCitasModal('modificar')}>
@@ -791,14 +874,14 @@ const Configuracion: React.FC = () => {
          </div>
        )}
 
-       {/* Modal para configuración de tiempo mínimo */}
+       {/* Modal de Tiempo Mínimo */}
        {tiempoMinimoModal && (
          <div className={styles.modal}>
            <div className={styles.modalHeader}>
              <FaCog className={styles.modalIcon} />
              <h3>Configurar Tiempo Mínimo de Reserva</h3>
            </div>
-           <form className={styles.formModal} onSubmit={handleTiempoMinimoSubmit}>
+           <div className={styles.formModal}>
              <div style={{ textAlign: 'left', marginBottom: '1.5rem', padding: '1rem', backgroundColor: 'rgba(255,193,7,0.1)', borderRadius: '8px', border: '1px solid rgba(255,193,7,0.3)' }}>
                <h4 style={{ margin: '0 0 0.5rem 0', color: '#ffc107', fontSize: '1rem' }}>¿Qué hace esta función?</h4>
                <ul style={{ margin: '0', paddingLeft: '1.2rem', fontSize: '0.9rem', color: '#ccc', lineHeight: '1.4' }}>
@@ -808,29 +891,172 @@ const Configuracion: React.FC = () => {
                  <li>Ejemplo: Si configuras 24 horas, los usuarios solo podrán reservar citas para mañana o después</li>
                </ul>
              </div>
-             <input 
-               className={styles.input} 
-               name="horas" 
-               type="number" 
-               placeholder="Horas mínimas (ej: 24)" 
-               min="1" 
-               max="168" 
-               value={tiempoMinimoForm.horas} 
-               onChange={handleTiempoMinimoChange} 
-               required 
-             />
+             <div className={styles.formGroup}>
+               <label>Horas mínimas de antelación:</label>
+               <input
+                 type="number"
+                 value={tiempoMinimoForm.horas}
+                 onChange={(e) => setTiempoMinimoForm({ horas: e.target.value })}
+                 min="1"
+                 max="168"
+                 className={styles.input}
+               />
+             </div>
+             {tiempoMinimoMsg && (
+               <div className={tiempoMinimoMsg.includes('Error') ? styles.errorMsg : styles.successMsg}>
+                 {tiempoMinimoMsg}
+               </div>
+             )}
              <div className={styles.modalBtnGroup}>
-               <button className={styles.saveBtn} type="submit" disabled={tiempoMinimoLoading}>
+               <button
+                 className={styles.saveBtn}
+                 onClick={handleTiempoMinimoSubmit}
+                 disabled={tiempoMinimoLoading}
+               >
                  <FaSave className={styles.btnIcon} />
-                 {tiempoMinimoLoading ? 'Guardando...' : 'Guardar Configuración'}
+                 {tiempoMinimoLoading ? 'Guardando...' : 'Guardar'}
                </button>
-               <button className={styles.cancelBtn} type="button" onClick={() => setTiempoMinimoModal(false)} disabled={tiempoMinimoLoading}>
+               <button className={styles.cancelBtn} onClick={() => setTiempoMinimoModal(false)}>
                  <FaTimes className={styles.btnIcon} />
                  Cancelar
                </button>
              </div>
-             {tiempoMinimoMsg && <div className={`${styles.message} ${tiempoMinimoMsg.startsWith('¡') ? styles.success : styles.error}`}>{tiempoMinimoMsg}</div>}
-           </form>
+           </div>
+         </div>
+       )}
+
+       {/* Sección de Gestión de Vacaciones */}
+       <div className={styles.serviciosSection} style={{ marginTop: '2rem' }}>
+         <div className={styles.header}>
+           <FaUmbrellaBeach className={styles.calendarIcon} />
+           <h2>Gestionar Vacaciones</h2>
+         </div>
+         
+         <div className={styles.buttonGroup}>
+           <button className={`${styles.configBtn} ${styles.addBtn}`} onClick={openVacacionesModal}>
+             <FaPlus className={styles.btnIcon} />
+             <span>Añadir Vacaciones</span>
+           </button>
+           <button className={`${styles.configBtn} ${styles.deleteBtn}`} onClick={openCancelarVacacionesModal}>
+             <FaTrash className={styles.btnIcon} />
+             <span>Cancelar Vacaciones</span>
+           </button>
+         </div>
+       </div>
+
+       {/* Modal de Vacaciones */}
+       {vacacionesModal && (
+         <div className={styles.modal}>
+           <div className={styles.modalHeader}>
+             <FaPlus className={styles.modalIcon} />
+             <h3>Añadir Vacaciones</h3>
+           </div>
+           <div className={styles.formModal}>
+             {/* Formulario para crear vacaciones */}
+             <div style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: 'rgba(25,118,210,0.05)', borderRadius: '8px' }}>
+               <h4 style={{ margin: '0 0 1rem 0', color: '#1976d2' }}>Crear Nuevo Período de Vacaciones</h4>
+               <div className={styles.formGroup}>
+                 <label>Fecha de inicio:</label>
+                 <input
+                   type="date"
+                   value={vacacionesForm.fechaInicio}
+                   onChange={(e) => setVacacionesForm({...vacacionesForm, fechaInicio: e.target.value})}
+                   className={styles.input}
+                 />
+               </div>
+               <div className={styles.formGroup}>
+                 <label>Fecha de fin:</label>
+                 <input
+                   type="date"
+                   value={vacacionesForm.fechaFin}
+                   onChange={(e) => setVacacionesForm({...vacacionesForm, fechaFin: e.target.value})}
+                   className={styles.input}
+                 />
+               </div>
+               <div className={styles.formGroup}>
+                 <label>Descripción (opcional):</label>
+                 <input
+                   type="text"
+                   value={vacacionesForm.descripcion}
+                   onChange={(e) => setVacacionesForm({...vacacionesForm, descripcion: e.target.value})}
+                   placeholder="Ej: Vacaciones de verano"
+                   className={styles.input}
+                 />
+               </div>
+             </div>
+             <div className={styles.modalBtnGroup}>
+               <button
+                 className={styles.saveBtn}
+                 onClick={handleVacacionesSubmit}
+                 disabled={!vacacionesForm.fechaInicio || !vacacionesForm.fechaFin}
+               >
+                 <FaSave className={styles.btnIcon} />
+                 Crear Vacaciones
+               </button>
+               <button className={styles.cancelBtn} onClick={() => setVacacionesModal(false)}>
+                 <FaTimes className={styles.btnIcon} />
+                 Cancelar
+               </button>
+             </div>
+           </div>
+         </div>
+       )}
+
+       {/* Modal de Cancelar Vacaciones */}
+       {cancelarVacacionesModal && (
+         <div className={styles.modal}>
+           <div className={styles.modalHeader}>
+             <FaTrash className={styles.modalIcon} />
+             <h3>Cancelar Vacaciones</h3>
+           </div>
+           <div className={styles.formModal}>
+             {/* Lista de vacaciones existentes */}
+             <div>
+               <h4 style={{ margin: '0 0 1rem 0', color: '#1976d2' }}>Períodos de Vacaciones Activos</h4>
+               {vacacionesList.length === 0 ? (
+                 <p style={{ color: '#666', fontStyle: 'italic' }}>No hay períodos de vacaciones configurados</p>
+               ) : (
+                 <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                   {vacacionesList.map((vacacion) => (
+                     <div key={vacacion.id} style={{
+                       padding: '1rem',
+                       border: '1px solid #ddd',
+                       borderRadius: '8px',
+                       marginBottom: '0.5rem',
+                       backgroundColor: '#f9f9f9'
+                     }}>
+                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                         <div>
+                           <strong>{new Date(vacacion.fechaInicio).toLocaleDateString('es-ES')} - {new Date(vacacion.fechaFin).toLocaleDateString('es-ES')}</strong>
+                           {vacacion.descripcion && <p style={{ margin: '0.5rem 0 0 0', color: '#666' }}>{vacacion.descripcion}</p>}
+                         </div>
+                         <button
+                           onClick={() => handleEliminarVacaciones(vacacion.id)}
+                           style={{
+                             background: '#e74c3c',
+                             color: 'white',
+                             border: 'none',
+                             borderRadius: '4px',
+                             padding: '0.5rem 1rem',
+                             cursor: 'pointer',
+                             fontSize: '0.9rem'
+                           }}
+                         >
+                           Eliminar
+                         </button>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               )}
+             </div>
+             <div className={styles.modalBtnGroup}>
+               <button className={styles.cancelBtn} onClick={() => setCancelarVacacionesModal(false)}>
+                 <FaTimes className={styles.btnIcon} />
+                 Cerrar
+               </button>
+             </div>
+           </div>
          </div>
        )}
      </div>

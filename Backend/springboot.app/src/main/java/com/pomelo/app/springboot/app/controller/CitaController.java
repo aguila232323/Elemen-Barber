@@ -7,6 +7,8 @@ import com.pomelo.app.springboot.app.dto.CitaRequest;
 import com.pomelo.app.springboot.app.service.CitaService;
 import com.pomelo.app.springboot.app.service.UsuarioService;
 import com.pomelo.app.springboot.app.service.ServicioService;
+import com.pomelo.app.springboot.app.service.ConfiguracionService;
+import com.pomelo.app.springboot.app.service.VacacionesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -35,11 +37,15 @@ public class CitaController {
     private final CitaService citaService;
     private final UsuarioService usuarioService;
     private final ServicioService servicioService;
+    private final ConfiguracionService configuracionService;
+    private final VacacionesService vacacionesService;
 
-    public CitaController(CitaService citaService, UsuarioService usuarioService, ServicioService servicioService) {
+    public CitaController(CitaService citaService, UsuarioService usuarioService, ServicioService servicioService, ConfiguracionService configuracionService, VacacionesService vacacionesService) {
         this.citaService = citaService;
         this.usuarioService = usuarioService;
         this.servicioService = servicioService;
+        this.configuracionService = configuracionService;
+        this.vacacionesService = vacacionesService;
     }
 
     @PostMapping
@@ -268,11 +274,16 @@ public class CitaController {
     @Operation(summary = "Disponibilidad de citas", description = "Devuelve los slots libres para un día y duración concreta")
     public ResponseEntity<?> disponibilidad(
         @RequestParam String fecha,
-        @RequestParam int duracion // en minutos
+        @RequestParam int duracion, // en minutos
+        @RequestParam(required = false) String userRole // "ADMIN" o "USER"
     ) {
         try {
             LocalDate dia = LocalDate.parse(fecha, DateTimeFormatter.ISO_DATE);
-
+            LocalDateTime ahora = LocalDateTime.now();
+            
+            // Obtener tiempo mínimo de reserva
+            int tiempoMinimo = configuracionService.obtenerTiempoMinimo();
+            
             // Generar todos los slots de inicio cada 45 min
             List<LocalTime[]> tramos = List.of(
                 new LocalTime[]{LocalTime.of(9,0), LocalTime.of(14,0)},
@@ -299,6 +310,7 @@ public class CitaController {
                 boolean hueco = true;
                 LocalTime slotInicio = slots.get(i);
                 LocalTime slotFin = slotInicio.plusMinutes(45 * slotsNecesarios);
+                
                 // Comprobar que el rango completo cabe dentro de algún tramo
                 boolean dentroHorario = false;
                 for (LocalTime[] tramo : tramos) {
@@ -308,6 +320,21 @@ public class CitaController {
                     }
                 }
                 if (!dentroHorario) continue;
+                
+                // Comprobar si el día está en vacaciones
+                if (vacacionesService.esFechaVacaciones(dia)) {
+                    continue; // Saltar este slot si el día está en vacaciones
+                }
+                
+                // Comprobar restricción de tiempo mínimo para usuarios no-admin
+                if (!"ADMIN".equals(userRole)) {
+                    LocalDateTime fechaHoraSlot = LocalDateTime.of(dia, slotInicio);
+                    long horasAntes = java.time.temporal.ChronoUnit.HOURS.between(ahora, fechaHoraSlot);
+                    if (horasAntes < tiempoMinimo) {
+                        continue; // Saltar este slot si no cumple el tiempo mínimo
+                    }
+                }
+                
                 // Comprobar que todos los slots consecutivos están libres
                 for (int j = 0; j < slotsNecesarios; j++) {
                     LocalDateTime inicio = LocalDateTime.of(dia, slots.get(i + j));
@@ -343,12 +370,15 @@ public class CitaController {
     public ResponseEntity<?> disponibilidadMes(
         @RequestParam int anio,
         @RequestParam int mes, // 1-12
-        @RequestParam int duracion // en minutos
+        @RequestParam int duracion, // en minutos
+        @RequestParam(required = false) String userRole // "ADMIN" o "USER"
     ) {
         try {
             int diasEnMes = java.time.YearMonth.of(anio, mes).lengthOfMonth();
             List<Cita> todasCitas = citaService.listarTodasLasCitas();
             List<Map<String, Object>> dias = new ArrayList<>();
+            LocalDateTime ahora = LocalDateTime.now();
+            int tiempoMinimo = configuracionService.obtenerTiempoMinimo();
             
             for (int dia = 1; dia <= diasEnMes; dia++) {
                 LocalDate fecha = LocalDate.of(anio, mes, dia);
@@ -382,6 +412,21 @@ public class CitaController {
                         }
                     }
                     if (!dentroHorario) continue;
+                    
+                    // Comprobar si el día está en vacaciones
+                    if (vacacionesService.esFechaVacaciones(fecha)) {
+                        continue; // Saltar este slot si el día está en vacaciones
+                    }
+                    
+                    // Comprobar restricción de tiempo mínimo para usuarios no-admin
+                    if (!"ADMIN".equals(userRole)) {
+                        LocalDateTime fechaHoraSlot = LocalDateTime.of(fecha, slotInicio);
+                        long horasAntes = java.time.temporal.ChronoUnit.HOURS.between(ahora, fechaHoraSlot);
+                        if (horasAntes < tiempoMinimo) {
+                            continue; // Saltar este slot si no cumple el tiempo mínimo
+                        }
+                    }
+                    
                     // Comprobar que todos los slots consecutivos están libres
                     for (int j = 0; j < slotsNecesarios; j++) {
                         LocalDateTime inicio = LocalDateTime.of(fecha, slots.get(i + j));
@@ -404,7 +449,9 @@ public class CitaController {
                 diaMap.put("slotsLibres", libres);
                 dias.add(diaMap);
             }
-            return ResponseEntity.ok(dias);
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("dias", dias);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, String> errorResponse = new java.util.HashMap<>();
             errorResponse.put("error", "Error al obtener disponibilidad mensual");

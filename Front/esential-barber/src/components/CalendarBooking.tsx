@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 // Simulación de disponibilidad por día (0-100%)
 function getDisponibilidad(dia: number) {
@@ -31,6 +32,7 @@ interface Props {
 }
 
 const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompletada, nombresServicios }) => {
+  const { user } = useAuth();
   const today = new Date();
   const [mes, setMes] = useState(today.getMonth());
   const [anio, setAnio] = useState(today.getFullYear());
@@ -44,6 +46,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
   const [confirmError, setConfirmError] = useState('');
   const [confirmSuccess, setConfirmSuccess] = useState(false);
   const [comentario, setComentario] = useState('');
+  const [tiempoMinimo, setTiempoMinimo] = useState<number>(24); // valor por defecto
 
   // Obtener la mayor duración de los servicios seleccionados (por si se seleccionan varios)
   const duracion = servicio.length > 0 ? Math.max(...servicio.map(s => s.duracionMinutos)) : 45;
@@ -59,6 +62,23 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
   const anioActual = now.getFullYear();
   const horaActual = now.getHours();
   const minutosActual = now.getMinutes();
+
+  // Obtener tiempo mínimo de reserva
+  useEffect(() => {
+    const fetchTiempoMinimo = async () => {
+      try {
+        const res = await fetch('http://localhost:8080/api/configuracion/tiempo-minimo');
+        const data = await res.json();
+        if (data.horasMinimas) {
+          setTiempoMinimo(data.horasMinimas);
+          console.log('Tiempo mínimo configurado:', data.horasMinimas, 'horas');
+        }
+      } catch (error) {
+        console.log('Error al obtener tiempo mínimo, usando valor por defecto (24 horas)');
+      }
+    };
+    fetchTiempoMinimo();
+  }, []);
 
   // Navegación de mes
   function cambiarMes(delta: number) {
@@ -78,7 +98,8 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
     if (diaSeleccionado) {
       setLoadingHoras(true);
       const fecha = `${anio}-${String(mes+1).padStart(2,'0')}-${String(diaSeleccionado).padStart(2,'0')}`;
-      fetch(`http://localhost:8080/api/citas/disponibilidad?fecha=${fecha}&duracion=${duracion}`)
+      const userRole = user?.rol || 'USER';
+      fetch(`http://localhost:8080/api/citas/disponibilidad?fecha=${fecha}&duracion=${duracion}&userRole=${userRole}`)
         .then(res => res.json())
         .then(data => {
           setHorasLibres(data.horasLibres || []);
@@ -91,18 +112,19 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
     } else {
       setHorasLibres([]);
     }
-  }, [diaSeleccionado, mes, anio, duracion]);
+  }, [diaSeleccionado, mes, anio, duracion, user?.rol]);
 
   // Consultar disponibilidad de todo el mes al cambiar mes/año
   useEffect(() => {
     const fetchDisponibilidadMes = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/citas/disponibilidad-mes?anio=${anio}&mes=${mes+1}&duracion=${duracion}`);
+        const userRole = user?.rol || 'USER';
+        const res = await fetch(`http://localhost:8080/api/citas/disponibilidad-mes?anio=${anio}&mes=${mes+1}&duracion=${duracion}&userRole=${userRole}`);
         const data = await res.json();
         const map: {[dia: number]: number} = {};
         if (data.dias && Array.isArray(data.dias)) {
           data.dias.forEach((d: any) => {
-            const diaNum = parseInt(d.fecha.split('-')[2], 10);
+            const diaNum = d.dia;
             map[diaNum] = d.slotsLibres;
           });
         }
@@ -112,7 +134,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
       }
     };
     fetchDisponibilidadMes();
-  }, [mes, anio, duracion]);
+  }, [mes, anio, duracion, user?.rol]);
 
   // --- UI principal ---
   if (confirmStep) {
@@ -207,6 +229,19 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
       <div style={{background:'#fff',padding:32,borderRadius:16,boxShadow:'0 4px 32px rgba(0,0,0,0.18)',minWidth:360, maxWidth:420, color:'#222'}}>
         <h2 style={{color:'#1976d2',marginTop:0,marginBottom:8}}>Selecciona día y hora</h2>
         <div style={{fontWeight:500,marginBottom:16, color:'#222'}}>Servicios: <span style={{color:'#1976d2'}}>{nombresServicios}</span></div>
+        {user?.rol !== 'ADMIN' && (
+          <div style={{
+            background: '#fff3cd',
+            border: '1px solid #ffeaa7',
+            borderRadius: '8px',
+            padding: '12px',
+            marginBottom: '16px',
+            fontSize: '0.9rem',
+            color: '#856404'
+          }}>
+            <strong>Recordatorio:</strong> Debes reservar con al menos {tiempoMinimo} {tiempoMinimo === 1 ? 'hora' : 'horas'} de antelación.
+          </div>
+        )}
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
           <button 
             onClick={()=>cambiarMes(-1)} 
@@ -227,20 +262,24 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
             let colorBarra = porcentaje > 70 ? '#43b94a' : porcentaje > 30 ? '#ffe066' : '#e74c3c';
             // Deshabilitar días en el pasado
             const esPasado = (anio < anioActual) || (anio === anioActual && mes < mesActual) || (anio === anioActual && mes === mesActual && dia < hoy);
+            // Deshabilitar días sin slots disponibles (para usuarios no-admin)
+            const sinSlotsDisponibles = user?.rol !== 'ADMIN' && libres === 0 && !esPasado;
+            const esSeleccionable = !esPasado && !sinSlotsDisponibles;
+            
             return (
-              <div key={dia} style={{display:'flex',flexDirection:'column',alignItems:'center',cursor: esPasado?'not-allowed':'pointer',opacity:esPasado?0.45:1}} onClick={()=>{if(!esPasado){setDiaSeleccionado(dia);setHoraSeleccionada(null);}}}>
+              <div key={dia} style={{display:'flex',flexDirection:'column',alignItems:'center',cursor: esSeleccionable?'pointer':'not-allowed',opacity:esSeleccionable?1:0.45}} onClick={()=>{if(esSeleccionable){setDiaSeleccionado(dia);setHoraSeleccionada(null);}}}>
                 <div style={{
                   width:34,height:34,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
-                  background: diaSeleccionado===dia?'#1976d2':'#fff',
-                  color: diaSeleccionado===dia?'#fff':'#1976d2',
-                  border: diaSeleccionado===dia?'2px solid #1976d2':'1.5px solid #1976d2',
+                  background: diaSeleccionado===dia?'#1976d2':sinSlotsDisponibles?'#f5f5f5':'#fff',
+                  color: diaSeleccionado===dia?'#fff':sinSlotsDisponibles?'#999':'#1976d2',
+                  border: diaSeleccionado===dia?'2px solid #1976d2':sinSlotsDisponibles?'1.5px solid #ddd':'1.5px solid #1976d2',
                   fontWeight:800,marginBottom:2,
                   fontSize:'1.13rem',
                   boxShadow: diaSeleccionado===dia?'0 2px 8px rgba(25,118,210,0.10)':'none',
                   transition:'all 0.18s',
                   letterSpacing:0.5
                 }}>{dia}</div>
-                <div style={{width:24,height:5,borderRadius:3,background:colorBarra,marginBottom:2}}></div>
+                <div style={{width:24,height:5,borderRadius:3,background:sinSlotsDisponibles?'#ddd':colorBarra,marginBottom:2}}></div>
               </div>
             )
           })}
@@ -251,7 +290,12 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
             {loadingHoras ? (
               <div style={{color:'#1976d2'}}>Cargando horas...</div>
             ) : horasLibres.length === 0 ? (
-              <div style={{color:'#e74c3c'}}>No hay horas libres para este día.</div>
+              <div style={{color:'#e74c3c'}}>
+                {user?.rol === 'ADMIN' ? 
+                  'No hay horas libres para este día.' : 
+                  `No hay horas disponibles para este día. Recuerda que debes reservar con al menos ${tiempoMinimo} ${tiempoMinimo === 1 ? 'hora' : 'horas'} de antelación.`
+                }
+              </div>
             ) : (
             <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
               {horasLibres.map(hora=>{
