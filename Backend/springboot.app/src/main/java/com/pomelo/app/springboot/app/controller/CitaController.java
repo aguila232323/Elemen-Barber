@@ -135,7 +135,37 @@ public class CitaController {
     @Operation(summary = "Todas las citas", description = "Lista todas las citas (solo para administradores)")
     public ResponseEntity<?> listarTodas() {
         try {
-            return ResponseEntity.ok(citaService.listarTodasLasCitas());
+            List<Cita> citas = citaService.listarTodasLasCitas();
+            List<Map<String, Object>> citasFormateadas = new ArrayList<>();
+            
+            for (Cita cita : citas) {
+                Map<String, Object> citaMap = new java.util.HashMap<>();
+                citaMap.put("id", cita.getId());
+                citaMap.put("fechaHora", cita.getFechaHora());
+                citaMap.put("comentario", cita.getComentario());
+                citaMap.put("confirmada", cita.isConfirmada());
+                citaMap.put("fija", cita.isFija());
+                citaMap.put("periodicidadDias", cita.getPeriodicidadDias());
+                citaMap.put("estado", cita.getEstado());
+                
+                // Servicio
+                Map<String, Object> servicioMap = new java.util.HashMap<>();
+                servicioMap.put("nombre", cita.getServicio().getNombre());
+                servicioMap.put("descripcion", cita.getServicio().getDescripcion());
+                servicioMap.put("precio", cita.getServicio().getPrecio());
+                servicioMap.put("duracionMinutos", cita.getServicio().getDuracionMinutos());
+                citaMap.put("servicio", servicioMap);
+                
+                // Usuario (cliente)
+                Map<String, Object> usuarioMap = new java.util.HashMap<>();
+                usuarioMap.put("nombre", cita.getCliente().getNombre());
+                usuarioMap.put("email", cita.getCliente().getEmail());
+                citaMap.put("usuario", usuarioMap);
+                
+                citasFormateadas.add(citaMap);
+            }
+            
+            return ResponseEntity.ok(citasFormateadas);
         } catch (Exception e) {
             Map<String, String> errorResponse = new java.util.HashMap<>();
             errorResponse.put("error", "Error al listar todas las citas");

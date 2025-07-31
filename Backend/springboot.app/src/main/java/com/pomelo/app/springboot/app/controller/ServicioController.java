@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/servicios")
@@ -24,28 +25,57 @@ public class ServicioController {
     @GetMapping
     @Operation(summary = "Listar servicios", description = "Devuelve la lista de todos los servicios disponibles")
     public ResponseEntity<List<Servicio>> listarServicios() {
-        return ResponseEntity.ok(servicioService.listarServicios());
+        try {
+            return ResponseEntity.ok(servicioService.listarServicios());
+        } catch (Exception e) {
+            throw new RuntimeException("Error al listar servicios: " + e.getMessage(), e);
+        }
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Añadir servicio", description = "Crea un nuevo servicio")
-    public ResponseEntity<Servicio> crearServicio(@RequestBody Servicio servicio) {
-        return ResponseEntity.ok(servicioService.crearServicio(servicio));
+    public ResponseEntity<?> crearServicio(@RequestBody Servicio servicio) {
+        try {
+            Servicio nuevoServicio = servicioService.crearServicio(servicio);
+            return ResponseEntity.ok(nuevoServicio);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new java.util.HashMap<>();
+            errorResponse.put("error", "Error al crear servicio");
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Eliminar servicio", description = "Elimina un servicio por su ID")
-    public ResponseEntity<Void> eliminarServicio(@PathVariable Long id) {
-        servicioService.eliminarServicio(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> eliminarServicio(@PathVariable Long id) {
+        try {
+            servicioService.eliminarServicio(id);
+            Map<String, String> response = new java.util.HashMap<>();
+            response.put("message", "Servicio eliminado correctamente");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new java.util.HashMap<>();
+            errorResponse.put("error", "Error al eliminar servicio");
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Modificar servicio", description = "Modifica un servicio existente")
-    public ResponseEntity<Servicio> modificarServicio(@PathVariable Long id, @RequestBody Servicio servicio) {
-        return ResponseEntity.ok(servicioService.modificarServicio(id, servicio));
+    public ResponseEntity<?> modificarServicio(@PathVariable Long id, @RequestBody Servicio servicio) {
+        try {
+            Servicio servicioModificado = servicioService.modificarServicio(id, servicio);
+            return ResponseEntity.ok(servicioModificado);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new java.util.HashMap<>();
+            errorResponse.put("error", "Error al modificar servicio");
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
     }
 } 

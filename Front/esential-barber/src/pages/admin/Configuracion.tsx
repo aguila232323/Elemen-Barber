@@ -20,7 +20,11 @@ const Configuracion: React.FC = () => {
   const [serviciosLoading, setServiciosLoading] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState({ nombre: '', descripcion: '', precio: '', duracion: '' });
+  const [editLoading, setEditLoading] = useState(false);
+  const [editMsg, setEditMsg] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteMsg, setDeleteMsg] = useState<string | null>(null);
 
   // Fetch servicios al abrir modales de editar/eliminar
   const fetchServicios = async () => {
@@ -43,8 +47,12 @@ const Configuracion: React.FC = () => {
     if (type === 'edit') {
       setEditId(null);
       setEditForm({ nombre: '', descripcion: '', precio: '', duracion: '' });
+      setEditMsg(null);
     }
-    if (type === 'delete') setDeleteId(null);
+    if (type === 'delete') {
+      setDeleteId(null);
+      setDeleteMsg(null);
+    }
   };
 
   // Al seleccionar servicio en modificar, rellenar campos
@@ -109,6 +117,70 @@ const Configuracion: React.FC = () => {
     }
   };
 
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editId) return;
+    
+    setEditLoading(true);
+    setEditMsg(null);
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch(`http://localhost:8080/api/servicios/${editId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          nombre: editForm.nombre,
+          descripcion: editForm.descripcion,
+          precio: parseFloat(editForm.precio),
+          duracionMinutos: parseInt(editForm.duracion)
+        })
+      });
+      if (!res.ok) throw new Error('Error al modificar servicio');
+      setEditMsg('¡Servicio modificado correctamente!');
+      setTimeout(() => {
+        setModal(null);
+        setEditMsg(null);
+        setEditId(null);
+        setEditForm({ nombre: '', descripcion: '', precio: '', duracion: '' });
+      }, 1200);
+    } catch (err: any) {
+      setEditMsg(err.message || 'Error al modificar servicio');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const handleDeleteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!deleteId) return;
+    
+    setDeleteLoading(true);
+    setDeleteMsg(null);
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch(`http://localhost:8080/api/servicios/${deleteId}`, {
+        method: 'DELETE',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+      if (!res.ok) throw new Error('Error al eliminar servicio');
+      setDeleteMsg('¡Servicio eliminado correctamente!');
+      setTimeout(() => {
+        setModal(null);
+        setDeleteMsg(null);
+        setDeleteId(null);
+      }, 1200);
+    } catch (err: any) {
+      setDeleteMsg(err.message || 'Error al eliminar servicio');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return (
     <div className={styles.configContainer}>
       <h2>Configuración de Servicios</h2>
@@ -136,7 +208,7 @@ const Configuracion: React.FC = () => {
       {modal === 'edit' && (
         <div className={styles.modal}>
           <h3>Modificar servicio</h3>
-          <form className={styles.formModal}>
+          <form className={styles.formModal} onSubmit={handleEditSubmit}>
             <select className={styles.input} value={editId ?? ''} onChange={handleEditSelect} required>
               <option value="">Selecciona un servicio</option>
               {servicios.map(s => (
@@ -148,16 +220,17 @@ const Configuracion: React.FC = () => {
             <input className={styles.input} name="precio" type="number" placeholder="Nuevo precio (€)" min="0" step="0.01" value={editForm.precio} onChange={handleEditChange} required />
             <input className={styles.input} name="duracion" type="number" placeholder="Nueva duración (minutos)" min="1" value={editForm.duracion} onChange={handleEditChange} required />
             <div className={styles.modalBtnGroup}>
-              <button className={styles.saveBtn} type="submit">Guardar cambios</button>
-              <button className={styles.cancelBtn} type="button" onClick={() => setModal(null)}>Cancelar</button>
+              <button className={styles.saveBtn} type="submit" disabled={editLoading}>{editLoading ? 'Guardando...' : 'Guardar cambios'}</button>
+              <button className={styles.cancelBtn} type="button" onClick={() => setModal(null)} disabled={editLoading}>Cancelar</button>
             </div>
+            {editMsg && <div style={{marginTop:8, color: editMsg.startsWith('¡') ? '#43b94a' : '#e74c3c'}}>{editMsg}</div>}
           </form>
         </div>
       )}
       {modal === 'delete' && (
         <div className={styles.modal}>
           <h3>Eliminar servicio</h3>
-          <form className={styles.formModal}>
+          <form className={styles.formModal} onSubmit={handleDeleteSubmit}>
             <select className={styles.input} value={deleteId ?? ''} onChange={handleDeleteSelect} required>
               <option value="">Selecciona un servicio</option>
               {servicios.map(s => (
@@ -165,9 +238,10 @@ const Configuracion: React.FC = () => {
               ))}
             </select>
             <div className={styles.modalBtnGroup}>
-              <button className={styles.deleteBtn} type="submit">Eliminar</button>
-              <button className={styles.cancelBtn} type="button" onClick={() => setModal(null)}>Cancelar</button>
+              <button className={styles.deleteBtn} type="submit" disabled={deleteLoading}>{deleteLoading ? 'Eliminando...' : 'Eliminar'}</button>
+              <button className={styles.cancelBtn} type="button" onClick={() => setModal(null)} disabled={deleteLoading}>Cancelar</button>
             </div>
+            {deleteMsg && <div style={{marginTop:8, color: deleteMsg.startsWith('¡') ? '#43b94a' : '#e74c3c'}}>{deleteMsg}</div>}
           </form>
         </div>
       )}
