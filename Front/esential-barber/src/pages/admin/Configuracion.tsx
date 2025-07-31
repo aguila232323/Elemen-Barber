@@ -90,6 +90,11 @@ const Configuracion: React.FC = () => {
     descripcion: ''
   });
 
+  // Estado para modal de advertencia profesional
+  const [warningModal, setWarningModal] = useState(false);
+  const [warningMessage, setWarningMessage] = useState('');
+  const [warningAction, setWarningAction] = useState<(() => void) | null>(null);
+
   // Fetch servicios al abrir modales de editar/eliminar
   const fetchServicios = async () => {
     setServiciosLoading(true);
@@ -239,31 +244,45 @@ const Configuracion: React.FC = () => {
   };
 
   const handleVacacionesSubmit = async () => {
-    try {
-      const res = await fetch('http://localhost:8080/api/vacaciones', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        },
-        body: JSON.stringify(vacacionesForm)
-      });
+    // Mostrar modal de advertencia profesional
+    setWarningMessage(
+      '¿Estás seguro de que quieres crear este período de vacaciones?\n\n' +
+      '⚠️ ADVERTENCIA: Todas las citas existentes que coincidan con este período serán canceladas automáticamente.'
+    );
+    setWarningAction(() => async () => {
+      try {
+        const res = await fetch('http://localhost:8080/api/vacaciones', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          },
+          body: JSON.stringify(vacacionesForm)
+        });
 
-      if (res.ok) {
-        setVacacionesForm({ fechaInicio: '', fechaFin: '', descripcion: '' });
-        fetchVacaciones();
-        setVacacionesModal(false);
-      } else {
-        const errorData = await res.json();
-        alert('Error: ' + (errorData.message || 'Error al crear vacaciones'));
+        if (res.ok) {
+          const responseData = await res.json();
+          setVacacionesForm({ fechaInicio: '', fechaFin: '', descripcion: '' });
+          fetchVacaciones();
+          setVacacionesModal(false);
+          
+          // Mostrar mensaje de éxito con información sobre citas canceladas
+          alert(responseData.mensaje || 'Vacaciones creadas correctamente');
+        } else {
+          const errorData = await res.json();
+          alert('Error: ' + (errorData.error || 'Error al crear vacaciones'));
+        }
+      } catch (error) {
+        alert('Error al crear vacaciones');
       }
-    } catch (error) {
-      alert('Error al crear vacaciones');
-    }
+      setWarningModal(false);
+    });
+    setWarningModal(true);
   };
 
   const handleEliminarVacaciones = async (id: number) => {
-    if (confirm('¿Estás seguro de que quieres eliminar este período de vacaciones?')) {
+    setWarningMessage('¿Estás seguro de que quieres eliminar este período de vacaciones?');
+    setWarningAction(() => async () => {
       try {
         const res = await fetch(`http://localhost:8080/api/vacaciones/${id}`, {
           method: 'DELETE',
@@ -280,7 +299,9 @@ const Configuracion: React.FC = () => {
       } catch (error) {
         alert('Error al eliminar vacaciones');
       }
-    }
+      setWarningModal(false);
+    });
+    setWarningModal(true);
   };
 
   // Al seleccionar servicio en modificar, rellenar campos
@@ -944,123 +965,184 @@ const Configuracion: React.FC = () => {
          </div>
        </div>
 
-       {/* Modal de Vacaciones */}
-       {vacacionesModal && (
-         <div className={styles.modal}>
-           <div className={styles.modalHeader}>
-             <FaPlus className={styles.modalIcon} />
-             <h3>Añadir Vacaciones</h3>
-           </div>
-           <div className={styles.formModal}>
-             {/* Formulario para crear vacaciones */}
-             <div style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: 'rgba(25,118,210,0.05)', borderRadius: '8px' }}>
-               <h4 style={{ margin: '0 0 1rem 0', color: '#1976d2' }}>Crear Nuevo Período de Vacaciones</h4>
-               <div className={styles.formGroup}>
-                 <label>Fecha de inicio:</label>
-                 <input
-                   type="date"
-                   value={vacacionesForm.fechaInicio}
-                   onChange={(e) => setVacacionesForm({...vacacionesForm, fechaInicio: e.target.value})}
-                   className={styles.input}
-                 />
-               </div>
-               <div className={styles.formGroup}>
-                 <label>Fecha de fin:</label>
-                 <input
-                   type="date"
-                   value={vacacionesForm.fechaFin}
-                   onChange={(e) => setVacacionesForm({...vacacionesForm, fechaFin: e.target.value})}
-                   className={styles.input}
-                 />
-               </div>
-               <div className={styles.formGroup}>
-                 <label>Descripción (opcional):</label>
-                 <input
-                   type="text"
-                   value={vacacionesForm.descripcion}
-                   onChange={(e) => setVacacionesForm({...vacacionesForm, descripcion: e.target.value})}
-                   placeholder="Ej: Vacaciones de verano"
-                   className={styles.input}
-                 />
-               </div>
-             </div>
-             <div className={styles.modalBtnGroup}>
-               <button
-                 className={styles.saveBtn}
-                 onClick={handleVacacionesSubmit}
-                 disabled={!vacacionesForm.fechaInicio || !vacacionesForm.fechaFin}
-               >
-                 <FaSave className={styles.btnIcon} />
-                 Crear Vacaciones
-               </button>
-               <button className={styles.cancelBtn} onClick={() => setVacacionesModal(false)}>
-                 <FaTimes className={styles.btnIcon} />
-                 Cancelar
-               </button>
-             </div>
-           </div>
-         </div>
-       )}
+        {/* Modal de Vacaciones */}
+        {vacacionesModal && (
+          <div className={styles.modal}>
+            <div className={styles.modalHeader}>
+              <FaPlus className={styles.modalIcon} />
+              <h3>Añadir Vacaciones</h3>
+            </div>
+            <div className={styles.formModal}>
+              {/* Formulario para crear vacaciones */}
+              <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: 'rgba(25,118,210,0.05)', borderRadius: '8px' }}>
+                <h4 style={{ margin: '0 0 1rem 0', color: '#1976d2' }}>Crear Nuevo Período de Vacaciones</h4>
+                <div className={styles.formGroup}>
+                  <label>Fecha de inicio:</label>
+                  <input
+                    type="date"
+                    value={vacacionesForm.fechaInicio}
+                    onChange={(e) => setVacacionesForm({...vacacionesForm, fechaInicio: e.target.value})}
+                    className={styles.input}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Fecha de fin:</label>
+                  <input
+                    type="date"
+                    value={vacacionesForm.fechaFin}
+                    onChange={(e) => setVacacionesForm({...vacacionesForm, fechaFin: e.target.value})}
+                    className={styles.input}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Descripción (opcional):</label>
+                  <input
+                    type="text"
+                    value={vacacionesForm.descripcion}
+                    onChange={(e) => setVacacionesForm({...vacacionesForm, descripcion: e.target.value})}
+                    placeholder="Ej: Vacaciones de verano"
+                    className={styles.input}
+                  />
+                </div>
+              </div>
+              <div className={styles.modalBtnGroup}>
+                <button
+                  className={styles.saveBtn}
+                  onClick={handleVacacionesSubmit}
+                  disabled={!vacacionesForm.fechaInicio || !vacacionesForm.fechaFin}
+                >
+                  <FaSave className={styles.btnIcon} />
+                  Crear Vacaciones
+                </button>
+                <button className={styles.cancelBtn} onClick={() => setVacacionesModal(false)}>
+                  <FaTimes className={styles.btnIcon} />
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
-       {/* Modal de Cancelar Vacaciones */}
-       {cancelarVacacionesModal && (
-         <div className={styles.modal}>
-           <div className={styles.modalHeader}>
-             <FaTrash className={styles.modalIcon} />
-             <h3>Cancelar Vacaciones</h3>
-           </div>
-           <div className={styles.formModal}>
-             {/* Lista de vacaciones existentes */}
-             <div>
-               <h4 style={{ margin: '0 0 1rem 0', color: '#1976d2' }}>Períodos de Vacaciones Activos</h4>
-               {vacacionesList.length === 0 ? (
-                 <p style={{ color: '#666', fontStyle: 'italic' }}>No hay períodos de vacaciones configurados</p>
-               ) : (
-                 <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                   {vacacionesList.map((vacacion) => (
-                     <div key={vacacion.id} style={{
-                       padding: '1rem',
-                       border: '1px solid #ddd',
-                       borderRadius: '8px',
-                       marginBottom: '0.5rem',
-                       backgroundColor: '#f9f9f9'
-                     }}>
-                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                         <div>
-                           <strong>{new Date(vacacion.fechaInicio).toLocaleDateString('es-ES')} - {new Date(vacacion.fechaFin).toLocaleDateString('es-ES')}</strong>
-                           {vacacion.descripcion && <p style={{ margin: '0.5rem 0 0 0', color: '#666' }}>{vacacion.descripcion}</p>}
-                         </div>
-                         <button
-                           onClick={() => handleEliminarVacaciones(vacacion.id)}
-                           style={{
-                             background: '#e74c3c',
-                             color: 'white',
-                             border: 'none',
-                             borderRadius: '4px',
-                             padding: '0.5rem 1rem',
-                             cursor: 'pointer',
-                             fontSize: '0.9rem'
-                           }}
-                         >
-                           Eliminar
-                         </button>
-                       </div>
-                     </div>
-                   ))}
-                 </div>
-               )}
-             </div>
-             <div className={styles.modalBtnGroup}>
-               <button className={styles.cancelBtn} onClick={() => setCancelarVacacionesModal(false)}>
-                 <FaTimes className={styles.btnIcon} />
-                 Cerrar
-               </button>
-             </div>
-           </div>
-         </div>
-       )}
-     </div>
-   );
- };
+        {/* Modal de Cancelar Vacaciones */}
+        {cancelarVacacionesModal && (
+          <div className={styles.modal}>
+            <div className={styles.modalHeader}>
+              <FaTrash className={styles.modalIcon} />
+              <h3>Cancelar Vacaciones</h3>
+            </div>
+            <div className={styles.formModal}>
+              {/* Lista de vacaciones existentes */}
+              <div>
+                <h4 style={{ margin: '0 0 1rem 0', color: '#1976d2' }}>Períodos de Vacaciones Activos</h4>
+                {vacacionesList.length === 0 ? (
+                  <p style={{ color: '#666', fontStyle: 'italic' }}>No hay períodos de vacaciones configurados</p>
+                ) : (
+                  <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                    {vacacionesList.map((vacacion) => (
+                      <div key={vacacion.id} style={{
+                        padding: '1rem',
+                        border: '1px solid rgba(25,118,210,0.2)',
+                        borderRadius: '8px',
+                        marginBottom: '0.5rem',
+                        background: 'linear-gradient(135deg, rgba(25,118,210,0.05) 0%, rgba(25,118,210,0.1) 100%)',
+                        boxShadow: '0 2px 8px rgba(25,118,210,0.1)'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <strong style={{ color: '#1976d2', fontSize: '1.1rem' }}>
+                              {new Date(vacacion.fechaInicio).toLocaleDateString('es-ES')} - {new Date(vacacion.fechaFin).toLocaleDateString('es-ES')}
+                            </strong>
+                            {vacacion.descripcion && <p style={{ margin: '0.5rem 0 0 0', color: '#666', fontStyle: 'italic' }}>{vacacion.descripcion}</p>}
+                          </div>
+                          <button
+                            onClick={() => handleEliminarVacaciones(vacacion.id)}
+                            style={{
+                              background: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '0.5rem 1rem',
+                              cursor: 'pointer',
+                              fontSize: '0.9rem',
+                              fontWeight: '600',
+                              boxShadow: '0 2px 4px rgba(231,76,60,0.3)',
+                              transition: 'all 0.3s ease'
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.transform = 'translateY(-1px)';
+                              e.currentTarget.style.boxShadow = '0 4px 8px rgba(231,76,60,0.4)';
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = '0 2px 4px rgba(231,76,60,0.3)';
+                            }}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className={styles.modalBtnGroup}>
+                <button className={styles.cancelBtn} onClick={() => setCancelarVacacionesModal(false)}>
+                  <FaTimes className={styles.btnIcon} />
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Advertencia Profesional */}
+        {warningModal && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modal} style={{ maxWidth: '500px', width: '90%' }}>
+              <div className={styles.modalHeader}>
+                <FaCog className={styles.modalIcon} style={{ color: '#ffc107' }} />
+                <h3 style={{ color: '#ffc107' }}>Confirmar Acción</h3>
+              </div>
+              <div className={styles.formModal}>
+                <div style={{ 
+                  textAlign: 'left', 
+                  marginBottom: '1.5rem', 
+                  padding: '1rem', 
+                  backgroundColor: 'rgba(255,193,7,0.1)', 
+                  borderRadius: '8px', 
+                  border: '1px solid rgba(255,193,7,0.3)',
+                  color: '#fff'
+                }}>
+                  <p style={{ margin: '0', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
+                    {warningMessage}
+                  </p>
+                </div>
+                <div className={styles.modalBtnGroup}>
+                  <button
+                    className={styles.saveBtn}
+                    onClick={() => {
+                      if (warningAction) {
+                        warningAction();
+                      }
+                    }}
+                  >
+                    <FaSave className={styles.btnIcon} />
+                    Confirmar
+                  </button>
+                  <button 
+                    className={styles.cancelBtn} 
+                    onClick={() => setWarningModal(false)}
+                  >
+                    <FaTimes className={styles.btnIcon} />
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+    </div>
+  );
+};
 
 export default Configuracion; 

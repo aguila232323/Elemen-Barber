@@ -30,31 +30,35 @@ public class CitaService {
     @Autowired
     private ConfiguracionService configuracionService;
 
+    @Autowired
+    private VacacionesService vacacionesService;
+
     public Cita crearCita(Cita cita, String rolUsuario) {
-        try {
-            // Validar que la fecha sea futura
-            if (cita.getFechaHora().isBefore(LocalDateTime.now())) {
-                throw new RuntimeException("No se pueden crear citas en el pasado");
-            }
-
-            // Calcular horas antes de la cita
-            long horasAntes = ChronoUnit.HOURS.between(LocalDateTime.now(), cita.getFechaHora());
+        // Validar tiempo mínimo de reserva para usuarios no admin
+        if (!"ADMIN".equals(rolUsuario)) {
+            LocalDateTime ahora = LocalDateTime.now();
+            LocalDateTime fechaCita = cita.getFechaHora();
+            long horasAntes = ChronoUnit.HOURS.between(ahora, fechaCita);
             
-            // Verificar tiempo mínimo para usuarios no admin
-            if (!"ADMIN".equals(rolUsuario)) {
-                int tiempoMinimo = configuracionService.obtenerTiempoMinimo();
-                if (horasAntes < tiempoMinimo) {
-                    throw new RuntimeException("Debes reservar al menos " + tiempoMinimo + " horas antes de la cita");
-                }
+            int tiempoMinimo = configuracionService.obtenerTiempoMinimo();
+            if (horasAntes < tiempoMinimo) {
+                throw new RuntimeException("Debes reservar con al menos " + tiempoMinimo + " horas de antelación");
             }
-
-            // Verificar disponibilidad
-            verificarDisponibilidad(cita.getFechaHora(), cita.getServicio().getId());
-
-            return citaRepository.save(cita);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al crear la cita: " + e.getMessage(), e);
         }
+        
+        // Validar que no sea un día de vacaciones
+        LocalDate fechaCita = cita.getFechaHora().toLocalDate();
+        if (vacacionesService.esFechaVacaciones(fechaCita)) {
+            throw new RuntimeException("No se pueden crear citas en días de vacaciones");
+        }
+        
+        // Verificar disponibilidad
+        if (!verificarDisponibilidad(cita)) {
+            throw new RuntimeException("No hay disponibilidad para la fecha y hora seleccionada");
+        }
+        
+        cita.setEstado("confirmada");
+        return citaRepository.save(cita);
     }
 
     public List<Cita> obtenerCitasPorUsuario(Long usuarioId) {
@@ -173,13 +177,13 @@ public class CitaService {
         }
     }
 
-    private void verificarDisponibilidad(LocalDateTime fechaHora, Long servicioId) {
+    private boolean verificarDisponibilidad(Cita cita) {
         try {
-            Servicio servicio = servicioRepository.findById(servicioId)
+            Servicio servicio = servicioRepository.findById(cita.getServicio().getId())
                     .orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
 
-            LocalDateTime inicio = fechaHora;
-            LocalDateTime fin = fechaHora.plusMinutes(servicio.getDuracionMinutos());
+            LocalDateTime inicio = cita.getFechaHora();
+            LocalDateTime fin = inicio.plusMinutes(servicio.getDuracionMinutos());
 
             // Buscar citas que se solapen con el horario solicitado
             List<Cita> citasExistentes = citaRepository.findByFechaHoraBetween(
@@ -187,17 +191,18 @@ public class CitaService {
                 fin.plusMinutes(servicio.getDuracionMinutos())
             );
 
-            for (Cita cita : citasExistentes) {
-                if (!cita.getEstado().equals("cancelada")) {
-                    LocalDateTime inicioExistente = cita.getFechaHora();
-                    LocalDateTime finExistente = cita.getFechaHora().plusMinutes(cita.getServicio().getDuracionMinutos());
+            for (Cita citaExistente : citasExistentes) {
+                if (!citaExistente.getEstado().equals("cancelada")) {
+                    LocalDateTime inicioExistente = citaExistente.getFechaHora();
+                    LocalDateTime finExistente = citaExistente.getFechaHora().plusMinutes(citaExistente.getServicio().getDuracionMinutos());
 
                     // Verificar si hay solapamiento
                     if (inicio.isBefore(finExistente) && fin.isAfter(inicioExistente)) {
-                        throw new RuntimeException("Ya existe una cita en ese horario");
+                        return false; // No hay disponibilidad
                     }
                 }
             }
+            return true; // Hay disponibilidad
         } catch (Exception e) {
             throw new RuntimeException("Error al verificar disponibilidad: " + e.getMessage(), e);
         }
