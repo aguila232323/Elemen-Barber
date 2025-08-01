@@ -5,6 +5,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, EffectCoverflow } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/effect-coverflow';
+import { useServicios } from '../../../hooks/useServicios';
 
 
 const reviews = [
@@ -37,6 +38,8 @@ const getUserName = () => {
 
 const Inicio: React.FC = () => {
   const userName = getUserName();
+  const { servicios, loading, error } = useServicios();
+  
   return (
     <>
       <div style={{
@@ -295,22 +298,47 @@ const Inicio: React.FC = () => {
               <span style={{height:2, width:60, background:'#FFD600', borderRadius:2, display:'inline-block'}}></span>
             </div>
           </div>
-          <div style={{display:'flex', gap:'3.5rem', justifyContent:'center', flexWrap:'wrap'}}>
-            {/* Columna izquierda */}
-            <div style={{flex:'1 1 320px', minWidth:260, maxWidth:400}}>
-              <ServiceRow name="Corte sencillo" price="20€" desc="Corte clásico y rápido para mantener tu estilo." />
-              <ServiceRow name="Corte de pelo" price="15€" desc="Corte personalizado adaptado a tus gustos." />
-              <ServiceRow name="Corte a máquina" price="45€" desc="Corte profesional con máquina para un acabado perfecto." />
-              <ServiceRow name="Secador de pelo" price="36€" desc="Secado y peinado para un look impecable." />
+          {loading ? (
+            <div style={{textAlign: 'center', padding: '2rem'}}>
+              <div style={{fontSize: '1.5rem', marginBottom: '1rem'}}>⏳</div>
+              <p>Cargando servicios...</p>
             </div>
-            {/* Columna derecha */}
-            <div style={{flex:'1 1 320px', minWidth:260, maxWidth:400}}>
-              <ServiceRow name="Arreglo de bigote" price="32€" desc="Perfilado y arreglo de bigote con detalle." />
-              <ServiceRow name="Afeitado facial" price="10€" desc="Afeitado clásico y cuidado de la piel." />
-              <ServiceRow name="Lavado de pelo" price="18€" desc="Lavado y tratamiento capilar profesional." />
-              <ServiceRow name="Coloración" price="42€" desc="Coloración y matiz para renovar tu imagen." />
+          ) : error ? (
+            <div style={{textAlign: 'center', padding: '2rem', color: '#d32f2f'}}>
+              <div style={{fontSize: '1.5rem', marginBottom: '1rem'}}>❌</div>
+              <p>{error}</p>
             </div>
-          </div>
+          ) : servicios.length > 0 ? (
+            <div style={{display:'flex', gap:'3.5rem', justifyContent:'center', flexWrap:'wrap'}}>
+              {/* Columna izquierda */}
+              <div style={{flex:'1 1 320px', minWidth:260, maxWidth:400}}>
+                {servicios.slice(0, Math.ceil(servicios.length / 2)).map((servicio) => (
+                  <ServiceRow 
+                    key={servicio.id}
+                    name={servicio.nombre} 
+                    price={`${servicio.precio}€`} 
+                    desc={servicio.descripcion || `Duración: ${servicio.duracionMinutos} minutos`} 
+                  />
+                ))}
+              </div>
+              {/* Columna derecha */}
+              <div style={{flex:'1 1 320px', minWidth:260, maxWidth:400}}>
+                {servicios.slice(Math.ceil(servicios.length / 2)).map((servicio) => (
+                  <ServiceRow 
+                    key={servicio.id}
+                    name={servicio.nombre} 
+                    price={`${servicio.precio}€`} 
+                    desc={servicio.descripcion || `Duración: ${servicio.duracionMinutos} minutos`} 
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div style={{textAlign: 'center', padding: '2rem', color: '#666'}}>
+              <div style={{fontSize: '1.5rem', marginBottom: '1rem'}}>📋</div>
+              <p>No hay servicios disponibles en este momento.</p>
+            </div>
+          )}
         </div>
       </div>
     </>

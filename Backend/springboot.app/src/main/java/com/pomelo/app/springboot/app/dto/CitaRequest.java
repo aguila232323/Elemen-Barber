@@ -6,6 +6,7 @@ public class CitaRequest {
     private Long servicioId;
     private LocalDateTime fecha;
     private String comentario;
+    private Long clienteId; // Campo opcional para admin reservar para otros usuarios
 
     public Long getServicioId() {
         return servicioId;
@@ -29,5 +30,13 @@ public class CitaRequest {
     
     public void setComentario(String comentario) {
         this.comentario = comentario;
+    }
+    
+    public Long getClienteId() {
+        return clienteId;
+    }
+    
+    public void setClienteId(Long clienteId) {
+        this.clienteId = clienteId;
     }
 }

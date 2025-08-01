@@ -40,6 +40,8 @@
 .rbc-btn-group button:hover, .rbc-btn-group button:focus {
   background: #1251a3;
 }
+
+/* Estilos base para eventos */
 .rbc-event {
   background: #1976d2 !important;
   color: #fff !important;
@@ -57,7 +59,87 @@
   margin-bottom: 2px;
   cursor: pointer;
   transition: box-shadow 0.18s;
+  position: relative;
 }
+
+/* Estados dinámicos de las citas */
+.rbc-event[data-status="pendiente"] {
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%) !important;
+  border-left: 4px solid #1976d2 !important;
+  box-shadow: 0 2px 8px rgba(25,118,210,0.15) !important;
+}
+
+.rbc-event[data-status="pendiente"]:hover {
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%) !important;
+  box-shadow: 0 4px 16px rgba(25,118,210,0.25) !important;
+}
+
+.rbc-event[data-status="en_curso"] {
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%) !important;
+  border-left: 4px solid #ff9800 !important;
+  box-shadow: 0 2px 8px rgba(255,152,0,0.15) !important;
+  animation: pulse 2s infinite;
+}
+
+.rbc-event[data-status="en_curso"]:hover {
+  background: linear-gradient(135deg, #f57c00 0%, #ef6c00 100%) !important;
+  box-shadow: 0 4px 16px rgba(255,152,0,0.25) !important;
+}
+
+.rbc-event[data-status="completada"] {
+  background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%) !important;
+  border-left: 4px solid #4caf50 !important;
+  box-shadow: 0 2px 8px rgba(76,175,80,0.15) !important;
+  opacity: 0.8;
+}
+
+.rbc-event[data-status="completada"]:hover {
+  background: linear-gradient(135deg, #388e3c 0%, #2e7d32 100%) !important;
+  box-shadow: 0 4px 16px rgba(76,175,80,0.25) !important;
+  opacity: 1;
+}
+
+.rbc-event[data-status="cancelada"] {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+  border-left: 4px solid #e74c3c !important;
+  box-shadow: 0 2px 8px rgba(231,76,60,0.15) !important;
+  opacity: 0.7;
+  text-decoration: line-through;
+}
+
+.rbc-event[data-status="cancelada"]:hover {
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%) !important;
+  box-shadow: 0 4px 16px rgba(231,76,60,0.25) !important;
+  opacity: 0.9;
+}
+
+/* Animación de pulso para citas en curso */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 2px 8px rgba(255,152,0,0.15);
+  }
+  50% {
+    box-shadow: 0 2px 8px rgba(255,152,0,0.3);
+  }
+  100% {
+    box-shadow: 0 2px 8px rgba(255,152,0,0.15);
+  }
+}
+
+/* Indicador de estado en el evento */
+.rbc-event::after {
+  content: attr(data-status-label);
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(4px);
+}
+
 .rbc-event:hover {
   box-shadow: 0 4px 16px rgba(25,118,210,0.18);
   background: #1251a3 !important;
@@ -105,6 +187,47 @@
   color: #1976d2;
   font-weight: 600;
 }
+
+/* Animaciones para el modal profesional */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Efectos hover mejorados para botones */
+.citas-admin-nav-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(25,118,210,0.4);
+}
+
+/* Estilos para inputs con focus mejorado */
+input:focus {
+  border-color: #1976d2 !important;
+  box-shadow: 0 0 0 3px rgba(25,118,210,0.2) !important;
+}
+
+/* Transiciones suaves para todos los elementos interactivos */
+* {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 @media (max-width: 700px) {
   .citas-admin-container {
     padding: 0.5rem;

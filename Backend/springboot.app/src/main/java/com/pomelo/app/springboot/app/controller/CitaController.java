@@ -9,6 +9,7 @@ import com.pomelo.app.springboot.app.service.UsuarioService;
 import com.pomelo.app.springboot.app.service.ServicioService;
 import com.pomelo.app.springboot.app.service.ConfiguracionService;
 import com.pomelo.app.springboot.app.service.VacacionesService;
+import com.pomelo.app.springboot.app.service.EmailService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -39,23 +40,39 @@ public class CitaController {
     private final ServicioService servicioService;
     private final ConfiguracionService configuracionService;
     private final VacacionesService vacacionesService;
+    private final EmailService emailService;
 
-    public CitaController(CitaService citaService, UsuarioService usuarioService, ServicioService servicioService, ConfiguracionService configuracionService, VacacionesService vacacionesService) {
+    public CitaController(CitaService citaService, UsuarioService usuarioService, ServicioService servicioService, ConfiguracionService configuracionService, VacacionesService vacacionesService, EmailService emailService) {
         this.citaService = citaService;
         this.usuarioService = usuarioService;
         this.servicioService = servicioService;
         this.configuracionService = configuracionService;
         this.vacacionesService = vacacionesService;
+        this.emailService = emailService;
     }
 
     @PostMapping
-    @Operation(summary = "Crear cita", description = "Crea una nueva cita para el usuario autenticado")
+    @Operation(summary = "Crear cita", description = "Crea una nueva cita para el usuario autenticado o para un cliente específico si es admin")
     public ResponseEntity<?> crearCita(@RequestBody CitaRequest citaRequest, @AuthenticationPrincipal UserDetails user) {
         try {
-            // Buscar usuario por email para obtener el ID
-            Usuario usuario = usuarioService.findByEmail(user.getUsername());
-            if (usuario == null) {
-                throw new RuntimeException("Usuario no encontrado");
+            // Obtener el rol del usuario
+            String rolUsuario = user.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN")) ? "ADMIN" : "USER";
+            
+            Usuario cliente;
+            
+            // Si es admin y se proporciona clienteId, usar ese cliente
+            if ("ADMIN".equals(rolUsuario) && citaRequest.getClienteId() != null) {
+                cliente = usuarioService.findById(citaRequest.getClienteId());
+                if (cliente == null) {
+                    throw new RuntimeException("Cliente no encontrado");
+                }
+            } else {
+                // Buscar usuario por email para obtener el ID (comportamiento normal)
+                cliente = usuarioService.findByEmail(user.getUsername());
+                if (cliente == null) {
+                    throw new RuntimeException("Usuario no encontrado");
+                }
             }
             
             // Buscar el servicio
@@ -66,17 +83,22 @@ public class CitaController {
             
             // Crear la cita
             Cita cita = new Cita();
-            cita.setCliente(usuario);
+            cita.setCliente(cliente);
             cita.setServicio(servicio);
             cita.setFechaHora(citaRequest.getFecha());
             cita.setComentario(citaRequest.getComentario());
             cita.setEstado("pendiente");
             
-            // Obtener el rol del usuario
-            String rolUsuario = user.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN")) ? "ADMIN" : "USER";
-            
             Cita nuevaCita = citaService.crearCita(cita, rolUsuario);
+            
+            // Enviar email de confirmación
+            try {
+                emailService.enviarConfirmacionCita(nuevaCita);
+            } catch (Exception e) {
+                System.err.println("Error al enviar email de confirmación: " + e.getMessage());
+                // No fallar la creación de la cita si falla el email
+            }
+            
             return ResponseEntity.ok(nuevaCita);
         } catch (Exception e) {
             Map<String, String> errorResponse = new java.util.HashMap<>();
@@ -153,7 +175,6 @@ public class CitaController {
                 citaMap.put("id", cita.getId());
                 citaMap.put("fechaHora", cita.getFechaHora());
                 citaMap.put("comentario", cita.getComentario());
-                citaMap.put("confirmada", cita.isConfirmada());
                 citaMap.put("fija", cita.isFija());
                 citaMap.put("periodicidadDias", cita.getPeriodicidadDias());
                 citaMap.put("estado", cita.getEstado());
@@ -200,7 +221,6 @@ public class CitaController {
             Object servicioIdObj = request.get("servicioId");
             Object fechaHoraObj = request.get("fechaHora");
             Object comentarioObj = request.get("comentario");
-            Object confirmadaObj = request.get("confirmada");
             
             // Validar campos obligatorios
             if (clienteIdObj == null) {
@@ -217,7 +237,6 @@ public class CitaController {
             Long servicioId = Long.valueOf(servicioIdObj.toString());
             String fechaHoraStr = fechaHoraObj.toString();
             String comentario = comentarioObj != null ? comentarioObj.toString() : "";
-            Boolean confirmada = confirmadaObj != null ? Boolean.valueOf(confirmadaObj.toString()) : false;
             
             // Buscar cliente y servicio
             Usuario cliente = usuarioService.findById(clienteId);
@@ -236,9 +255,17 @@ public class CitaController {
             cita.setServicio(servicio);
             cita.setFechaHora(java.time.LocalDateTime.parse(fechaHoraStr));
             cita.setComentario(comentario);
-            cita.setConfirmada(confirmada != null ? confirmada : false);
             
             Cita nuevaCita = citaService.crearCitaFija(cita, periodicidadDias);
+            
+            // Enviar email de confirmación para la primera cita de la serie
+            try {
+                emailService.enviarConfirmacionCita(nuevaCita);
+            } catch (Exception e) {
+                System.err.println("Error al enviar email de confirmación: " + e.getMessage());
+                // No fallar la creación de la cita si falla el email
+            }
+            
             return ResponseEntity.ok(nuevaCita);
         } catch (Exception e) {
             Map<String, String> errorResponse = new java.util.HashMap<>();

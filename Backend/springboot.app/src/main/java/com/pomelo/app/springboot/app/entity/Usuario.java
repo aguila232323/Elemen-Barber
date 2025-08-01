@@ -25,6 +25,27 @@ public class Usuario {
     @Column(nullable = false, length = 20)
     private String rol = "CLIENTE"; // CLIENTE o ADMIN
 
+    @Column(length = 6)
+    private String verificationCode;
+
+    @Column(nullable = false)
+    private Boolean isEmailVerified = false;
+
+    @Column
+    private java.time.LocalDateTime verificationCodeExpiry;
+
+    @Column(nullable = false)
+    private Integer verificationAttempts = 0;
+
+    @Column
+    private java.time.LocalDateTime lockoutUntil;
+
+    @Column(length = 255)
+    private String resetPasswordToken;
+
+    @Column
+    private java.time.LocalDateTime resetPasswordExpiry;
+
     public String getEmail(){
         return email;
     }
@@ -71,5 +92,61 @@ public class Usuario {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getVerificationCode() {
+        return verificationCode;
+    }
+
+    public void setVerificationCode(String verificationCode) {
+        this.verificationCode = verificationCode;
+    }
+
+    public Boolean getIsEmailVerified() {
+        return isEmailVerified;
+    }
+
+    public void setIsEmailVerified(Boolean isEmailVerified) {
+        this.isEmailVerified = isEmailVerified;
+    }
+
+    public java.time.LocalDateTime getVerificationCodeExpiry() {
+        return verificationCodeExpiry;
+    }
+
+    public void setVerificationCodeExpiry(java.time.LocalDateTime verificationCodeExpiry) {
+        this.verificationCodeExpiry = verificationCodeExpiry;
+    }
+
+    public Integer getVerificationAttempts() {
+        return verificationAttempts;
+    }
+
+    public void setVerificationAttempts(Integer verificationAttempts) {
+        this.verificationAttempts = verificationAttempts;
+    }
+
+    public java.time.LocalDateTime getLockoutUntil() {
+        return lockoutUntil;
+    }
+
+    public void setLockoutUntil(java.time.LocalDateTime lockoutUntil) {
+        this.lockoutUntil = lockoutUntil;
+    }
+
+    public String getResetPasswordToken() {
+        return resetPasswordToken;
+    }
+
+    public void setResetPasswordToken(String resetPasswordToken) {
+        this.resetPasswordToken = resetPasswordToken;
+    }
+
+    public java.time.LocalDateTime getResetPasswordExpiry() {
+        return resetPasswordExpiry;
+    }
+
+    public void setResetPasswordExpiry(java.time.LocalDateTime resetPasswordExpiry) {
+        this.resetPasswordExpiry = resetPasswordExpiry;
     }
 }

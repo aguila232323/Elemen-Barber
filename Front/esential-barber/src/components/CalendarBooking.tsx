@@ -48,6 +48,12 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
   const [comentario, setComentario] = useState('');
   const [tiempoMinimo, setTiempoMinimo] = useState<number>(24); // valor por defecto
 
+  // Estados para selección de usuario por admin
+  const [usuarios, setUsuarios] = useState<any[]>([]);
+  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<string>('');
+  const [busquedaUsuario, setBusquedaUsuario] = useState<string>('');
+  const [mostrarDropdown, setMostrarDropdown] = useState(false);
+
   // Obtener la mayor duración de los servicios seleccionados (por si se seleccionan varios)
   const duracion = servicio.length > 0 ? Math.max(...servicio.map(s => s.duracionMinutos)) : 45;
 
@@ -79,6 +85,46 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
     };
     fetchTiempoMinimo();
   }, []);
+
+  // Cargar usuarios si es admin
+  useEffect(() => {
+    if (user?.rol === 'ADMIN') {
+      const fetchUsuarios = async () => {
+        try {
+          const token = localStorage.getItem('authToken');
+          const res = await fetch('http://localhost:8080/api/usuarios', {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          });
+          
+          if (res.ok) {
+            const usuariosData = await res.json();
+            setUsuarios(usuariosData);
+          }
+        } catch (error) {
+          console.error('Error fetching usuarios:', error);
+        }
+      };
+      fetchUsuarios();
+    }
+  }, [user?.rol]);
+
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.user-dropdown')) {
+        setMostrarDropdown(false);
+      }
+    };
+
+    if (mostrarDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [mostrarDropdown]);
 
   // Navegación de mes
   function cambiarMes(delta: number) {
@@ -152,6 +198,80 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
             <div style={{marginBottom:10}}><b>Duración:</b> <span>{servicioPrincipal?.duracionMinutos} min</span></div>
             <div style={{marginBottom:10}}><b>Fecha:</b> <span>{fechaStr}</span></div>
             <div style={{marginBottom:10}}><b>Hora:</b> <span>{horaSeleccionada}</span></div>
+            
+            {/* Selección de usuario para admin */}
+            {user?.rol === 'ADMIN' && (
+              <div style={{marginBottom:10}}>
+                <b>Cliente:</b>
+                <div style={{position: 'relative', marginTop: 6}} className="user-dropdown">
+                  <input
+                    type="text"
+                    value={busquedaUsuario}
+                    onChange={(e) => {
+                      setBusquedaUsuario(e.target.value);
+                      setMostrarDropdown(true);
+                    }}
+                    onFocus={() => setMostrarDropdown(true)}
+                    placeholder="Buscar cliente..."
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: 6,
+                      border: '1px solid #ccc',
+                      fontSize: '1rem',
+                      outline: 'none'
+                    }}
+                  />
+                  {mostrarDropdown && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      background: '#fff',
+                      border: '1px solid #ccc',
+                      borderRadius: 6,
+                      maxHeight: 200,
+                      overflowY: 'auto',
+                      zIndex: 1000,
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                    }}>
+                      {usuarios
+                        .filter(usuario => 
+                          usuario.nombre.toLowerCase().includes(busquedaUsuario.toLowerCase()) ||
+                          usuario.email.toLowerCase().includes(busquedaUsuario.toLowerCase())
+                        )
+                        .map(usuario => (
+                          <div
+                            key={usuario.id}
+                            onClick={() => {
+                              setUsuarioSeleccionado(usuario.id);
+                              setBusquedaUsuario(`${usuario.nombre} (${usuario.email})`);
+                              setMostrarDropdown(false);
+                            }}
+                            style={{
+                              padding: '8px 12px',
+                              cursor: 'pointer',
+                              borderBottom: '1px solid #eee',
+                              fontSize: '0.9rem'
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.background = '#f5f5f5';
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.background = '#fff';
+                            }}
+                          >
+                            <div style={{fontWeight: 600}}>{usuario.nombre}</div>
+                            <div style={{color: '#666', fontSize: '0.8rem'}}>{usuario.email}</div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
             <div style={{marginBottom:10}}>
               <b>Comentario:</b>
               <textarea
@@ -183,6 +303,12 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
               }}
               disabled={confirmLoading}
               onClick={async () => {
+                // Validar que admin haya seleccionado un cliente
+                if (user?.rol === 'ADMIN' && !usuarioSeleccionado) {
+                  setConfirmError('Por favor selecciona un cliente');
+                  return;
+                }
+                
                 setConfirmLoading(true);
                 setConfirmError('');
                 try {
@@ -193,7 +319,9 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
                   const body = {
                     servicioId: servicioPrincipal?.id,
                     fecha: fechaLocal,
-                    comentario: comentario.trim() || undefined
+                    comentario: comentario.trim() || undefined,
+                    // Incluir clienteId si es admin y se ha seleccionado un usuario
+                    ...(user?.rol === 'ADMIN' && usuarioSeleccionado && { clienteId: parseInt(usuarioSeleccionado) })
                   };
                   const res = await fetch('http://localhost:8080/api/citas', {
                     method: 'POST',

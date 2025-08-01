@@ -123,7 +123,6 @@ public class CitaService {
                     nuevaCita.setServicio(cita.getServicio());
                     nuevaCita.setFechaHora(nuevaFecha);
                     nuevaCita.setComentario(cita.getComentario());
-                    nuevaCita.setConfirmada(cita.isConfirmada());
                     nuevaCita.setFija(true);
                     nuevaCita.setPeriodicidadDias(periodicidadDias);
                     nuevaCita.setEstado(cita.getEstado());

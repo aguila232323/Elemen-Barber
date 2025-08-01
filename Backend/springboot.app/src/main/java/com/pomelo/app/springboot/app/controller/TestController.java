@@ -1,23 +1,39 @@
 package com.pomelo.app.springboot.app.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.pomelo.app.springboot.app.service.EmailService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
-@Tag(name = "Pruebas", description = "Endpoints de prueba para verificar el funcionamiento")
+@RequestMapping("/api/test")
+@CrossOrigin(origins = "*")
 public class TestController {
 
-    @GetMapping("/test")
-    @Operation(summary = "Endpoint de prueba", description = "Verifica que la aplicación está funcionando correctamente")
+    @Autowired
+    private EmailService emailService;
+
+    @GetMapping
     public String test() {
-        return "¡La aplicación está funcionando correctamente!";
+        return "API funcionando correctamente";
     }
 
-    @GetMapping("/")
-    @Operation(summary = "Página de inicio", description = "Mensaje de bienvenida de la aplicación")
-    public String home() {
-        return "Bienvenido a la aplicación de peluquería";
+    @PostMapping("/email")
+    public ResponseEntity<?> testEmail(@RequestBody Map<String, String> request) {
+        try {
+            String emailDestino = request.get("email");
+            if (emailDestino == null || emailDestino.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Email requerido"));
+            }
+
+            // Crear un email de prueba
+            emailService.enviarEmailPrueba(emailDestino);
+            
+            return ResponseEntity.ok(Map.of("message", "Email de prueba enviado correctamente"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Error al enviar email: " + e.getMessage()));
+        }
     }
 } 

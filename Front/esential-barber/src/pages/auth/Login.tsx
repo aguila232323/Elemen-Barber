@@ -15,6 +15,10 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
+  const [forgotPasswordMessage, setForgotPasswordMessage] = useState('');
   const { setUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,6 +42,85 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotPasswordMessage('');
+    setForgotPasswordLoading(true);
+    
+    try {
+      const response = await fetch('http://localhost:8080/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: forgotPasswordEmail }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setForgotPasswordMessage('✅ Se ha enviado un enlace de recuperación a tu correo electrónico.');
+        setForgotPasswordEmail('');
+      } else {
+        setForgotPasswordMessage(data.error || '❌ Error al enviar el enlace de recuperación.');
+      }
+    } catch (err: any) {
+      setForgotPasswordMessage('❌ Error de conexión. Intenta de nuevo.');
+    } finally {
+      setForgotPasswordLoading(false);
+    }
+  };
+
+  const handleBackToLogin = () => {
+    setShowForgotPassword(false);
+    setForgotPasswordEmail('');
+    setForgotPasswordMessage('');
+  };
+
+  if (showForgotPassword) {
+    return (
+      <form onSubmit={handleForgotPassword} className={styles.loginForm}>
+        <h2>Recuperar contraseña</h2>
+        <p style={{color: '#666', fontSize: '14px', marginBottom: '20px', textAlign: 'center'}}>
+          Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
+        </p>
+        <div className={styles.loginField}>
+          <input 
+            type='email' 
+            placeholder='Correo electrónico' 
+            value={forgotPasswordEmail} 
+            onChange={e => setForgotPasswordEmail(e.target.value)} 
+            required 
+            className={styles.loginInput} 
+          />
+        </div>
+        {forgotPasswordMessage && (
+          <div className={styles.loginError} style={{
+            backgroundColor: forgotPasswordMessage.includes('✅') ? '#d4edda' : '#f8d7da',
+            color: forgotPasswordMessage.includes('✅') ? '#155724' : '#721c24',
+            border: `1px solid ${forgotPasswordMessage.includes('✅') ? '#c3e6cb' : '#f5c6cb'}`
+          }}>
+            {forgotPasswordMessage}
+          </div>
+        )}
+        <button type='submit' className={styles.loginButton} disabled={forgotPasswordLoading}>
+          {forgotPasswordLoading ? 'Enviando...' : 'Enviar enlace de recuperación'}
+        </button>
+        <button 
+          type='button' 
+          className={styles.loginButton} 
+          style={{
+            backgroundColor: '#6c757d',
+            marginTop: '10px'
+          }}
+          onClick={handleBackToLogin}
+        >
+          Volver al inicio de sesión
+        </button>
+      </form>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit} className={styles.loginForm}>
       <h2>Iniciar sesión</h2>
@@ -46,6 +129,15 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
       </div>
       <div className={styles.loginField}>
         <input type='password' placeholder='Contraseña' value={password} onChange={e=>setPassword(e.target.value)} required className={styles.loginInput} />
+      </div>
+      <div style={{textAlign: 'right', marginBottom: '15px'}}>
+        <span 
+          className={styles.loginRegisterLink} 
+          style={{cursor: 'pointer', fontSize: '14px', color: '#667eea'}}
+          onClick={() => setShowForgotPassword(true)}
+        >
+          ¿Has olvidado tu contraseña?
+        </span>
       </div>
       {error && <div className={styles.loginError}>{error}</div>}
       <button type='submit' className={styles.loginButton} disabled={loading}>{loading ? 'Entrando...' : 'Entrar'}</button>

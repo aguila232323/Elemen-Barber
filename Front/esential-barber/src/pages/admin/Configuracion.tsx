@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaCog, FaSave, FaTimes, FaCalendarAlt, FaUserPlus, FaCalendarCheck, FaUmbrellaBeach } from 'react-icons/fa';
 import styles from './Configuracion.module.css';
 
@@ -73,6 +73,14 @@ const Configuracion: React.FC = () => {
   const [addCitaLoading, setAddCitaLoading] = useState(false);
   const [addCitaMsg, setAddCitaMsg] = useState<string | null>(null);
 
+  // Estados para búsqueda de usuarios en añadir cita periódica
+  const [busquedaUsuarioAdd, setBusquedaUsuarioAdd] = useState<string>('');
+  const [mostrarDropdownAdd, setMostrarDropdownAdd] = useState(false);
+
+  // Estados para horas disponibles en añadir cita periódica
+  const [horasDisponibles, setHorasDisponibles] = useState<string[]>([]);
+  const [cargandoHoras, setCargandoHoras] = useState(false);
+
   // Estados para configuración de tiempo mínimo de reserva
   const [tiempoMinimoModal, setTiempoMinimoModal] = useState(false);
   const [tiempoMinimo, setTiempoMinimo] = useState(24);
@@ -95,19 +103,54 @@ const Configuracion: React.FC = () => {
   const [warningMessage, setWarningMessage] = useState('');
   const [warningAction, setWarningAction] = useState<(() => void) | null>(null);
 
+  // Estados para reserva de citas por admin
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [serviciosDisponibles, setServiciosDisponibles] = useState<Servicio[]>([]);
+  const [bookingForm, setBookingForm] = useState({
+    usuarioId: '',
+    servicioId: '',
+    fechaHora: '',
+    comentario: ''
+  });
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingMsg, setBookingMsg] = useState<string | null>(null);
+
   // Fetch servicios al abrir modales de editar/eliminar
   const fetchServicios = async () => {
     setServiciosLoading(true);
     try {
-      const res = await fetch('http://localhost:8080/api/servicios');
-      const data = await res.json();
-      setServicios(data);
-    } catch {
-      setServicios([]);
+      const token = localStorage.getItem('authToken');
+      const res = await fetch('http://localhost:8080/api/servicios', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setServicios(data);
+      }
+    } catch (error) {
+      console.error('Error fetching servicios:', error);
     } finally {
       setServiciosLoading(false);
     }
   };
+
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.user-dropdown-add')) {
+        setMostrarDropdownAdd(false);
+      }
+    };
+
+    if (mostrarDropdownAdd) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [mostrarDropdownAdd]);
 
   // Fetch citas periódicas - solo una por usuario
   const fetchCitasPeriodicas = async () => {
@@ -235,11 +278,50 @@ const Configuracion: React.FC = () => {
 
   const fetchVacaciones = async () => {
     try {
-      const res = await fetch('http://localhost:8080/api/vacaciones');
+      const token = localStorage.getItem('authToken');
+      const res = await fetch('http://localhost:8080/api/vacaciones', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
       const data = await res.json();
       setVacacionesList(data);
+    } catch {
+      setVacacionesList([]);
+    }
+  };
+
+  // Función para obtener horas disponibles para una fecha específica
+  const fetchHorasDisponibles = async (fecha: string, servicioId: string) => {
+    if (!fecha || !servicioId) {
+      setHorasDisponibles([]);
+      return;
+    }
+
+    try {
+      setCargandoHoras(true);
+      const token = localStorage.getItem('authToken');
+      
+      // Obtener la duración del servicio seleccionado
+      const servicio = servicios.find(s => s.id.toString() === servicioId);
+      if (!servicio) {
+        setHorasDisponibles([]);
+        return;
+      }
+
+      const res = await fetch(`http://localhost:8080/api/citas/disponibilidad?fecha=${fecha}&duracion=${servicio.duracionMinutos}&userRole=ADMIN`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setHorasDisponibles(data.horasDisponibles || []);
+      } else {
+        setHorasDisponibles([]);
+      }
     } catch (error) {
-      console.error('Error al obtener vacaciones:', error);
+      console.error('Error al obtener horas disponibles:', error);
+      setHorasDisponibles([]);
+    } finally {
+      setCargandoHoras(false);
     }
   };
 
@@ -335,7 +417,13 @@ const Configuracion: React.FC = () => {
 
   // Handlers para formularios de citas
   const handleAddCitaChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setAddCitaForm({ ...addCitaForm, [e.target.name]: e.target.value });
+    const newForm = { ...addCitaForm, [e.target.name]: e.target.value };
+    setAddCitaForm(newForm);
+    
+    // Si cambió la fecha o el servicio, actualizar horas disponibles
+    if (e.target.name === 'fechaInicio' || e.target.name === 'servicioId') {
+      fetchHorasDisponibles(newForm.fechaInicio, newForm.servicioId);
+    }
   };
 
   const handleEditCitaChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -610,6 +698,8 @@ const Configuracion: React.FC = () => {
           fechaInicio: '', 
           hora: '09:00' 
         });
+        setBusquedaUsuarioAdd(''); // Limpiar campo de búsqueda
+        setHorasDisponibles([]); // Limpiar horas disponibles
       }, 1200);
     } catch (err: any) {
       setAddCitaMsg(err.message || 'Error al crear cita periódica');
@@ -865,12 +955,68 @@ const Configuracion: React.FC = () => {
             <h3>Añadir Cita Periódica</h3>
           </div>
           <form className={styles.formModal} onSubmit={handleAddCitaSubmit}>
-            <select className={styles.input} name="usuarioId" value={addCitaForm.usuarioId} onChange={handleAddCitaChange} required>
-              <option value="">Selecciona un usuario</option>
-              {usuarios.map(usuario => (
-                <option key={usuario.id} value={usuario.id}>{usuario.nombre} ({usuario.email})</option>
-              ))}
-            </select>
+            {/* Campo de usuario con búsqueda */}
+            <div style={{ position: 'relative' }} className="user-dropdown-add">
+              <input
+                type="text"
+                value={busquedaUsuarioAdd}
+                onChange={(e) => {
+                  setBusquedaUsuarioAdd(e.target.value);
+                  setMostrarDropdownAdd(true);
+                }}
+                onFocus={() => setMostrarDropdownAdd(true)}
+                placeholder="Buscar usuario..."
+                className={styles.input}
+                required
+              />
+              {mostrarDropdownAdd && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  background: '#fff',
+                  border: '1px solid #ccc',
+                  borderRadius: 6,
+                  maxHeight: 200,
+                  overflowY: 'auto',
+                  zIndex: 1000,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                }}>
+                  {usuarios
+                    .filter(usuario => 
+                      usuario.nombre.toLowerCase().includes(busquedaUsuarioAdd.toLowerCase()) ||
+                      usuario.email.toLowerCase().includes(busquedaUsuarioAdd.toLowerCase())
+                    )
+                    .map(usuario => (
+                      <div
+                        key={usuario.id}
+                        onClick={() => {
+                          setAddCitaForm({ ...addCitaForm, usuarioId: usuario.id.toString() });
+                          setBusquedaUsuarioAdd(`${usuario.nombre} (${usuario.email})`);
+                          setMostrarDropdownAdd(false);
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          cursor: 'pointer',
+                          borderBottom: '1px solid #eee',
+                          fontSize: '0.9rem'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.background = '#f5f5f5';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.background = '#fff';
+                        }}
+                      >
+                        <div style={{fontWeight: 600}}>{usuario.nombre}</div>
+                        <div style={{color: '#666', fontSize: '0.8rem'}}>{usuario.email}</div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+            
             <select className={styles.input} name="servicioId" value={addCitaForm.servicioId} onChange={handleAddCitaChange} required>
               <option value="">Selecciona un servicio</option>
               {servicios.map(servicio => (
@@ -879,13 +1025,28 @@ const Configuracion: React.FC = () => {
             </select>
             <input className={styles.input} name="periodicidadDias" type="number" placeholder="Periodicidad (días)" min="1" max="365" value={addCitaForm.periodicidadDias} onChange={handleAddCitaChange} required />
             <input className={styles.input} name="fechaInicio" type="date" placeholder="Fecha de inicio" value={addCitaForm.fechaInicio} onChange={handleAddCitaChange} required />
-            <input className={styles.input} name="hora" type="time" placeholder="Hora" value={addCitaForm.hora} onChange={handleAddCitaChange} required />
+            <select className={styles.input} name="hora" value={addCitaForm.hora} onChange={handleAddCitaChange} required>
+              <option value="">Selecciona una hora</option>
+              {cargandoHoras ? (
+                <option value="" disabled>Cargando horas disponibles...</option>
+              ) : horasDisponibles.length > 0 ? (
+                horasDisponibles.map(hora => (
+                  <option key={hora} value={hora}>{hora}</option>
+                ))
+              ) : (
+                <option value="" disabled>No hay horas disponibles para esta fecha</option>
+              )}
+            </select>
             <div className={styles.modalBtnGroup}>
               <button className={styles.saveBtn} type="submit" disabled={addCitaLoading}>
                 <FaSave className={styles.btnIcon} />
                 {addCitaLoading ? 'Creando...' : 'Crear Cita Periódica'}
               </button>
-              <button className={styles.cancelBtn} type="button" onClick={() => setCitasModal(null)} disabled={addCitaLoading}>
+              <button className={styles.cancelBtn} type="button" onClick={() => {
+                setCitasModal(null);
+                setBusquedaUsuarioAdd(''); // Limpiar campo de búsqueda
+                setHorasDisponibles([]); // Limpiar horas disponibles
+              }} disabled={addCitaLoading}>
                 <FaTimes className={styles.btnIcon} />
                 Cancelar
               </button>

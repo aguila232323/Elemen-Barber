@@ -29,9 +29,6 @@ public class Cita {
     private String comentario;
 
     @Column
-    private boolean confirmada = false;
-
-    @Column
     private boolean fija = false;
 
     @Column
@@ -83,14 +80,6 @@ public class Cita {
 
     public void setComentario(String comentario) {
         this.comentario = comentario;
-    }
-
-    public boolean isConfirmada() {
-        return confirmada;
-    }
-
-    public void setConfirmada(boolean confirmada) {
-        this.confirmada = confirmada;
     }
 
     public boolean isFija() {

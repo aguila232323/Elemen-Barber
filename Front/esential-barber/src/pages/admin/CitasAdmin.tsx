@@ -31,6 +31,7 @@ interface Cita {
   confirmada?: boolean;
   fija?: boolean;
   periodicidadDias?: number;
+  estado?: string;
   servicio: Servicio;
   usuario: Usuario;
 }
@@ -97,16 +98,7 @@ const CustomToolbar = (toolbar: any) => {
           fontWeight:600,
           transition:'all 0.3s ease'
         }}>&#8592;</button>
-        <button onClick={() => handleViewChange('month')} className="citas-admin-nav-btn" style={{
-          background:toolbar.view === 'month' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.2)',
-          border:'none',
-          borderRadius:8,
-          padding:'0.5rem 1rem',
-          color:'#fff',
-          cursor:'pointer',
-          fontWeight:600,
-          transition:'all 0.3s ease'
-        }}>Mes</button>
+        
         <button onClick={goToNext} className="citas-admin-nav-btn" style={{
           background:'rgba(255,255,255,0.2)',
           border:'none',
@@ -117,9 +109,7 @@ const CustomToolbar = (toolbar: any) => {
           fontWeight:600,
           transition:'all 0.3s ease'
         }}>&#8594;</button>
-      </div>
-      <div>{label()}</div>
-      <div style={{display:'flex',alignItems:'center',gap:8}}>
+        
         <button onClick={goToToday} className="citas-admin-nav-btn" style={{
           background:'rgba(255,255,255,0.2)',
           border:'none',
@@ -130,6 +120,23 @@ const CustomToolbar = (toolbar: any) => {
           fontWeight:600,
           transition:'all 0.3s ease'
         }}>Hoy</button>
+      </div>
+      
+      <div style={{fontWeight:800, fontSize:'1.2rem', color:'#ffffff'}}>
+        {label()}
+      </div>
+      
+      <div style={{display:'flex',alignItems:'center',gap:8}}>
+        <button onClick={() => handleViewChange('month')} className="citas-admin-nav-btn" style={{
+          background:'rgba(255,255,255,0.2)',
+          border:'none',
+          borderRadius:8,
+          padding:'0.5rem 1rem',
+          color:'#fff',
+          cursor:'pointer',
+          fontWeight:600,
+          transition:'all 0.3s ease'
+        }}>Mes</button>
       </div>
     </div>
   );
@@ -156,58 +163,182 @@ const CitasAdmin: React.FC = () => {
   const [periodicLoading, setPeriodicLoading] = useState(false);
   const [periodicMsg, setPeriodicMsg] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Función para determinar el estado dinámico de una cita
+  const getCitaStatus = (fechaHora: Date, duracionMinutos: number = 45, estadoOriginal?: string) => {
+    // Si la cita ya está cancelada en la base de datos, mantener ese estado
+    if (estadoOriginal === 'cancelada') {
+      return {
+        status: 'cancelada',
+        label: 'Cancelada',
+        color: '#e74c3c',
+        bgColor: '#fdf2f2',
+        borderColor: '#e74c3c'
+      };
+    }
+
+    const ahora = moment();
+    const inicioCita = moment(fechaHora);
+    const finCita = moment(fechaHora).add(duracionMinutos, 'minutes');
+    
+    if (ahora.isBefore(inicioCita)) {
+      return {
+        status: 'pendiente',
+        label: 'Pendiente',
+        color: '#1976d2',
+        bgColor: '#e3f2fd',
+        borderColor: '#1976d2'
+      };
+    } else if (ahora.isBetween(inicioCita, finCita)) {
+      return {
+        status: 'en_curso',
+        label: 'En Curso',
+        color: '#ff9800',
+        bgColor: '#fff3e0',
+        borderColor: '#ff9800'
+      };
+    } else {
+      return {
+        status: 'completada',
+        label: 'Completada',
+        color: '#4caf50',
+        bgColor: '#e8f5e8',
+        borderColor: '#4caf50'
+      };
+    }
+  };
+
     const fetchCitas = async () => {
       setLoading(true);
       setError('');
       try {
         const token = localStorage.getItem('authToken');
-        console.log('Fetching citas with token:', token ? 'Present' : 'Missing');
-        
+      console.log('Fetching citas with token:', token ? 'Present' : 'Missing');
+      
         const res = await fetch('http://localhost:8080/api/citas/todas', {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
-        
-        console.log('Response status:', res.status);
-        console.log('Response ok:', res.ok);
-        
-        if (!res.ok) {
-          const errorText = await res.text();
-          console.error('Error response:', errorText);
-          throw new Error(`Error ${res.status}: ${errorText}`);
-        }
-        
+      
+      console.log('Response status:', res.status);
+      console.log('Response ok:', res.ok);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Error response:', errorText);
+        throw new Error(`Error ${res.status}: ${errorText}`);
+      }
+      
         const citas: Cita[] = await res.json();
+      
+      const eventos = citas.map(cita => {
+        const fechaHora = new Date(cita.fechaHora);
+        const duracionMinutos = cita.servicio?.duracionMinutos || 45;
+        const statusInfo = getCitaStatus(fechaHora, duracionMinutos, cita.estado);
         
-        const eventos = citas.map(cita => {
-          return {
+        return {
           id: cita.id,
-            title: `${cita.servicio?.nombre || 'Sin servicio'} - ${cita.usuario?.nombre || 'Sin usuario'}`,
-          start: new Date(cita.fechaHora),
-          end: new Date(moment(cita.fechaHora).add(cita.servicio?.duracionMinutos || 45, 'minutes').toISOString()),
+          title: `${cita.servicio?.nombre || 'Sin servicio'} - ${cita.usuario?.nombre || 'Sin usuario'}`,
+          start: fechaHora,
+          end: new Date(moment(fechaHora).add(duracionMinutos, 'minutes').toISOString()),
           servicio: cita.servicio,
           usuario: cita.usuario,
           comentario: cita.comentario,
           confirmada: cita.confirmada,
           fija: cita.fija,
-          periodicidadDias: cita.periodicidadDias
-          };
-        });
-        
-        console.log('Events created:', eventos);
+          periodicidadDias: cita.periodicidadDias,
+          status: statusInfo.status,
+          statusLabel: statusInfo.label,
+          statusColor: statusInfo.color,
+          statusBgColor: statusInfo.bgColor,
+          statusBorderColor: statusInfo.borderColor,
+          estado: cita.estado // Agregar el estado original a los eventos
+        };
+      });
+      
+      console.log('Events created:', eventos);
         setEvents(eventos);
       } catch (err: any) {
-        console.error('Error fetching citas:', err);
-        if (err.message.includes('Failed to fetch')) {
-          setError('No se puede conectar con el servidor. Verifica que el backend esté ejecutándose en http://localhost:8080');
-        } else {
+      console.error('Error fetching citas:', err);
+      if (err.message.includes('Failed to fetch')) {
+        setError('No se puede conectar con el servidor. Verifica que el backend esté ejecutándose en http://localhost:8080');
+      } else {
         setError(err.message || 'Error al cargar las citas');
-        }
+      }
       } finally {
         setLoading(false);
       }
     };
+
+  useEffect(() => {
     fetchCitas();
+  }, []);
+
+  // Componente personalizado para mostrar eventos con estado dinámico
+  const EventComponent = ({ event }: { event: any }) => {
+    const isCancelled = event.status === 'cancelada';
+    
+    return (
+      <div
+        data-status={event.status}
+        data-status-label={event.statusLabel}
+        style={{
+          background: event.statusBgColor || '#1976d2',
+          color: '#fff',
+          padding: '4px 8px',
+          borderRadius: '6px',
+          fontSize: '0.85rem',
+          fontWeight: 600,
+          borderLeft: `3px solid ${event.statusBorderColor || '#1976d2'}`,
+          position: 'relative',
+          overflow: 'hidden',
+          opacity: isCancelled ? 0.7 : 1,
+          textDecoration: isCancelled ? 'line-through' : 'none'
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ flex: 1, fontSize: '0.8rem' }}>
+            {event.servicio?.nombre || 'Sin servicio'}
+          </span>
+          <span style={{
+            fontSize: '0.7rem',
+            background: 'rgba(255,255,255,0.2)',
+            padding: '1px 4px',
+            borderRadius: '3px',
+            fontWeight: 600
+          }}>
+            {event.statusLabel || 'Pendiente'}
+          </span>
+        </div>
+        <div style={{ fontSize: '0.75rem', opacity: 0.9, marginTop: '2px' }}>
+          {event.usuario?.nombre || 'Sin cliente'}
+        </div>
+      </div>
+    );
+  };
+
+  // Función para actualizar estados en tiempo real
+  const updateEventStatuses = () => {
+    setEvents(prevEvents => 
+      prevEvents.map(event => {
+        const fechaHora = new Date(event.start);
+        const duracionMinutos = event.servicio?.duracionMinutos || 45;
+        const statusInfo = getCitaStatus(fechaHora, duracionMinutos, event.estado);
+        
+        return {
+          ...event,
+          status: statusInfo.status,
+          statusLabel: statusInfo.label,
+          statusColor: statusInfo.color,
+          statusBgColor: statusInfo.bgColor,
+          statusBorderColor: statusInfo.borderColor
+        };
+      })
+    );
+  };
+
+  // Actualizar estados cada 30 segundos
+  useEffect(() => {
+    const interval = setInterval(updateEventStatuses, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleSelectSlot = (slotInfo: any) => {
@@ -633,14 +764,17 @@ const CitasAdmin: React.FC = () => {
                               {event.title}
                             </div>
                             <div style={{
-                              background: event.confirmada ? '#43b94a' : '#e74c3c',
+                              background: event.statusColor || '#43b94a',
                               color: '#fff',
                               padding: '0.2rem 0.4rem',
                               borderRadius: 6,
                               fontSize: '0.7rem',
                               fontWeight: 600
                             }}>
-                              {event.confirmada ? '✅' : '⏳'}
+                              {event.status === 'pendiente' ? '⏳' : 
+                               event.status === 'en_curso' ? '🔄' : 
+                               event.status === 'completada' ? '✅' : 
+                               event.status === 'cancelada' ? '❌' : '⏳'}
                             </div>
                           </div>
                           
@@ -781,35 +915,8 @@ const CitasAdmin: React.FC = () => {
               onNavigate={handleNavigate}
               onDoubleClickSlot={handleDoubleClickSlot}
           components={{
-            toolbar: CustomToolbar,
-            event: ({ event }) => (
-              <div style={{
-                background: event.confirmada ? '#43b94a' : '#e74c3c',
-                color: '#fff',
-                borderRadius: 8,
-                    padding: '4px 8px',
-                fontWeight: 700,
-                    fontSize: '0.9rem',
-                    boxShadow: '0 2px 8px rgba(25,118,210,0.15)',
-                display: 'flex',
-                flexDirection: 'column',
-                minWidth: 0,
-                maxWidth: '100%',
-                overflow: 'hidden',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-              }}>
-                    <span style={{whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis', fontWeight: 600}}>
-                  {event.title}
-                </span>
-                    <span style={{fontWeight:400,fontSize:'0.8em',opacity:0.9}}>
-                  {event.servicio?.precio?.toFixed(2)} € · {event.servicio?.duracionMinutos} min
-                </span>
-                    <span style={{fontWeight:400,fontSize:'0.8em',opacity:0.9}}>
-                  {moment(event.start).format('HH:mm')}
-                </span>
-              </div>
-            )
+            toolbar: (props: any) => <CustomToolbar {...props} />, // Removed setShowBookingModal
+            event: EventComponent,
           }}
         />
             
@@ -879,12 +986,14 @@ const CitasAdmin: React.FC = () => {
               <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
                 {getDayEvents(selectedDate).map((event, index) => (
                   <div key={index} style={{
-                    background: event.confirmada ? '#f0f9ff' : '#fef2f2',
-                    border: `2px solid ${event.confirmada ? '#43b94a' : '#e74c3c'}`,
+                    background: event.statusBgColor || '#f0f9ff',
+                    border: `2px solid ${event.statusBorderColor || '#43b94a'}`,
                     borderRadius: 12,
                     padding: '1rem',
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    opacity: event.status === 'cancelada' ? 0.7 : 1,
+                    textDecoration: event.status === 'cancelada' ? 'line-through' : 'none'
                   }} onClick={() => {
                     setSelectedEvent(event);
                     setShowDayEvents(false);
@@ -897,21 +1006,21 @@ const CitasAdmin: React.FC = () => {
                     }}>
                       <span style={{
                         fontWeight: 700,
-                        color: event.confirmada ? '#43b94a' : '#e74c3c',
+                        color: event.statusColor || '#43b94a',
                         fontSize: '1.1rem'
                       }}>
                         {event.servicio?.nombre}
-                      </span>
+                </span>
                       <span style={{
-                        background: event.confirmada ? '#43b94a' : '#e74c3c',
+                        background: event.statusColor || '#43b94a',
                         color: '#fff',
                         padding: '0.3rem 0.8rem',
                         borderRadius: 20,
                         fontSize: '0.8rem',
                         fontWeight: 600
                       }}>
-                        {event.confirmada ? 'Confirmada' : 'Pendiente'}
-                      </span>
+                        {event.statusLabel || 'Pendiente'}
+                </span>
                     </div>
                     
                     <div style={{marginBottom: '0.5rem'}}>
@@ -1054,81 +1163,130 @@ const CitasAdmin: React.FC = () => {
           left: 0,
           width: '100vw',
           height: '100vh',
-          background: 'rgba(0,0,0,0.5)',
+          background: 'rgba(0,0,0,0.7)',
           zIndex: 2000,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          backdropFilter: 'blur(4px)'
         }} onClick={() => setShowPeriodicModal(false)}>
           <div style={{
-            background: 'linear-gradient(135deg, #181b22 0%, #0f1117 100%)',
+            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
             color: '#fff',
-            borderRadius: 16,
+            borderRadius: 20,
             padding: '1.5rem',
             width: '95%',
-            maxWidth: '450px',
-            maxHeight: '90vh',
-            overflow: 'auto',
-            boxShadow: '0 8px 32px rgba(25,118,210,0.2)',
+            maxWidth: '480px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)',
             border: '1px solid rgba(255,255,255,0.1)',
-            position: 'relative'
+            position: 'relative',
+            animation: 'modalSlideIn 0.3s ease-out'
           }} onClick={e => e.stopPropagation()}>
             
-            {/* Header del modal */}
+            {/* Header del modal con diseño mejorado */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
               gap: '0.8rem',
-              marginBottom: '1rem',
+              marginBottom: '1.2rem',
               paddingBottom: '0.8rem',
-              borderBottom: '1px solid rgba(255,255,255,0.1)'
+              borderBottom: '2px solid rgba(25,118,210,0.3)',
+              position: 'relative'
             }}>
-              <FaCalendarAlt style={{fontSize: '1.3rem', color: '#9c27b0'}} />
-              <h3 style={{
-                margin: 0,
-                fontSize: '1.2rem',
-                fontWeight: 600,
-                color: '#fff'
-              }}>Crear Cita Periódica</h3>
+              <div style={{
+                background: 'linear-gradient(135deg, #1976d2, #1565c0)',
+                borderRadius: '50%',
+                width: '45px',
+                height: '45px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(25,118,210,0.4)'
+              }}>
+                <FaCalendarAlt style={{fontSize: '1.3rem', color: '#fff'}} />
+              </div>
+              <div>
+                <h3 style={{
+                  margin: 0,
+                  fontSize: '1.3rem',
+                  fontWeight: 700,
+                  color: '#fff',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                }}>Crear Cita Periódica</h3>
+                <p style={{
+                  margin: '0.1rem 0 0 0',
+                  fontSize: '0.85rem',
+                  color: '#b0b0b0',
+                  fontWeight: 400
+                }}>Configura la periodicidad de la cita</p>
+              </div>
             </div>
 
             <form onSubmit={handlePeriodicSubmit} style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '1rem'
+              gap: '1.2rem'
             }}>
               
-              {/* Información de la cita original */}
+              {/* Información de la cita original con diseño mejorado */}
               <div style={{
-                background: 'rgba(255,255,255,0.05)',
-                padding: '0.8rem',
-                borderRadius: 8,
-                border: '1px solid rgba(255,255,255,0.1)'
+                background: 'linear-gradient(135deg, rgba(25,118,210,0.1) 0%, rgba(25,118,210,0.05) 100%)',
+                padding: '1rem',
+                borderRadius: 12,
+                border: '1px solid rgba(25,118,210,0.2)',
+                position: 'relative',
+                overflow: 'hidden'
               }}>
-                <div style={{fontSize: '0.85rem', color: '#9c27b0', fontWeight: 600, marginBottom: '0.4rem'}}>
-                  Cita Original:
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '4px',
+                  height: '100%',
+                  background: 'linear-gradient(135deg, #1976d2, #1565c0)'
+                }}></div>
+                <div style={{
+                  fontSize: '0.85rem', 
+                  color: '#1976d2', 
+                  fontWeight: 700, 
+                  marginBottom: '0.6rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}>
+                  📅 Cita Original
                 </div>
-                <div style={{fontSize: '0.8rem', color: '#ccc'}}>
-                  <strong>Cliente:</strong> {selectedCitaForPeriodic?.usuario?.nombre}
-                </div>
-                <div style={{fontSize: '0.8rem', color: '#ccc'}}>
-                  <strong>Servicio:</strong> {selectedCitaForPeriodic?.servicio?.nombre}
-                </div>
-                <div style={{fontSize: '0.8rem', color: '#ccc'}}>
-                  <strong>Hora:</strong> {moment(selectedCitaForPeriodic?.start).format('HH:mm')}
+                <div style={{
+                  display: 'grid',
+                  gap: '0.4rem',
+                  fontSize: '0.85rem',
+                  color: '#e0e0e0'
+                }}>
+                  <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                    <span style={{fontWeight: 600, color: '#b0b0b0'}}>Cliente:</span>
+                    <span style={{color: '#fff', fontWeight: 500}}>{selectedCitaForPeriodic?.usuario?.nombre}</span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                    <span style={{fontWeight: 600, color: '#b0b0b0'}}>Servicio:</span>
+                    <span style={{color: '#fff', fontWeight: 500}}>{selectedCitaForPeriodic?.servicio?.nombre}</span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                    <span style={{fontWeight: 600, color: '#b0b0b0'}}>Hora:</span>
+                    <span style={{color: '#fff', fontWeight: 500}}>{moment(selectedCitaForPeriodic?.start).format('HH:mm')}</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Periodicidad */}
+              {/* Periodicidad con diseño mejorado */}
               <div>
                 <label style={{
                   display: 'block',
-                  marginBottom: '0.4rem',
-                  fontSize: '0.85rem',
+                  marginBottom: '0.5rem',
+                  fontSize: '0.9rem',
                   fontWeight: 600,
-                  color: '#fff'
+                  color: '#fff',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.3)'
                 }}>
-                  Periodicidad (días):
+                  🔄 Periodicidad (días)
                 </label>
                 <input
                   type="number"
@@ -1138,30 +1296,49 @@ const CitasAdmin: React.FC = () => {
                   min="1"
                   max="365"
                   style={{
-                    width: '100%',
+                    width: 'calc(100% - 2px)',
                     padding: '0.6rem 0.8rem',
-                    borderRadius: 8,
-                    border: '2px solid rgba(156,39,176,0.3)',
+                    borderRadius: 12,
+                    border: '2px solid rgba(25,118,210,0.3)',
                     background: 'rgba(255,255,255,0.05)',
                     color: '#fff',
                     fontSize: '0.9rem',
                     outline: 'none',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    boxSizing: 'border-box'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#1976d2';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(25,118,210,0.2)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'rgba(25,118,210,0.3)';
+                    e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
                   }}
                   required
                 />
+                <div style={{
+                  fontSize: '0.75rem',
+                  color: '#b0b0b0',
+                  marginTop: '0.3rem',
+                  fontStyle: 'italic'
+                }}>
+                  Ejemplo: 7 días = cada semana, 30 días = cada mes
+                </div>
               </div>
 
-              {/* Fecha de inicio */}
+              {/* Fecha de inicio con diseño mejorado */}
               <div>
                 <label style={{
                   display: 'block',
-                  marginBottom: '0.4rem',
-                  fontSize: '0.85rem',
+                  marginBottom: '0.5rem',
+                  fontSize: '0.9rem',
                   fontWeight: 600,
-                  color: '#fff'
+                  color: '#fff',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.3)'
                 }}>
-                  Fecha de inicio:
+                  📅 Fecha de inicio
                 </label>
                 <input
                   type="date"
@@ -1169,26 +1346,46 @@ const CitasAdmin: React.FC = () => {
                   value={periodicForm.fechaInicio}
                   onChange={handlePeriodicFormChange}
                   style={{
-                    width: '100%',
+                    width: 'calc(100% - 2px)',
                     padding: '0.6rem 0.8rem',
-                    borderRadius: 8,
-                    border: '2px solid rgba(156,39,176,0.3)',
+                    borderRadius: 12,
+                    border: '2px solid rgba(25,118,210,0.3)',
                     background: 'rgba(255,255,255,0.05)',
                     color: '#fff',
                     fontSize: '0.9rem',
                     outline: 'none',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    boxSizing: 'border-box'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#1976d2';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(25,118,210,0.2)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'rgba(25,118,210,0.3)';
+                    e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
                   }}
                   required
                 />
+                <div style={{
+                  fontSize: '0.75rem',
+                  color: '#b0b0b0',
+                  marginTop: '0.3rem',
+                  fontStyle: 'italic'
+                }}>
+                  La primera cita se creará a partir de esta fecha
+                </div>
               </div>
 
-              {/* Botones */}
+              {/* Botones con diseño mejorado */}
               <div style={{
                 display: 'flex',
                 gap: '0.8rem',
                 justifyContent: 'flex-end',
-                marginTop: '0.8rem'
+                marginTop: '0.8rem',
+                paddingTop: '0.8rem',
+                borderTop: '1px solid rgba(255,255,255,0.1)'
               }}>
                 <button
                   type="button"
@@ -1198,15 +1395,26 @@ const CitasAdmin: React.FC = () => {
                     background: 'linear-gradient(135deg, #6c757d 0%, #495057 100%)',
                     color: '#fff',
                     border: 'none',
-                    borderRadius: 8,
-                    padding: '0.6rem 1.2rem',
+                    borderRadius: 12,
+                    padding: '0.7rem 1.3rem',
                     fontSize: '0.9rem',
                     fontWeight: 600,
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.4rem'
+                    gap: '0.4rem',
+                    boxShadow: '0 4px 12px rgba(108,117,125,0.3)',
+                    minWidth: '110px',
+                    justifyContent: 'center'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(108,117,125,0.4)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(108,117,125,0.3)';
                   }}
                 >
                   <FaTimes />
@@ -1216,18 +1424,29 @@ const CitasAdmin: React.FC = () => {
                   type="submit"
                   disabled={periodicLoading}
                   style={{
-                    background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
+                    background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
                     color: '#fff',
                     border: 'none',
-                    borderRadius: 8,
-                    padding: '0.6rem 1.2rem',
+                    borderRadius: 12,
+                    padding: '0.7rem 1.3rem',
                     fontSize: '0.9rem',
                     fontWeight: 600,
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.4rem'
+                    gap: '0.4rem',
+                    boxShadow: '0 4px 12px rgba(25,118,210,0.3)',
+                    minWidth: '150px',
+                    justifyContent: 'center'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(25,118,210,0.4)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(25,118,210,0.3)';
                   }}
                 >
                   <FaSave />
@@ -1235,20 +1454,22 @@ const CitasAdmin: React.FC = () => {
                 </button>
               </div>
 
-              {/* Mensaje de estado */}
+              {/* Mensaje de estado con diseño mejorado */}
               {periodicMsg && (
                 <div style={{
                   marginTop: '0.8rem',
-                  padding: '0.6rem 0.8rem',
-                  borderRadius: 8,
+                  padding: '0.8rem',
+                  borderRadius: 12,
                   fontSize: '0.85rem',
                   fontWeight: 600,
                   textAlign: 'center',
                   background: periodicMsg.startsWith('¡') 
-                    ? 'linear-gradient(135deg, rgba(67,185,74,0.2) 0%, rgba(46,125,50,0.2) 100%)'
-                    : 'linear-gradient(135deg, rgba(231,76,60,0.2) 0%, rgba(198,40,40,0.2) 100%)',
+                    ? 'linear-gradient(135deg, rgba(76,175,80,0.15) 0%, rgba(46,125,50,0.15) 100%)'
+                    : 'linear-gradient(135deg, rgba(244,67,54,0.15) 0%, rgba(198,40,40,0.15) 100%)',
                   color: periodicMsg.startsWith('¡') ? '#4caf50' : '#f44336',
-                  border: `1px solid ${periodicMsg.startsWith('¡') ? 'rgba(67,185,74,0.3)' : 'rgba(231,76,60,0.3)'}`
+                  border: `2px solid ${periodicMsg.startsWith('¡') ? 'rgba(76,175,80,0.3)' : 'rgba(244,67,54,0.3)'}`,
+                  boxShadow: `0 4px 12px ${periodicMsg.startsWith('¡') ? 'rgba(76,175,80,0.2)' : 'rgba(244,67,54,0.2)'}`,
+                  animation: 'messageSlideIn 0.3s ease-out'
                 }}>
                   {periodicMsg}
                 </div>

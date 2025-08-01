@@ -23,4 +23,14 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
     List<Cita> findByFechaHoraBetweenAndEstadoNot(@Param("fechaInicio") LocalDateTime fechaInicio, 
                                                    @Param("fechaFin") LocalDateTime fechaFin, 
                                                    @Param("estado") String estado);
+    
+    /**
+     * Busca citas que están programadas para dentro de 1 hora
+     * Excluye citas canceladas
+     */
+    @Query("SELECT c FROM Cita c WHERE c.fechaHora BETWEEN :fechaInicio AND :fechaFin " +
+           "AND c.estado IN ('CONFIRMADA', 'PENDIENTE') " +
+           "ORDER BY c.fechaHora ASC")
+    List<Cita> findCitasProximas(@Param("fechaInicio") LocalDateTime fechaInicio, 
+                                  @Param("fechaFin") LocalDateTime fechaFin);
 }
