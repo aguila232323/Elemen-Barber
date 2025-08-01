@@ -63,7 +63,7 @@ const Portafolio: React.FC = () => {
   };
 
   return (
-    <div className={styles.portafolio} style={{background:'#181818', minHeight:'100vh', padding:'2.5rem 0'}}>
+    <div className={styles.portafolio} style={{background:'#121212', minHeight:'100vh', padding:'2.5rem 0'}}>
       <section>
         <h2 style={{color:'#fff'}}></h2>
         <div style={{background:'#fff', borderRadius:'1.2rem', padding:'2.5rem 2vw', boxShadow:'0 4px 32px rgba(0,0,0,0.10)', maxWidth:1100, margin:'0 auto'}}>

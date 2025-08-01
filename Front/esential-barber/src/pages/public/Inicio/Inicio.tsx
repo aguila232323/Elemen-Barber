@@ -9,11 +9,48 @@ import { useServicios } from '../../../hooks/useServicios';
 
 
 const reviews = [
-  { text: 'Excelente servicio y atención. ¡Repetiré sin duda!', author: 'Juan Pérez', rating: 5 },
-  { text: 'El mejor corte de mi vida, muy recomendado.', author: 'Carlos Gómez', rating: 5 },
-  { text: 'Ambiente agradable y profesionales de primera.', author: 'Luis Martínez', rating: 4 },
-  { text: 'Muy buen trato y resultados espectaculares.', author: 'Ana Torres', rating: 5 },
-  { text: 'Rápidos y muy profesionales.', author: 'Pedro Ruiz', rating: 4 },
+  { 
+    text: 'Excelente servicio y atención. ¡Repetiré sin duda! El ambiente es increíble y el resultado perfecto.', 
+    author: 'Juan Pérez', 
+    rating: 5,
+    company: 'Cliente Regular',
+    avatar: '👨‍💼'
+  },
+  { 
+    text: 'El mejor corte de mi vida, muy recomendado. Luis es un verdadero profesional.', 
+    author: 'Carlos Gómez', 
+    rating: 5,
+    company: 'Cliente VIP',
+    avatar: '👨‍🦱'
+  },
+  { 
+    text: 'Ambiente agradable y profesionales de primera. El trato es excepcional.', 
+    author: 'Luis Martínez', 
+    rating: 4,
+    company: 'Cliente Frecuente',
+    avatar: '👨‍🦳'
+  },
+  { 
+    text: 'Muy buen trato y resultados espectaculares. Definitivamente volveré.', 
+    author: 'Ana Torres', 
+    rating: 5,
+    company: 'Cliente Satisfecha',
+    avatar: '👩‍💼'
+  },
+  { 
+    text: 'Rápidos y muy profesionales. El mejor servicio de barbería que he probado.', 
+    author: 'Pedro Ruiz', 
+    rating: 4,
+    company: 'Cliente Leal',
+    avatar: '👨‍🦲'
+  },
+  { 
+    text: 'Increíble experiencia. El detalle en cada corte es impresionante.', 
+    author: 'María García', 
+    rating: 5,
+    company: 'Cliente Premium',
+    avatar: '👩‍🦰'
+  },
 ];
 
 const getStars = (rating: number) => '★'.repeat(rating) + '☆'.repeat(5 - rating);
@@ -171,50 +208,220 @@ const Inicio: React.FC = () => {
           </span>
         </span>
       </div>
-      {/* Carrusel de reseñas con Swiper */}
-      <div style={{width:'100%', background:'none', margin:'2.5rem 0', display:'flex', justifyContent:'center'}}>
-        <div style={{width:'100%', maxWidth:900}}>
+      {/* Reviews Carrusel Moderno */}
+      <div style={{
+        width: '100%',
+        background: 'linear-gradient(180deg, #121212 0%, #0a0a0a 15%, #1a1a1a 30%, #2d2d2d 50%, #1a1a1a 70%, #0a0a0a 85%, #121212 100%)',
+        margin: '3rem 0',
+        padding: '4rem 2rem',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+
+        
+        {/* Título de la sección */}
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '3rem',
+          position: 'relative',
+          zIndex: 2
+        }}>
+          <h2 style={{
+            color: '#fff',
+            fontSize: '2.5rem',
+            fontWeight: 'bold',
+            margin: '0 0 1rem 0',
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          }}>
+            Lo que opinan nuestros clientes
+          </h2>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '0.5rem',
+            marginTop: '1rem'
+          }}>
+            <span style={{color: '#FFD600', fontSize: '2rem'}}>★★★★★</span>
+            <span style={{color: '#fff', fontSize: '1.1rem', marginLeft: '0.5rem'}}>4.9/5</span>
+          </div>
+        </div>
+
+        {/* Carrusel de reviews */}
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          position: 'relative',
+          zIndex: 2
+        }}>
           <Swiper
             modules={[Autoplay, EffectCoverflow]}
             slidesPerView={3}
             centeredSlides={true}
             loop={true}
-            autoplay={{ delay: 2600, disableOnInteraction: false }}
+            autoplay={{ delay: 3000, disableOnInteraction: false }}
             effect="coverflow"
-            coverflowEffect={{ rotate: 0, stretch: 0, depth: 120, modifier: 2, slideShadows: false }}
-            style={{ padding: '2rem 0', paddingLeft: '4vw', paddingRight: '2vw' }}
+            coverflowEffect={{ 
+              rotate: 0, 
+              stretch: 0, 
+              depth: 150, 
+              modifier: 2.5, 
+              slideShadows: true
+            }}
+            style={{ padding: '2rem 0' }}
             slidesOffsetBefore={80}
             slidesOffsetAfter={32}
             breakpoints={{
-              0: { slidesPerView: 1, centeredSlides: false, slidesOffsetBefore: 0, slidesOffsetAfter: 0 },
-              600: { slidesPerView: 2, centeredSlides: true, slidesOffsetBefore: 40, slidesOffsetAfter: 20 },
-              900: { slidesPerView: 3, centeredSlides: true, slidesOffsetBefore: 80, slidesOffsetAfter: 32 }
+              0: { 
+                slidesPerView: 1, 
+                centeredSlides: false, 
+                slidesOffsetBefore: 0, 
+                slidesOffsetAfter: 0,
+                coverflowEffect: { depth: 100, modifier: 1.5 }
+              },
+              600: { 
+                slidesPerView: 2, 
+                centeredSlides: true, 
+                slidesOffsetBefore: 40, 
+                slidesOffsetAfter: 20,
+                coverflowEffect: { depth: 120, modifier: 2 }
+              },
+              900: { 
+                slidesPerView: 3, 
+                centeredSlides: true, 
+                slidesOffsetBefore: 80, 
+                slidesOffsetAfter: 32,
+                coverflowEffect: { depth: 150, modifier: 2.5 }
+              }
             }}
           >
-            {reviews.map((review, idx) => (
-              <SwiperSlide key={idx}>
-                <div style={{
-                  background: '#fff',
-                  color: '#111',
-                  borderRadius: '14px',
-                  boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
-                  padding: '1.2rem 1.5rem',
-                  minWidth: '260px',
-                  maxWidth: '320px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  fontStyle: 'italic',
-                  borderLeft: '4px solid #111',
-                  position: 'relative',
-                  transition: 'transform 0.4s cubic-bezier(.4,2,.6,1)',
-                }}>
-                  <span style={{fontSize: '1.3rem', marginBottom: '0.7rem'}}>{review.text}</span>
-                  <span style={{color: '#f5b301', fontSize: '1.2rem', marginBottom: '0.3rem'}}>{getStars(review.rating)}</span>
-                  <span style={{fontWeight: 'bold', color: '#222', fontStyle: 'normal', fontSize: '1rem'}}>  {review.author}</span>
-                </div>
-              </SwiperSlide>
-            ))}
+            {reviews.map((review, idx) => {
+              // Colores variados para las cards
+              const colors = [
+                { bg: '#2c3e50', text: '#fff', accent: '#3498db' },
+                { bg: '#e74c3c', text: '#fff', accent: '#f39c12' },
+                { bg: '#27ae60', text: '#fff', accent: '#2ecc71' },
+                { bg: '#8e44ad', text: '#fff', accent: '#9b59b6' },
+                { bg: '#f39c12', text: '#fff', accent: '#e67e22' },
+                { bg: '#34495e', text: '#fff', accent: '#3498db' }
+              ];
+              const color = colors[idx % colors.length];
+              
+              return (
+                <SwiperSlide key={idx}>
+                  <div style={{
+                    background: color.bg,
+                    color: color.text,
+                    borderRadius: '25px',
+                    padding: '2.5rem',
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
+                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: 'relative',
+                    cursor: 'pointer',
+                    minHeight: '320px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    border: `2px solid ${color.accent}20`,
+                    backdropFilter: 'blur(10px)',
+                    transform: 'translateZ(0)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateZ(20px) scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 20px 60px rgba(0,0,0,0.5)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateZ(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.4)';
+                  }}>
+                    
+                    {/* Contenido del review */}
+                    <div>
+                      <p style={{
+                        fontSize: '1.2rem',
+                        lineHeight: '1.7',
+                        marginBottom: '2rem',
+                        fontStyle: 'italic',
+                        textAlign: 'center'
+                      }}>
+                        "{review.text}"
+                      </p>
+                      
+                      {/* Estrellas con bordes redondeados */}
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        gap: '0.3rem',
+                        marginBottom: '1.5rem'
+                      }}>
+                        {[...Array(5)].map((_, starIdx) => (
+                          <div key={starIdx} style={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '50%',
+                            background: starIdx < review.rating ? color.accent : 'rgba(255,255,255,0.2)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '1.2rem',
+                            color: starIdx < review.rating ? '#fff' : 'rgba(255,255,255,0.5)',
+                            boxShadow: starIdx < review.rating ? 
+                              `0 4px 12px ${color.accent}40` : 'none',
+                            transition: 'all 0.3s ease'
+                          }}>
+                            ★
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* Información del autor */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '1.2rem',
+                      marginTop: 'auto',
+                      padding: '1rem',
+                      background: `${color.accent}15`,
+                      borderRadius: '15px',
+                      border: `1px solid ${color.accent}30`
+                    }}>
+                      <div style={{
+                        width: '60px',
+                        height: '60px',
+                        borderRadius: '50%',
+                        background: `linear-gradient(135deg, ${color.accent}, ${color.accent}dd)`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '2rem',
+                        boxShadow: `0 6px 20px ${color.accent}40`,
+                        border: `3px solid ${color.accent}30`
+                      }}>
+                        {review.avatar}
+                      </div>
+                      <div>
+                        <div style={{
+                          fontWeight: 'bold',
+                          fontSize: '1.2rem',
+                          marginBottom: '0.3rem',
+                          textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                        }}>
+                          {review.author}
+                        </div>
+                        <div style={{
+                          fontSize: '1rem',
+                          opacity: '0.9',
+                          fontStyle: 'italic'
+                        }}>
+                          {review.company}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </SwiperSlide>
+              );
+            })}
           </Swiper>
         </div>
       </div>
@@ -250,21 +457,50 @@ const Inicio: React.FC = () => {
         ].map((serv, idx) => (
           <div key={idx} style={{
             border: '2px solid #FFD600',
-            borderRadius: '14px',
-            padding: '2.2rem 2.2rem 1.5rem 2.2rem',
-            background: '#181818',
-            minWidth: 220,
-            maxWidth: 270,
-            minHeight: 280,
+            borderRadius: '20px',
+            padding: '2.5rem 2rem 2rem 2rem',
+            background: 'linear-gradient(145deg, #121212 0%, #1a1a1a 100%)',
+            minWidth: 240,
+            maxWidth: 290,
+            minHeight: 300,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            boxShadow: '0 2px 24px rgba(0,0,0,0.18)',
+            boxShadow: '0 8px 32px rgba(255,215,0,0.15), 0 4px 16px rgba(0,0,0,0.3)',
             position: 'relative',
+            transition: 'all 0.3s ease',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
+            e.currentTarget.style.boxShadow = '0 12px 40px rgba(255,215,0,0.25), 0 8px 24px rgba(0,0,0,0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 8px 32px rgba(255,215,0,0.15), 0 4px 16px rgba(0,0,0,0.3)';
           }}>
-            <div style={{marginBottom: '1.2rem'}}>{serv.icon}</div>
-            <div style={{color:'#FFD600', fontWeight:900, fontSize:'1.18rem', letterSpacing:1, marginBottom:8}}>{serv.title}</div>
-            <div style={{color:'#ccc', textAlign:'center', fontSize:'1rem'}}>{serv.desc}</div>
+            <div style={{
+              marginBottom: '1.5rem',
+              padding: '1rem',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #FFD600, #FFA500)',
+              boxShadow: '0 4px 20px rgba(255,215,0,0.4)'
+            }}>{serv.icon}</div>
+            <div style={{
+              color:'#FFD600', 
+              fontWeight:900, 
+              fontSize:'1.3rem', 
+              letterSpacing:2, 
+              marginBottom:12,
+              textShadow: '0 2px 8px rgba(255,215,0,0.3)'
+            }}>{serv.title}</div>
+            <div style={{
+              color:'#ddd', 
+              textAlign:'center', 
+              fontSize:'1.05rem',
+              lineHeight: '1.6',
+              opacity: '0.9'
+            }}>{serv.desc}</div>
           </div>
         ))}
       </div>
@@ -273,29 +509,32 @@ const Inicio: React.FC = () => {
           <h1>Bienvenido a Esential Barber</h1>
           <p>Tu barbería de confianza. Estilo, elegancia y profesionalismo en cada corte.</p>
         </section>
-        {/* Apartado de servicios tipo carta */}
+        {/* Apartado de servicios mejorado */}
         <div
           style={{
-            background: 'url("https://www.transparenttextures.com/patterns/paper-fibers.png") repeat #f7f6f3',
-            borderRadius: '1.5rem',
+            background: 'linear-gradient(135deg, #121212 0%, #1a1a1a 50%, #121212 100%)',
+            borderRadius: '40px',
             margin: '3rem auto',
             maxWidth: 1100,
-            boxShadow: '0 4px 32px rgba(0,0,0,0.07)',
-            padding: '3.5rem 2vw 3.5rem 2vw',
+            boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
+            padding: '4rem 2vw 4rem 2vw',
             position: 'relative',
+            border: '2px solid #FFD600',
+            overflow: 'hidden',
           }}
         >
-          <div style={{textAlign:'center', marginBottom:'2.5rem'}}>
-            <div style={{display:'flex', alignItems:'center', justifyContent:'center', gap:12, marginBottom:10}}>
-              <span style={{height:2, width:60, background:'#FFD600', borderRadius:2, display:'inline-block'}}></span>
-              <span style={{height:10, width:10, background:'#FFD600', borderRadius:'50%', display:'inline-block'}}></span>
-              <span style={{height:2, width:60, background:'#FFD600', borderRadius:2, display:'inline-block'}}></span>
+          <div style={{textAlign:'center', marginBottom:'3rem'}}>
+            <div style={{display:'flex', alignItems:'center', justifyContent:'center', gap:12, marginBottom:15}}>
+              <span style={{height:3, width:80, background:'linear-gradient(90deg, transparent, #FFD600, transparent)', borderRadius:2, display:'inline-block'}}></span>
+              <span style={{height:12, width:12, background:'#FFD600', borderRadius:'50%', display:'inline-block', boxShadow: '0 0 20px #FFD600'}}></span>
+              <span style={{height:3, width:80, background:'linear-gradient(90deg, transparent, #FFD600, transparent)', borderRadius:2, display:'inline-block'}}></span>
             </div>
-            <h2 style={{fontSize:'2.5rem', fontWeight:900, letterSpacing:2, color:'#222', margin:0, textTransform:'uppercase'}}>Servicios de Barbería</h2>
-            <div style={{display:'flex', alignItems:'center', justifyContent:'center', gap:12, marginTop:10}}>
-              <span style={{height:2, width:60, background:'#FFD600', borderRadius:2, display:'inline-block'}}></span>
-              <span style={{height:10, width:10, background:'#FFD600', borderRadius:'50%', display:'inline-block'}}></span>
-              <span style={{height:2, width:60, background:'#FFD600', borderRadius:2, display:'inline-block'}}></span>
+            <h2 style={{fontSize:'3rem', fontWeight:900, letterSpacing:3, color:'#FFD600', margin:0, textTransform:'uppercase', textShadow: '0 2px 10px rgba(255,215,0,0.5)'}}>Servicios de Barbería</h2>
+            <p style={{color:'#ccc', fontSize:'1.2rem', marginTop:'1rem', fontStyle:'italic'}}>Profesionales al servicio de tu estilo</p>
+            <div style={{display:'flex', alignItems:'center', justifyContent:'center', gap:12, marginTop:15}}>
+              <span style={{height:3, width:80, background:'linear-gradient(90deg, transparent, #FFD600, transparent)', borderRadius:2, display:'inline-block'}}></span>
+              <span style={{height:12, width:12, background:'#FFD600', borderRadius:'50%', display:'inline-block', boxShadow: '0 0 20px #FFD600'}}></span>
+              <span style={{height:3, width:80, background:'linear-gradient(90deg, transparent, #FFD600, transparent)', borderRadius:2, display:'inline-block'}}></span>
             </div>
           </div>
           {loading ? (
@@ -347,16 +586,61 @@ const Inicio: React.FC = () => {
 
 export default Inicio
 
-// Componente auxiliar para una fila de servicio
+// Componente auxiliar para una fila de servicio mejorado
 function ServiceRow({name, price, desc}:{name:string, price:string, desc:string}) {
   return (
-    <div style={{display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'2.1rem', fontSize:'1.13rem'}}>
-      <div style={{flex:1, fontWeight:700, color:'#222'}}>{name}
-        <div style={{fontWeight:400, color:'#aaa', fontSize:'0.98rem', marginTop:2}}>{desc}</div>
+    <div style={{
+      display:'flex', 
+      alignItems:'flex-start', 
+      justifyContent:'space-between', 
+      marginBottom:'2.5rem', 
+      fontSize:'1.15rem',
+      padding: '1.5rem',
+      background: 'linear-gradient(145deg, rgba(255,215,0,0.05) 0%, rgba(255,215,0,0.02) 100%)',
+      borderRadius: '15px',
+      border: '1px solid rgba(255,215,0,0.2)',
+      transition: 'all 0.3s ease',
+      cursor: 'pointer',
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = 'linear-gradient(145deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)';
+      e.currentTarget.style.border = '1px solid rgba(255,215,0,0.4)';
+      e.currentTarget.style.transform = 'translateX(5px)';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = 'linear-gradient(145deg, rgba(255,215,0,0.05) 0%, rgba(255,215,0,0.02) 100%)';
+      e.currentTarget.style.border = '1px solid rgba(255,215,0,0.2)';
+      e.currentTarget.style.transform = 'translateX(0)';
+    }}>
+      <div style={{flex:1, fontWeight:700, color:'#FFD600', fontSize:'1.2rem'}}>
+        {name}
+        <div style={{
+          fontWeight:400, 
+          color:'#ccc', 
+          fontSize:'1rem', 
+          marginTop:8,
+          lineHeight: '1.5'
+        }}>
+          {desc}
+        </div>
       </div>
-      <div style={{flex:'0 0 90px', display:'flex', alignItems:'center', justifyContent:'flex-end'}}>
-        <span style={{flex:1, borderBottom:'1.5px dotted #FFD600', margin:'0 1rem 0 1.5rem', height:1, minWidth:40, opacity:0.7}}></span>
-        <span style={{fontWeight:700, color:'#222', fontSize:'1.13rem'}}>{price}</span>
+      <div style={{flex:'0 0 100px', display:'flex', alignItems:'center', justifyContent:'flex-end'}}>
+        <span style={{
+          flex:1, 
+          borderBottom:'2px dotted #FFD600', 
+          margin:'0 1rem 0 1.5rem', 
+          height:2, 
+          minWidth:40, 
+          opacity:0.8
+        }}></span>
+        <span style={{
+          fontWeight:700, 
+          color:'#FFD600', 
+          fontSize:'1.3rem',
+          textShadow: '0 2px 4px rgba(255,215,0,0.3)'
+        }}>
+          {price}
+        </span>
       </div>
     </div>
   );

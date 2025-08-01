@@ -3,7 +3,7 @@ import styles from './ContactoResenas.module.css'
 import { FaMapMarkerAlt, FaWhatsapp, FaEnvelope, FaFacebookF, FaInstagram, FaTiktok, FaTwitter } from 'react-icons/fa';
 
 const ContactoResenas: React.FC = () => (
-  <div style={{background:'#181818', minHeight:'100vh', color:'#fff', padding:'0', fontFamily:'inherit', display:'flex', alignItems:'center', justifyContent:'center'}}>
+  <div style={{background:'#121212', minHeight:'100vh', color:'#fff', padding:'0', fontFamily:'inherit', display:'flex', alignItems:'center', justifyContent:'center'}}>
     <div style={{maxWidth:1200, margin:'0 auto', padding:'3rem 2vw 2rem 2vw', display:'flex', flexWrap:'wrap', gap:'2.5rem', alignItems:'center', justifyContent:'center'}}>
       {/* Columna Izquierda */}
       <div style={{flex:'1 1 340px', minWidth:320, maxWidth:420, display:'flex', flexDirection:'column', gap:'2.5rem'}}>
@@ -59,7 +59,7 @@ const ContactoResenas: React.FC = () => (
           </table>
         </div>
         <div style={{flex:1, display:'flex', alignItems:'center', justifyContent:'center'}}>
-          <a href="https://www.google.com/maps?q=4+Paseo+Dr.+Revuelta,+Begíjar,+Andalucía" target="_blank" rel="noopener noreferrer" style={{width:'100%', maxWidth:400, minHeight:260, background:'radial-gradient(circle at 60% 40%, #FFD60033 0%, #181818 80%)', borderRadius:'1rem', display:'flex', alignItems:'center', justifyContent:'center', position:'relative', textDecoration:'none', cursor:'pointer'}}>
+          <a href="https://www.google.com/maps?q=4+Paseo+Dr.+Revuelta,+Begíjar,+Andalucía" target="_blank" rel="noopener noreferrer" style={{width:'100%', maxWidth:400, minHeight:260, background:'radial-gradient(circle at 60% 40%, #FFD60033 0%, #121212 80%)', borderRadius:'1rem', display:'flex', alignItems:'center', justifyContent:'center', position:'relative', textDecoration:'none', cursor:'pointer'}}>
             <FaMapMarkerAlt style={{position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', color:'#FFD600', fontSize:'3.5rem', filter:'drop-shadow(0 0 12px #FFD60088)'}}/>
           </a>
         </div>
