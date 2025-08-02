@@ -23,7 +23,7 @@ interface Props {
 const iconForService = (nombre: string) => {
   const lower = nombre.toLowerCase();
   if (lower.includes('corte')) return <FaCut style={{color:'#1976d2', fontSize:'1.6rem'}} />;
-  if (lower.includes('tinte')) return <FaPaintBrush style={{color:'#FFD600', fontSize:'1.6rem'}} />;
+  if (lower.includes('tinte')) return <FaPaintBrush style={{color:'var(--primary-color)', fontSize:'1.6rem'}} />;
   if (lower.includes('mecha')) return <FaMagic style={{color:'#43b94a', fontSize:'1.6rem'}} />;
   if (lower.includes('barba') || lower.includes('bigote')) return <FaUserTie style={{color:'#8d5524', fontSize:'1.6rem'}} />;
   return <FaQuestion style={{color:'#888', fontSize:'1.6rem'}} />;

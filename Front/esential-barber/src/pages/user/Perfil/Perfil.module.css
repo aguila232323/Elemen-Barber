@@ -1,5 +1,5 @@
 .perfilCont {
-  background: #fff;
+  background: #1a1a1a;
   border-radius: 1.2rem;
   padding: 2.5rem 2vw;
   box-shadow: 0 4px 32px rgba(0,0,0,0.10);
@@ -27,7 +27,7 @@
   align-items: center;
   margin-bottom: 2.5rem;
   padding-bottom: 1.5rem;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 2px solid #444;
   transition: all 0.3s ease;
   margin-top: 0;
 }
@@ -73,10 +73,10 @@
 }
 
 .campoContainer {
-  background: #f8f9fa;
+  background: #2a2a2a;
   border-radius: 12px;
   padding: 1.5rem;
-  border: 1px solid #e9ecef;
+  border: 1px solid #444;
   transition: all 0.3s ease;
   animation: fadeInUp 0.6s ease;
   animation-fill-mode: both;
@@ -128,15 +128,15 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.8rem 1rem;
-  background: #fff;
+  background: #333;
   border-radius: 8px;
-  border: 1px solid #e9ecef;
+  border: 1px solid #555;
   transition: all 0.3s ease;
 }
 
 .campoValor {
   font-size: 1.1rem;
-  color: #333;
+  color: #fff;
   font-weight: 500;
   transition: color 0.3s ease;
 }
@@ -173,7 +173,8 @@
   font-size: 1.1rem;
   outline: none;
   transition: all 0.3s ease;
-  background: #fff;
+  background: #333;
+  color: #fff;
 }
 
 .campoInput:focus {
@@ -245,7 +246,7 @@
 
 .passwordLabel {
   font-weight: 600;
-  color: #333;
+  color: #fff;
   font-size: 0.95rem;
   margin-bottom: 0.2rem;
 }
@@ -470,36 +471,7 @@
   }
 }
 
-/* Soporte para modo oscuro */
-@media (prefers-color-scheme: dark) {
-  .perfilCont {
-    background: #1a1a1a;
-    color: #fff;
-  }
-  
-  .campoContainer {
-    background: #2a2a2a;
-    border-color: #444;
-  }
-  
-  .campoMostrar {
-    background: #333;
-    border-color: #555;
-  }
-  
-  .campoValor {
-    color: #fff;
-  }
-  
-  .campoInput {
-    background: #333;
-    color: #fff;
-  }
-  
-  .passwordLabel {
-    color: #fff;
-  }
-} 
+ 
 
 .profileImageSection {
   width: 100%;

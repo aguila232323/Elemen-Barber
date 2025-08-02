@@ -43,7 +43,7 @@
   margin-bottom: 0;
 }
 .loginInput:focus {
-  border: 1.7px solid #FFD600;
+  border: 1.7px solid var(--primary-color);
   background: #23272f;
 }
 .loginInput::placeholder {
@@ -153,7 +153,7 @@
   width: 100%;
 }
 .loginRegisterLink {
-  color: #FFD600;
+  color: var(--primary-color);
   font-weight: 900;
   text-decoration: underline;
   cursor: pointer;
@@ -168,7 +168,7 @@
   left: 0.9rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #FFD600;
+  color: var(--primary-color);
   font-size: 1.35rem;
   pointer-events: none;
   opacity: 0.95;

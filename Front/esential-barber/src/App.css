@@ -15,8 +15,8 @@ body, html, #root, .main-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #fff;
-  color: #111;
+  background: #121212;
+  color: #fff;
   font-family: 'Segoe UI', Arial, sans-serif;
   position: relative;
 }
@@ -96,13 +96,7 @@ button, input, textarea {
   }
 }
 
-/* Soporte para modo oscuro del sistema */
-@media (prefers-color-scheme: dark) {
-  .main-container {
-    background: #121212;
-    color: #fff;
-  }
-}
+
 
 /* Mejoras de performance */
 @media (prefers-reduced-motion: reduce) {

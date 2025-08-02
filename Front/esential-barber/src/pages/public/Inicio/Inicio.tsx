@@ -6,6 +6,7 @@ import { Autoplay, EffectCoverflow } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/effect-coverflow';
 import { useServicios } from '../../../hooks/useServicios';
+import ColorDemo from '../../../components/ColorDemo/ColorDemo';
 
 
 const reviews = [
@@ -113,30 +114,30 @@ const Inicio: React.FC = () => {
           justifyContent: 'center',
           width: '100%',
         }}>
-          <span style={{
-            color: '#fff',
-            fontSize: '4.2rem',
-            fontWeight: 'bold',
-            letterSpacing: '2px',
-            textShadow: '0 4px 24px #000, 0 1px 2px #000',
-            fontFamily: 'serif',
-            lineHeight: 1.05,
-            textAlign: 'center',
-          }}>
-            ELEMEN
-          </span>
-          <span style={{
-            color: '#fff',
-            fontSize: '1.45rem',
-            fontWeight: 400,
-            letterSpacing: '2.5px',
-            textShadow: '0 2px 12px #000, 0 1px 2px #000',
-            fontFamily: 'sans-serif',
-            marginTop: '0.3rem',
-            textAlign: 'center',
-          }}>
-            BARBER STUDIO
-          </span>
+                  <span style={{
+          color: '#fff',
+          fontSize: '4.2rem',
+          fontWeight: 'bold',
+          letterSpacing: '2px',
+          textShadow: '0 4px 24px #000, 0 1px 2px #000',
+          fontFamily: 'serif',
+          lineHeight: 1.05,
+          textAlign: 'center',
+        }}>
+          ELEMEN
+        </span>
+        <span style={{
+          color: '#fff',
+          fontSize: '1.45rem',
+          fontWeight: 400,
+          letterSpacing: '2.5px',
+          textShadow: '0 2px 12px #000, 0 1px 2px #000',
+          fontFamily: 'sans-serif',
+          marginTop: '0.3rem',
+          textAlign: 'center',
+        }}>
+          BARBER STUDIO
+        </span>
         </div>
       </div>
 
@@ -164,7 +165,7 @@ const Inicio: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-            <FaClock style={{color: '#FFD600', fontSize: '1.2rem'}} />
+            <FaClock style={{color: 'var(--primary-color)', fontSize: '1.2rem'}} />
           </span>
           <span style={{display: 'flex', flexDirection: 'column', lineHeight: 1.1}}>
             <span style={{fontWeight: 600, fontSize: '0.93em'}}>Martes - Sábado</span>
@@ -182,7 +183,7 @@ const Inicio: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-            <FaUser style={{color: '#FFD600', fontSize: '1.2rem'}} />
+            <FaUser style={{color: 'var(--primary-color)', fontSize: '1.2rem'}} />
           </span>
           <span style={{display: 'flex', flexDirection: 'column', lineHeight: 1.1}}>
             <span style={{fontWeight: 600, fontSize: '0.93em'}}>Luis</span>
@@ -200,7 +201,7 @@ const Inicio: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-            <FaMapMarkerAlt style={{color: '#FFD600', fontSize: '1.2rem'}} />
+            <FaMapMarkerAlt style={{color: 'var(--primary-color)', fontSize: '1.2rem'}} />
           </span>
           <span style={{display: 'flex', flexDirection: 'column', lineHeight: 1.1}}>
             <span style={{fontWeight: 600, fontSize: '0.93em'}}>4 Paseo Dr. Revuelta</span>
@@ -242,7 +243,7 @@ const Inicio: React.FC = () => {
             gap: '0.5rem',
             marginTop: '1rem'
           }}>
-            <span style={{color: '#FFD600', fontSize: '2rem'}}>★★★★★</span>
+            <span style={{color: 'var(--primary-color)', fontSize: '2rem'}}>★★★★★</span>
             <span style={{color: '#fff', fontSize: '1.1rem', marginLeft: '0.5rem'}}>4.9/5</span>
           </div>
         </div>
@@ -456,7 +457,7 @@ const Inicio: React.FC = () => {
           },
         ].map((serv, idx) => (
           <div key={idx} style={{
-            border: '2px solid #FFD600',
+            border: '2px solid var(--primary-color)',
             borderRadius: '20px',
             padding: '2.5rem 2rem 2rem 2rem',
             background: 'linear-gradient(145deg, #121212 0%, #1a1a1a 100%)',
@@ -466,33 +467,33 @@ const Inicio: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            boxShadow: '0 8px 32px rgba(255,215,0,0.15), 0 4px 16px rgba(0,0,0,0.3)',
+            boxShadow: 'var(--shadow-primary)',
             position: 'relative',
             transition: 'all 0.3s ease',
             cursor: 'pointer',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
-            e.currentTarget.style.boxShadow = '0 12px 40px rgba(255,215,0,0.25), 0 8px 24px rgba(0,0,0,0.4)';
+            e.currentTarget.style.boxShadow = 'var(--shadow-primary-hover)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0) scale(1)';
-            e.currentTarget.style.boxShadow = '0 8px 32px rgba(255,215,0,0.15), 0 4px 16px rgba(0,0,0,0.3)';
+            e.currentTarget.style.boxShadow = 'var(--shadow-primary)';
           }}>
             <div style={{
               marginBottom: '1.5rem',
               padding: '1rem',
               borderRadius: '50%',
-              background: 'linear-gradient(135deg, #FFD600, #FFA500)',
-              boxShadow: '0 4px 20px rgba(255,215,0,0.4)'
+              background: 'linear-gradient(135deg, var(--primary-color), var(--primary-color-hover))',
+              boxShadow: 'var(--shadow-primary-icon)'
             }}>{serv.icon}</div>
             <div style={{
-              color:'#FFD600', 
+              color:'var(--primary-color)', 
               fontWeight:900, 
               fontSize:'1.3rem', 
               letterSpacing:2, 
               marginBottom:12,
-              textShadow: '0 2px 8px rgba(255,215,0,0.3)'
+              textShadow: 'var(--shadow-primary-text)'
             }}>{serv.title}</div>
             <div style={{
               color:'#ddd', 
@@ -519,22 +520,22 @@ const Inicio: React.FC = () => {
             boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
             padding: '4rem 2vw 4rem 2vw',
             position: 'relative',
-            border: '2px solid #FFD600',
+            border: '2px solid var(--primary-color)',
             overflow: 'hidden',
           }}
         >
           <div style={{textAlign:'center', marginBottom:'3rem'}}>
             <div style={{display:'flex', alignItems:'center', justifyContent:'center', gap:12, marginBottom:15}}>
-              <span style={{height:3, width:80, background:'linear-gradient(90deg, transparent, #FFD600, transparent)', borderRadius:2, display:'inline-block'}}></span>
-              <span style={{height:12, width:12, background:'#FFD600', borderRadius:'50%', display:'inline-block', boxShadow: '0 0 20px #FFD600'}}></span>
-              <span style={{height:3, width:80, background:'linear-gradient(90deg, transparent, #FFD600, transparent)', borderRadius:2, display:'inline-block'}}></span>
+              <span style={{height:3, width:80, background:'linear-gradient(90deg, transparent, var(--primary-color), transparent)', borderRadius:2, display:'inline-block'}}></span>
+              <span style={{height:12, width:12, background:'var(--primary-color)', borderRadius:'50%', display:'inline-block', boxShadow: '0 0 20px var(--primary-color)'}}></span>
+              <span style={{height:3, width:80, background:'linear-gradient(90deg, transparent, var(--primary-color), transparent)', borderRadius:2, display:'inline-block'}}></span>
             </div>
-            <h2 style={{fontSize:'3rem', fontWeight:900, letterSpacing:3, color:'#FFD600', margin:0, textTransform:'uppercase', textShadow: '0 2px 10px rgba(255,215,0,0.5)'}}>Servicios de Barbería</h2>
+            <h2 style={{fontSize:'3rem', fontWeight:900, letterSpacing:3, color:'var(--primary-color)', margin:0, textTransform:'uppercase', textShadow: 'var(--shadow-primary-text)'}}>Servicios de Barbería</h2>
             <p style={{color:'#ccc', fontSize:'1.2rem', marginTop:'1rem', fontStyle:'italic'}}>Profesionales al servicio de tu estilo</p>
             <div style={{display:'flex', alignItems:'center', justifyContent:'center', gap:12, marginTop:15}}>
-              <span style={{height:3, width:80, background:'linear-gradient(90deg, transparent, #FFD600, transparent)', borderRadius:2, display:'inline-block'}}></span>
-              <span style={{height:12, width:12, background:'#FFD600', borderRadius:'50%', display:'inline-block', boxShadow: '0 0 20px #FFD600'}}></span>
-              <span style={{height:3, width:80, background:'linear-gradient(90deg, transparent, #FFD600, transparent)', borderRadius:2, display:'inline-block'}}></span>
+              <span style={{height:3, width:80, background:'linear-gradient(90deg, transparent, var(--primary-color), transparent)', borderRadius:2, display:'inline-block'}}></span>
+              <span style={{height:12, width:12, background:'var(--primary-color)', borderRadius:'50%', display:'inline-block', boxShadow: '0 0 20px var(--primary-color)'}}></span>
+              <span style={{height:3, width:80, background:'linear-gradient(90deg, transparent, var(--primary-color), transparent)', borderRadius:2, display:'inline-block'}}></span>
             </div>
           </div>
           {loading ? (
@@ -580,6 +581,9 @@ const Inicio: React.FC = () => {
           )}
         </div>
       </div>
+      
+      {/* Componente de demostración de colores */}
+      <ColorDemo />
     </>
   )
 }
@@ -596,23 +600,23 @@ function ServiceRow({name, price, desc}:{name:string, price:string, desc:string}
       marginBottom:'2.5rem', 
       fontSize:'1.15rem',
       padding: '1.5rem',
-      background: 'linear-gradient(145deg, rgba(255,215,0,0.05) 0%, rgba(255,215,0,0.02) 100%)',
+      background: 'var(--gradient-primary-light)',
       borderRadius: '15px',
-      border: '1px solid rgba(255,215,0,0.2)',
+      border: '1px solid var(--border-primary-light)',
       transition: 'all 0.3s ease',
       cursor: 'pointer',
     }}
     onMouseEnter={(e) => {
-      e.currentTarget.style.background = 'linear-gradient(145deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)';
-      e.currentTarget.style.border = '1px solid rgba(255,215,0,0.4)';
+      e.currentTarget.style.background = 'var(--gradient-primary-hover)';
+      e.currentTarget.style.border = '1px solid var(--border-primary-hover)';
       e.currentTarget.style.transform = 'translateX(5px)';
     }}
     onMouseLeave={(e) => {
-      e.currentTarget.style.background = 'linear-gradient(145deg, rgba(255,215,0,0.05) 0%, rgba(255,215,0,0.02) 100%)';
-      e.currentTarget.style.border = '1px solid rgba(255,215,0,0.2)';
+      e.currentTarget.style.background = 'var(--gradient-primary-light)';
+      e.currentTarget.style.border = '1px solid var(--border-primary-light)';
       e.currentTarget.style.transform = 'translateX(0)';
     }}>
-      <div style={{flex:1, fontWeight:700, color:'#FFD600', fontSize:'1.2rem'}}>
+      <div style={{flex:1, fontWeight:700, color:'var(--primary-color)', fontSize:'1.2rem'}}>
         {name}
         <div style={{
           fontWeight:400, 
@@ -627,7 +631,7 @@ function ServiceRow({name, price, desc}:{name:string, price:string, desc:string}
       <div style={{flex:'0 0 100px', display:'flex', alignItems:'center', justifyContent:'flex-end'}}>
         <span style={{
           flex:1, 
-          borderBottom:'2px dotted #FFD600', 
+          borderBottom:'2px dotted var(--primary-color)', 
           margin:'0 1rem 0 1.5rem', 
           height:2, 
           minWidth:40, 
@@ -635,9 +639,9 @@ function ServiceRow({name, price, desc}:{name:string, price:string, desc:string}
         }}></span>
         <span style={{
           fontWeight:700, 
-          color:'#FFD600', 
+          color:'var(--primary-color)', 
           fontSize:'1.3rem',
-          textShadow: '0 2px 4px rgba(255,215,0,0.3)'
+                      textShadow: '0 2px 4px rgba(33,150,243,0.3)'
         }}>
           {price}
         </span>

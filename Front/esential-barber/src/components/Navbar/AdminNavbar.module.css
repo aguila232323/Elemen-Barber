@@ -52,8 +52,8 @@
   object-fit: contain;
   display: block;
   margin: 0 auto 2px auto;
-  filter: brightness(0) saturate(100%) invert(87%) sepia(99%) saturate(7499%) hue-rotate(1deg) brightness(104%) contrast(104%);
-  color: #FFD600 !important;
+  filter: brightness(0) saturate(100%) invert(100%);
+  color: #fff !important;
   transition: all 0.3s ease;
   position: relative;
   z-index: 1;
@@ -61,7 +61,7 @@
 
 .bottomBtnLabel {
   font-size: 0.97rem;
-  color: #FFD600;
+  color: #fff;
   font-weight: 600;
   margin-top: 2px;
   transition: all 0.3s ease;
