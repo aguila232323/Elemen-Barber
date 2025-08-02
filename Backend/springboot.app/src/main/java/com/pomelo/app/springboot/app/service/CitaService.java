@@ -33,6 +33,9 @@ public class CitaService {
     @Autowired
     private VacacionesService vacacionesService;
 
+    @Autowired
+    private EmailService emailService;
+
     public Cita crearCita(Cita cita, String rolUsuario) {
         // Validar tiempo mínimo de reserva para usuarios no admin
         if (!"ADMIN".equals(rolUsuario)) {
@@ -106,28 +109,116 @@ public class CitaService {
 
     public Cita crearCitaFija(Cita cita, int periodicidadDias) {
         try {
-            // Crear la cita inicial
-            cita.setFija(true);
-            cita.setPeriodicidadDias(periodicidadDias);
-            Cita citaGuardada = citaRepository.save(cita);
+            // Validar que no sea un día de vacaciones para la cita inicial
+            LocalDate fechaCita = cita.getFechaHora().toLocalDate();
+            if (vacacionesService.esFechaVacaciones(fechaCita)) {
+                throw new RuntimeException("No se pueden crear citas en días de vacaciones");
+            }
+            
+            // Verificar disponibilidad para la cita inicial
+            boolean citaInicialDisponible = verificarDisponibilidad(cita);
+            
+            Cita citaGuardada = null;
+            int citasCreadas = 0;
+            int citasOmitidas = 0;
+            int diasVacaciones = 0;
+            
+            // Crear la cita inicial solo si está disponible
+            if (citaInicialDisponible) {
+                cita.setFija(true);
+                cita.setPeriodicidadDias(periodicidadDias);
+                citaGuardada = citaRepository.save(cita);
+                citasCreadas++;
+                System.out.println("✅ Cita inicial creada: " + cita.getFechaHora());
+            } else {
+                citasOmitidas++;
+                System.out.println("⚠️  Cita inicial omitida (horario ocupado): " + cita.getFechaHora());
+            }
             
             // Crear citas adicionales para los próximos 6 meses (aproximadamente 26 semanas)
             LocalDateTime fechaActual = cita.getFechaHora();
+            
+            System.out.println("Creando citas periódicas cada " + periodicidadDias + " días...");
+            
             for (int i = 1; i <= 26; i++) {
                 LocalDateTime nuevaFecha = fechaActual.plusDays(periodicidadDias * i);
                 
                 // Solo crear citas futuras
                 if (nuevaFecha.isAfter(LocalDateTime.now())) {
-                    Cita nuevaCita = new Cita();
-                    nuevaCita.setCliente(cita.getCliente());
-                    nuevaCita.setServicio(cita.getServicio());
-                    nuevaCita.setFechaHora(nuevaFecha);
-                    nuevaCita.setComentario(cita.getComentario());
-                    nuevaCita.setFija(true);
-                    nuevaCita.setPeriodicidadDias(periodicidadDias);
-                    nuevaCita.setEstado(cita.getEstado());
+                    // Verificar si es día de vacaciones
+                    LocalDate fechaNuevaCita = nuevaFecha.toLocalDate();
+                    if (vacacionesService.esFechaVacaciones(fechaNuevaCita)) {
+                        diasVacaciones++;
+                        System.out.println("Omitiendo día de vacaciones: " + nuevaFecha.toLocalDate());
+                        continue; // Saltar días de vacaciones
+                    }
                     
-                    citaRepository.save(nuevaCita);
+                    // Crear cita temporal para verificar disponibilidad
+                    Cita citaTemporal = new Cita();
+                    citaTemporal.setCliente(cita.getCliente());
+                    citaTemporal.setServicio(cita.getServicio());
+                    citaTemporal.setFechaHora(nuevaFecha);
+                    citaTemporal.setComentario(cita.getComentario());
+                    citaTemporal.setFija(true);
+                    citaTemporal.setPeriodicidadDias(periodicidadDias);
+                    citaTemporal.setEstado(cita.getEstado());
+                    
+                    // Verificar disponibilidad para esta fecha específica
+                    if (verificarDisponibilidad(citaTemporal)) {
+                        citaRepository.save(citaTemporal);
+                        citasCreadas++;
+                        System.out.println("Cita periódica creada: " + nuevaFecha);
+                    } else {
+                        citasOmitidas++;
+                        System.out.println("Omitiendo fecha ocupada: " + nuevaFecha + " - Horario no disponible");
+                    }
+                }
+            }
+            
+            // Log de información detallada sobre las citas creadas
+            System.out.println("=== RESUMEN DE CITAS PERIÓDICAS ===");
+            System.out.println("✅ Citas creadas exitosamente: " + citasCreadas);
+            if (citasOmitidas > 0) {
+                System.out.println("⚠️  Citas omitidas (horarios ocupados): " + citasOmitidas);
+            }
+            if (diasVacaciones > 0) {
+                System.out.println("🏖️  Días de vacaciones omitidos: " + diasVacaciones);
+            }
+            System.out.println("📅 Periodicidad: cada " + periodicidadDias + " días");
+            System.out.println("=====================================");
+            
+            // Si no se creó ninguna cita, lanzar excepción
+            if (citasCreadas == 0) {
+                throw new RuntimeException("No se pudo crear ninguna cita periódica. Todas las fechas están ocupadas o son días de vacaciones.");
+            }
+            
+            // Si no se creó la cita inicial, devolver la primera cita creada
+            if (citaGuardada == null) {
+                // Buscar la primera cita creada en el bucle
+                List<Cita> citasCreadasEnBD = citaRepository.findByClienteAndFijaTrueAndPeriodicidadDiasIsNotNull(cita.getCliente());
+                if (!citasCreadasEnBD.isEmpty()) {
+                    citaGuardada = citasCreadasEnBD.get(0);
+                }
+            }
+            
+            // Enviar email de notificación de cita periódica
+            if (citaGuardada != null) {
+                try {
+                    String fechaInicioFormateada = cita.getFechaHora().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                    emailService.enviarNotificacionCitaPeriodica(
+                        cita.getCliente().getEmail(),
+                        cita.getCliente().getNombre(),
+                        cita.getServicio().getNombre(),
+                        fechaInicioFormateada,
+                        periodicidadDias,
+                        citasCreadas,
+                        citasOmitidas,
+                        diasVacaciones
+                    );
+                    System.out.println("✅ Email de notificación de cita periódica enviado a: " + cita.getCliente().getEmail());
+                } catch (Exception e) {
+                    System.err.println("❌ Error al enviar email de notificación: " + e.getMessage());
+                    // No lanzar excepción para no interrumpir el proceso de creación
                 }
             }
             
@@ -185,18 +276,29 @@ public class CitaService {
             LocalDateTime fin = inicio.plusMinutes(servicio.getDuracionMinutos());
 
             // Buscar citas que se solapen con el horario solicitado
-            List<Cita> citasExistentes = citaRepository.findByFechaHoraBetween(
-                inicio.minusMinutes(servicio.getDuracionMinutos()), 
-                fin.plusMinutes(servicio.getDuracionMinutos())
-            );
+            // Usar un rango más amplio para asegurar que no se pierdan conflictos
+            LocalDateTime inicioBusqueda = inicio.minusMinutes(servicio.getDuracionMinutos());
+            LocalDateTime finBusqueda = fin.plusMinutes(servicio.getDuracionMinutos());
+            
+            List<Cita> citasExistentes = citaRepository.findByFechaHoraBetween(inicioBusqueda, finBusqueda);
 
             for (Cita citaExistente : citasExistentes) {
-                if (!citaExistente.getEstado().equals("cancelada")) {
+                // Solo considerar citas que no estén canceladas
+                if (!"cancelada".equals(citaExistente.getEstado())) {
                     LocalDateTime inicioExistente = citaExistente.getFechaHora();
                     LocalDateTime finExistente = citaExistente.getFechaHora().plusMinutes(citaExistente.getServicio().getDuracionMinutos());
 
                     // Verificar si hay solapamiento
+                    // Dos citas se solapan si:
+                    // 1. El inicio de la nueva cita es antes del fin de la existente Y
+                    // 2. El fin de la nueva cita es después del inicio de la existente
                     if (inicio.isBefore(finExistente) && fin.isAfter(inicioExistente)) {
+                        System.out.println("❌ CONFLICTO: Cita existente #" + citaExistente.getId() + 
+                                         " (" + citaExistente.getCliente().getNombre() + " - " + citaExistente.getServicio().getNombre() + ")" +
+                                         " de " + inicioExistente.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) + 
+                                         " a " + finExistente.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")) + 
+                                         " | Nueva cita: " + inicio.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) + 
+                                         " a " + fin.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")));
                         return false; // No hay disponibilidad
                     }
                 }

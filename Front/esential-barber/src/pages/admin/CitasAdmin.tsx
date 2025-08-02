@@ -369,7 +369,10 @@ const CitasAdmin: React.FC = () => {
   const getDayEvents = (date: Date) => {
     return events.filter(event => 
       moment(event.start).isSame(date, 'day')
-    );
+    ).sort((a, b) => {
+      // Ordenar por hora de inicio (más temprano primero)
+      return moment(a.start).diff(moment(b.start));
+    });
   };
 
   // Calcular ocupación del día

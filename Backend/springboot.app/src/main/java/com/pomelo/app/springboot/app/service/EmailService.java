@@ -156,6 +156,31 @@ public class EmailService {
         }
     }
 
+    @Async
+    public void enviarNotificacionCitaPeriodica(String emailDestino, String nombreCliente, String nombreServicio, 
+                                               String fechaInicio, int periodicidadDias, int citasCreadas, 
+                                               int citasOmitidas, int diasVacaciones) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            
+            helper.setTo(emailDestino);
+            helper.setSubject("🔄 Cita Periódica Creada - Esential Barber");
+            helper.setFrom("aguila23232323@gmail.com");
+            
+            String htmlContent = crearEmailCitaPeriodicaHTML(nombreCliente, nombreServicio, fechaInicio, 
+                                                           periodicidadDias, citasCreadas, citasOmitidas, diasVacaciones);
+            
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+            System.out.println("✅ Email de notificación de cita periódica enviado a: " + emailDestino);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error al enviar email de notificación de cita periódica: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private String crearEmailConfirmacionHTML(String nombreCliente, String nombreServicio, String fechaHora, int duracion, double precio) {
         return String.format("""
             <!DOCTYPE html>
@@ -914,5 +939,239 @@ public class EmailService {
             </body>
             </html>
             """, nombreUsuario, resetToken, resetToken);
+    }
+
+    private String crearEmailCitaPeriodicaHTML(String nombreCliente, String nombreServicio, String fechaInicio, 
+                                             int periodicidadDias, int citasCreadas, int citasOmitidas, int diasVacaciones) {
+        return String.format("""
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Cita Periódica Creada</title>
+                <style>
+                    body {
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        background-color: #f4f4f4;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    .container {
+                        max-width: 600px;
+                        margin: 20px auto;
+                        background: white;
+                        border-radius: 10px;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                        overflow: hidden;
+                    }
+                    .header {
+                        background: linear-gradient(135deg, #9c27b0 0%%, #7b1fa2 50%%, #4a148c 100%%);
+                        color: white;
+                        padding: 30px;
+                        text-align: center;
+                    }
+                    .header h1 {
+                        margin: 0;
+                        font-size: 28px;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        letter-spacing: 2px;
+                    }
+                    .header .logo {
+                        width: 80px;
+                        height: auto;
+                        margin-bottom: 15px;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    }
+                    .content {
+                        padding: 40px 30px;
+                    }
+                    .greeting {
+                        font-size: 20px;
+                        color: #2c3e50;
+                        margin-bottom: 20px;
+                    }
+                    .success-message {
+                        background: #d4edda;
+                        border: 1px solid #c3e6cb;
+                        border-radius: 8px;
+                        padding: 20px;
+                        margin: 20px 0;
+                        color: #155724;
+                    }
+                    .periodic-details {
+                        background: #f8f9fa;
+                        border-radius: 8px;
+                        padding: 30px;
+                        margin: 25px 0;
+                    }
+                    .detail-row {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 15px 0;
+                        border-bottom: 1px solid #e9ecef;
+                        text-align: center;
+                    }
+                    .detail-row:last-child {
+                        border-bottom: none;
+                    }
+                    .detail-label {
+                        font-weight: 600;
+                        color: #2c3e50;
+                        flex: 1;
+                    }
+                    .detail-value {
+                        font-weight: 700;
+                        color: #9c27b0;
+                        flex: 1;
+                    }
+                    .stats-container {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                        gap: 15px;
+                        margin: 25px 0;
+                    }
+                    .stat-card {
+                        background: white;
+                        border-radius: 8px;
+                        padding: 20px;
+                        text-align: center;
+                        border: 2px solid #e9ecef;
+                        transition: all 0.3s ease;
+                    }
+                    .stat-card:hover {
+                        border-color: #9c27b0;
+                        transform: translateY(-2px);
+                    }
+                    .stat-number {
+                        font-size: 32px;
+                        font-weight: 700;
+                        color: #9c27b0;
+                        margin-bottom: 5px;
+                    }
+                    .stat-label {
+                        font-size: 14px;
+                        color: #666;
+                        font-weight: 600;
+                    }
+                    .info-section {
+                        background: #e3f2fd;
+                        border: 1px solid #bbdefb;
+                        border-radius: 8px;
+                        padding: 20px;
+                        margin: 20px 0;
+                        color: #1565c0;
+                    }
+                    .warning-section {
+                        background: #fff3e0;
+                        border: 1px solid #ffcc02;
+                        border-radius: 8px;
+                        padding: 20px;
+                        margin: 20px 0;
+                        color: #e65100;
+                    }
+                    .footer {
+                        background: #f8f9fa;
+                        padding: 25px 30px;
+                        text-align: center;
+                        border-top: 1px solid #e9ecef;
+                    }
+                    .footer-logo {
+                        font-size: 24px;
+                        font-weight: 700;
+                        margin-bottom: 10px;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <img src="https://esentialbarber.com/logoElemental.png" alt="Esential Barber" class="logo">
+                        <h1>Esential Barber</h1>
+                        <p>🔄 Cita Periódica Creada</p>
+                    </div>
+                    
+                    <div class="content">
+                        <div class="greeting">¡Hola %s!</div>
+                        
+                        <div class="success-message">
+                            <strong>✅ Tu cita periódica ha sido creada exitosamente</strong>
+                        </div>
+                        
+                        <p>Te confirmamos que hemos creado tu cita periódica con los siguientes detalles:</p>
+                        
+                        <div class="periodic-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Servicio:</span>
+                                <span class="detail-value">%s</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Fecha de inicio:</span>
+                                <span class="detail-value">%s</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Periodicidad:</span>
+                                <span class="detail-value">Cada %d días</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stats-container">
+                            <div class="stat-card">
+                                <div class="stat-number">%d</div>
+                                <div class="stat-label">Citas Creadas</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">%d</div>
+                                <div class="stat-label">Citas Omitidas</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">%d</div>
+                                <div class="stat-label">Días Vacaciones</div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <strong>📅 Información importante:</strong>
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                <li>Las citas se crean automáticamente cada %d días</li>
+                                <li>Se omiten automáticamente los días de vacaciones</li>
+                                <li>Se omiten las fechas donde no hay disponibilidad</li>
+                                <li>Recibirás recordatorios por email antes de cada cita</li>
+                            </ul>
+                        </div>
+                        
+                        %s
+                        
+                        <p style="color: #6c757d; font-size: 14px;">
+                            Si necesitas modificar o cancelar tu cita periódica, contacta con nosotros.
+                        </p>
+                    </div>
+                    
+                    <div class="footer">
+                        <div class="footer-logo">Esential Barber</div>
+                        <p>¡Gracias por confiar en Esential Barber!</p>
+                        <div class="contact-info">
+                            📞 Contacto: +34 XXX XXX XXX<br>
+                            📧 Email: info@esentialbarber.com
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """, nombreCliente, nombreServicio, fechaInicio, periodicidadDias, 
+                 citasCreadas, citasOmitidas, diasVacaciones, periodicidadDias,
+                 citasOmitidas > 0 ? """
+                        <div class="warning-section">
+                            <strong>⚠️ Nota:</strong>
+                            <p>Algunas citas no se pudieron crear debido a horarios ocupados. El sistema continuará creando citas en las fechas disponibles.</p>
+                        </div>
+                        """ : "");
     }
 } 
