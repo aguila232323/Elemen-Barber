@@ -316,56 +316,6 @@
   border: 1px solid rgba(231,76,60,0.3);
 }
 
-@media (max-width: 600px) {
-  .configContainer {
-    padding: 1rem;
-    margin: 1rem;
-  }
-  
-  .header h2 {
-    font-size: 1.5rem;
-  }
-  
-  .headerIcon {
-    font-size: 1.5rem;
-  }
-  
-  .buttonGroup {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .configBtn {
-    width: 100%;
-    max-width: 280px;
-  }
-  
-  .modal {
-    padding: 1.5rem;
-    max-width: 95vw;
-    margin: 1rem;
-  }
-  
-  .formModal {
-    gap: 1rem;
-  }
-  
-  .input {
-    font-size: 0.95rem;
-    padding: 0.8rem 1rem;
-  }
-  
-  .saveBtn, .cancelBtn, .deleteBtn {
-    font-size: 0.95rem;
-    padding: 0.7rem 1.2rem;
-    min-width: 120px;
-  }
-  
-  .modalBtnGroup {
-    justify-content: center;
-  }
-}
-
 /* Separador entre secciones */
 .sectionDivider {
   margin: 3rem 0;
@@ -545,4 +495,551 @@
   margin: 1rem 0;
   border: 1px solid rgba(67,185,74,0.3);
   font-weight: 600;
+} 
+
+/* ===== RESPONSIVE DESIGN MEJORADO ===== */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 1024px) {
+  .configContainer {
+    max-width: 90%;
+    margin: 1.5rem auto;
+    padding: 1.5rem;
+  }
+  
+  .header h2 {
+    font-size: 1.6rem;
+  }
+  
+  .headerIcon {
+    font-size: 1.8rem;
+  }
+  
+  .buttonGroup {
+    gap: 0.8rem;
+  }
+  
+  .configBtn {
+    min-width: 160px;
+    padding: 0.9rem 1.3rem;
+    font-size: 0.95rem;
+  }
+  
+  .modal {
+    max-width: 85vw;
+    padding: 1.8rem;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  
+  .serviciosSection,
+  .citasSection {
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+}
+
+/* Tablets pequeñas */
+@media (max-width: 768px) {
+  .configContainer {
+    max-width: 95%;
+    margin: 1rem auto;
+    padding: 1.2rem;
+  }
+  
+  .header {
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .header h2 {
+    font-size: 1.4rem;
+  }
+  
+  .headerIcon {
+    font-size: 1.6rem;
+  }
+  
+  .buttonGroup {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    margin: 1.5rem 0;
+  }
+  
+  .configBtn {
+    width: 100%;
+    max-width: 300px;
+    min-width: auto;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  .modal {
+    max-width: 90vw;
+    padding: 1.5rem;
+    margin: 1rem;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  
+  .formModal {
+    gap: 1rem;
+    max-width: 100%;
+  }
+  
+  .input {
+    font-size: 1rem;
+    padding: 0.8rem 1rem;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .saveBtn, .cancelBtn, .deleteBtn {
+    font-size: 1rem;
+    padding: 0.8rem 1.3rem;
+    min-width: 120px;
+    max-width: 100%;
+  }
+  
+  .modalBtnGroup {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    max-width: 100%;
+  }
+  
+  .serviciosSection,
+  .citasSection {
+    padding: 1.2rem;
+    margin: 1.2rem 0;
+  }
+  
+  .modalButtons {
+    flex-direction: column;
+    gap: 0.8rem;
+    max-width: 100%;
+  }
+  
+  .submitBtn,
+  .cancelBtn {
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+  
+  .formGroup {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .formGroup label {
+    max-width: 100%;
+    word-wrap: break-word;
+  }
+}
+
+/* Móviles grandes */
+@media (max-width: 600px) {
+  .configContainer {
+    padding: 1rem;
+    margin: 0.8rem;
+    border-radius: 16px;
+    max-width: 98%;
+  }
+  
+  .header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .headerIcon {
+    font-size: 1.4rem;
+  }
+  
+  .buttonGroup {
+    gap: 0.6rem;
+    margin: 1.2rem 0;
+  }
+  
+  .configBtn {
+    max-width: 280px;
+    padding: 0.9rem 1.2rem;
+    font-size: 0.95rem;
+    min-width: auto;
+  }
+  
+  .modal {
+    padding: 1.2rem;
+    max-width: 95vw;
+    margin: 0.8rem;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
+  
+  .formModal {
+    gap: 0.8rem;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .input {
+    font-size: 0.95rem;
+    padding: 0.7rem 0.9rem;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .saveBtn, .cancelBtn, .deleteBtn {
+    font-size: 0.95rem;
+    padding: 0.7rem 1.2rem;
+    min-width: 110px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .modalBtnGroup {
+    gap: 0.6rem;
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .serviciosSection,
+  .citasSection {
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 16px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .modalButtons {
+    gap: 0.6rem;
+    max-width: 100%;
+  }
+  
+  .submitBtn,
+  .cancelBtn {
+    max-width: 180px;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+  }
+  
+  .formGroup {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .formGroup label {
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+}
+
+/* Móviles medianos */
+@media (max-width: 480px) {
+  .configContainer {
+    padding: 0.8rem;
+    margin: 0.5rem;
+    border-radius: 12px;
+    max-width: 99%;
+  }
+  
+  .header {
+    margin-bottom: 1.2rem;
+  }
+  
+  .header h2 {
+    font-size: 1.2rem;
+  }
+  
+  .headerIcon {
+    font-size: 1.3rem;
+  }
+  
+  .buttonGroup {
+    gap: 0.5rem;
+    margin: 1rem 0;
+  }
+  
+  .configBtn {
+    max-width: 260px;
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+    border-radius: 10px;
+  }
+  
+  .modal {
+    padding: 1rem;
+    max-width: 98vw;
+    margin: 0.5rem;
+    border-radius: 12px;
+    max-height: 95vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
+  
+  .formModal {
+    gap: 0.7rem;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .input {
+    font-size: 0.9rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 6px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .saveBtn, .cancelBtn, .deleteBtn {
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+    min-width: 100px;
+    border-radius: 6px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .modalBtnGroup {
+    gap: 0.5rem;
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .serviciosSection,
+  .citasSection {
+    padding: 0.8rem;
+    margin: 0.8rem 0;
+    border-radius: 12px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .modalButtons {
+    gap: 0.5rem;
+    max-width: 100%;
+  }
+  
+  .submitBtn,
+  .cancelBtn {
+    max-width: 160px;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    border-radius: 6px;
+    box-sizing: border-box;
+  }
+  
+  .modal h3 {
+    font-size: 1.3rem;
+    margin-bottom: 1.2rem;
+    word-wrap: break-word;
+  }
+  
+  .formGroup label {
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  .formGroup {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* Móviles pequeños */
+@media (max-width: 360px) {
+  .configContainer {
+    padding: 0.6rem;
+    margin: 0.3rem;
+    border-radius: 10px;
+    max-width: 99.5%;
+  }
+  
+  .header h2 {
+    font-size: 1.1rem;
+  }
+  
+  .headerIcon {
+    font-size: 1.2rem;
+  }
+  
+  .buttonGroup {
+    gap: 0.4rem;
+    margin: 0.8rem 0;
+  }
+  
+  .configBtn {
+    max-width: 240px;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.85rem;
+    border-radius: 8px;
+  }
+  
+  .modal {
+    padding: 0.8rem;
+    max-width: 99vw;
+    margin: 0.3rem;
+    border-radius: 10px;
+    max-height: 98vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
+  
+  .formModal {
+    gap: 0.6rem;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .input {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.7rem;
+    border-radius: 5px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .saveBtn, .cancelBtn, .deleteBtn {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.9rem;
+    min-width: 90px;
+    border-radius: 5px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .modalBtnGroup {
+    gap: 0.4rem;
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .serviciosSection,
+  .citasSection {
+    padding: 0.6rem;
+    margin: 0.6rem 0;
+    border-radius: 10px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .modalButtons {
+    gap: 0.4rem;
+    max-width: 100%;
+  }
+  
+  .submitBtn,
+  .cancelBtn {
+    max-width: 140px;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.85rem;
+    border-radius: 5px;
+    box-sizing: border-box;
+  }
+  
+  .modal h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    word-wrap: break-word;
+  }
+  
+  .formGroup label {
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  .formGroup {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* Orientación landscape en móviles */
+@media (max-width: 768px) and (orientation: landscape) {
+  .configContainer {
+    margin: 0.5rem auto;
+    padding: 1rem;
+  }
+  
+  .header {
+    margin-bottom: 1rem;
+  }
+  
+  .buttonGroup {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+    margin: 1rem 0;
+  }
+  
+  .configBtn {
+    width: auto;
+    max-width: 200px;
+    min-width: 160px;
+    padding: 0.8rem 1.2rem;
+    font-size: 0.9rem;
+  }
+  
+  .modal {
+    max-height: 80vh;
+    padding: 1.2rem;
+    overflow-y: auto;
+  }
+  
+  .serviciosSection,
+  .citasSection {
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+}
+
+/* Mejoras para dispositivos táctiles */
+@media (hover: none) and (pointer: coarse) {
+  .configBtn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .input {
+    min-height: 44px;
+  }
+  
+  .saveBtn, .cancelBtn, .deleteBtn,
+  .submitBtn, .cancelBtn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .modal {
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+}
+
+/* Mejoras para pantallas de alta densidad */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .configContainer {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  }
+  
+  .modal {
+    box-shadow: 0 4px 16px rgba(25,118,210,0.15);
+  }
+  
+  .configBtn {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
 } 

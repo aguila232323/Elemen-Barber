@@ -3,7 +3,7 @@ import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'moment/locale/es';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { FaCalendarAlt, FaPlus, FaTimes, FaSave } from 'react-icons/fa';
+import { FaCalendarAlt, FaPlus, FaTimes, FaSave, FaBars, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import './CitasAdminCustom.css';
 
 const localizer = momentLocalizer(moment);
@@ -36,7 +36,7 @@ interface Cita {
   usuario: Usuario;
 }
 
-// Toolbar profesional personalizado
+// Toolbar profesional personalizado con responsive
 const CustomToolbar = (toolbar: any) => {
   const goToBack = () => {
     console.log('Going back from:', toolbar.date);
@@ -65,7 +65,7 @@ const CustomToolbar = (toolbar: any) => {
     const monthName = getMonthName(date);
     const year = date.getFullYear();
     return (
-      <span style={{fontWeight:800, fontSize:'1.2rem', color:'#ffffff'}}>
+      <span className="toolbar-month-year">
         {monthName} {year}
       </span>
     );
@@ -77,66 +77,29 @@ const CustomToolbar = (toolbar: any) => {
   };
 
   return (
-    <div className="citas-admin-toolbar" style={{
-      display:'flex',
-      alignItems:'center',
-      justifyContent:'space-between',
-      marginBottom:18,
-      background:'linear-gradient(135deg, #1976d2, #1565c0)',
-      borderRadius:12,
-      padding:'1rem 1.2rem',
-      boxShadow:'0 4px 16px rgba(25,118,210,0.15)'
-    }}>
-      <div style={{display:'flex',alignItems:'center',gap:8}}>
-        <button onClick={goToBack} className="citas-admin-nav-btn" style={{
-          background:'rgba(255,255,255,0.2)',
-          border:'none',
-          borderRadius:8,
-          padding:'0.5rem 1rem',
-          color:'#fff',
-          cursor:'pointer',
-          fontWeight:600,
-          transition:'all 0.3s ease'
-        }}>&#8592;</button>
+    <div className="citas-admin-toolbar">
+      <div className="toolbar-left">
+        <button onClick={goToBack} className="citas-admin-nav-btn">
+          <FaChevronLeft />
+        </button>
         
-        <button onClick={goToNext} className="citas-admin-nav-btn" style={{
-          background:'rgba(255,255,255,0.2)',
-          border:'none',
-          borderRadius:8,
-          padding:'0.5rem 1rem',
-          color:'#fff',
-          cursor:'pointer',
-          fontWeight:600,
-          transition:'all 0.3s ease'
-        }}>&#8594;</button>
+        <button onClick={goToNext} className="citas-admin-nav-btn">
+          <FaChevronRight />
+        </button>
         
-        <button onClick={goToToday} className="citas-admin-nav-btn" style={{
-          background:'rgba(255,255,255,0.2)',
-          border:'none',
-          borderRadius:8,
-          padding:'0.5rem 1rem',
-          color:'#fff',
-          cursor:'pointer',
-          fontWeight:600,
-          transition:'all 0.3s ease'
-        }}>Hoy</button>
+        <button onClick={goToToday} className="citas-admin-nav-btn">
+          Hoy
+        </button>
       </div>
       
-      <div style={{fontWeight:800, fontSize:'1.2rem', color:'#ffffff'}}>
+      <div className="toolbar-center">
         {label()}
       </div>
       
-      <div style={{display:'flex',alignItems:'center',gap:8}}>
-        <button onClick={() => handleViewChange('month')} className="citas-admin-nav-btn" style={{
-          background:'rgba(255,255,255,0.2)',
-          border:'none',
-          borderRadius:8,
-          padding:'0.5rem 1rem',
-          color:'#fff',
-          cursor:'pointer',
-          fontWeight:600,
-          transition:'all 0.3s ease'
-        }}>Mes</button>
+      <div className="toolbar-right">
+        <button onClick={() => handleViewChange('month')} className="citas-admin-nav-btn">
+          Mes
+        </button>
       </div>
     </div>
   );
@@ -152,6 +115,8 @@ const CitasAdmin: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showOccupancyModal, setShowOccupancyModal] = useState(false);
   const [selectedDayOccupancy, setSelectedDayOccupancy] = useState<any>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
   
   // Estados para modal de periodicidad
   const [showPeriodicModal, setShowPeriodicModal] = useState(false);
@@ -162,6 +127,18 @@ const CitasAdmin: React.FC = () => {
   });
   const [periodicLoading, setPeriodicLoading] = useState(false);
   const [periodicMsg, setPeriodicMsg] = useState<string | null>(null);
+
+  // Detectar si es móvil
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Función para determinar el estado dinámico de una cita
   const getCitaStatus = (fechaHora: Date, duracionMinutos: number = 45, estadoOriginal?: string) => {
@@ -280,35 +257,17 @@ const CitasAdmin: React.FC = () => {
       <div
         data-status={event.status}
         data-status-label={event.statusLabel}
-        style={{
-          background: event.statusBgColor || '#1976d2',
-          color: '#fff',
-          padding: '4px 8px',
-          borderRadius: '6px',
-          fontSize: '0.85rem',
-          fontWeight: 600,
-          borderLeft: `3px solid ${event.statusBorderColor || '#1976d2'}`,
-          position: 'relative',
-          overflow: 'hidden',
-          opacity: isCancelled ? 0.7 : 1,
-          textDecoration: isCancelled ? 'line-through' : 'none'
-        }}
+        className="custom-event-component"
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ flex: 1, fontSize: '0.8rem' }}>
+        <div className="event-header">
+          <span className="event-service">
             {event.servicio?.nombre || 'Sin servicio'}
           </span>
-          <span style={{
-            fontSize: '0.7rem',
-            background: 'rgba(255,255,255,0.2)',
-            padding: '1px 4px',
-            borderRadius: '3px',
-            fontWeight: 600
-          }}>
+          <span className="event-status">
             {event.statusLabel || 'Pendiente'}
           </span>
         </div>
-        <div style={{ fontSize: '0.75rem', opacity: 0.9, marginTop: '2px' }}>
+        <div className="event-client">
           {event.usuario?.nombre || 'Sin cliente'}
         </div>
       </div>
@@ -518,86 +477,44 @@ const CitasAdmin: React.FC = () => {
   };
 
   return (
-    <div className="citas-admin-container" style={{padding: '2rem', background: '#f8f9fa', minHeight: '100vh'}}>
-      <h2 className="citas-admin-title" style={{
-        color: '#1976d2',
-        fontSize: '2rem',
-        fontWeight: 800,
-        marginBottom: '2rem',
-        textAlign: 'center',
-        textShadow: '0 2px 4px rgba(25,118,210,0.1)'
-      }}>Calendario de Citas</h2>
-      
+    <div className="citas-admin-container">
+      <div className="citas-admin-header">
+        <h2 className="citas-admin-title">Calendario de Citas</h2>
+        
+        {/* Botón de menú móvil */}
+        {isMobile && (
+          <button 
+            className="mobile-menu-toggle"
+            onClick={() => setShowSidebar(!showSidebar)}
+          >
+            <FaBars />
+          </button>
+        )}
+      </div>
 
-      
-
-      
       {error && (
-        <div style={{
-          color: '#e74c3c',
-          textAlign: 'center',
-          marginBottom: 16,
-          padding: '1rem',
-          background: '#fdf2f2',
-          border: '1px solid #fecaca',
-          borderRadius: '8px',
-          fontWeight: '600'
-        }}>
+        <div className="error-message">
           Error: {error}
         </div>
       )}
       
       {loading ? (
-        <div style={{
-          textAlign: 'center',
-          color: '#1976d2',
-          fontWeight: 600,
-          padding: '2rem',
-          fontSize: '1.1rem'
-        }}>
+        <div className="loading-message">
           Cargando citas...
         </div>
       ) : (
-        <div style={{display: 'flex', gap: '1.5rem', height: '80vh', maxHeight: '80vh', overflow: 'hidden'}}>
+        <div className="citas-admin-content">
           {/* Panel lateral izquierdo */}
-          <div style={{
-            background: '#fff',
-            borderRadius: 16,
-            padding: '1.5rem',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-            width: '400px',
-            display: 'flex',
-            flexDirection: 'column',
-            maxHeight: '100%',
-            overflow: 'hidden'
-          }}>
+          <div className={`sidebar-panel ${isMobile ? 'mobile-sidebar' : ''} ${showSidebar ? 'sidebar-open' : ''}`}>
             {/* Sección de ocupación del día seleccionado */}
-            <div style={{
-              background: '#f8f9fa',
-              borderRadius: 12,
-              padding: '1rem',
-              marginBottom: '1rem',
-              border: '1px solid #e9ecef',
-              flexShrink: 0
-            }}>
-              <div style={{
-                fontWeight: 600,
-                marginBottom: '0.8rem',
-                color: '#1976d2',
-                fontSize: '1rem',
-                textAlign: 'center'
-              }}>
+            <div className="occupancy-section">
+              <div className="section-title">
                 📊 Ocupación del Día
               </div>
               
               {selectedDate ? (
-                <div style={{textAlign: 'center'}}>
-                  <div style={{
-                    fontSize: '0.9rem',
-                    fontWeight: 600,
-                    color: '#2c3e50',
-                    marginBottom: '0.8rem'
-                  }}>
+                <div className="occupancy-content">
+                  <div className="occupancy-date">
                     {selectedDate.toLocaleDateString('es-ES', { 
                       weekday: 'long', 
                       year: 'numeric', 
@@ -610,59 +527,26 @@ const CitasAdmin: React.FC = () => {
                     const occupancy = getDayOccupancy(selectedDate);
                     return (
                       <>
-                        <div style={{
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          gap: '0.8rem',
-                          marginBottom: '0.8rem'
-                        }}>
-                          <div style={{
-                            background: occupancy.percentage > 80 ? '#e74c3c' : 
-                                       occupancy.percentage > 50 ? '#f39c12' : 
-                                       occupancy.percentage > 0 ? '#27ae60' : '#95a5a6',
-                            color: '#fff',
-                            padding: '0.6rem 1.2rem',
-                            borderRadius: '6px',
-                            fontSize: '1.3rem',
-                            fontWeight: 700,
-                            minWidth: '70px'
-                          }}>
+                        <div className="occupancy-stats">
+                          <div className={`occupancy-percentage occupancy-${occupancy.percentage > 80 ? 'high' : occupancy.percentage > 50 ? 'medium' : 'low'}`}>
                             {occupancy.percentage}%
                           </div>
                           
-                          <div style={{
-                            background: '#fff',
-                            padding: '0.6rem',
-                            borderRadius: '6px',
-                            border: '2px solid #e9ecef'
-                          }}>
-                            <div style={{fontSize: '1rem', fontWeight: 700, color: '#1976d2'}}>
+                          <div className="occupancy-slots">
+                            <div className="slots-number">
                               {occupancy.occupied}/{occupancy.total}
                             </div>
-                            <div style={{fontSize: '0.7rem', color: '#666'}}>
+                            <div className="slots-label">
                               Citas ocupadas
                             </div>
                           </div>
                         </div>
                         
-                        <div style={{
-                          background: '#fff',
-                          padding: '0.6rem',
-                          borderRadius: '6px',
-                          marginBottom: '0.8rem',
-                          border: '1px solid #e9ecef'
-                        }}>
-                          <div style={{fontSize: '0.8rem', fontWeight: 600, color: '#2c3e50', marginBottom: '0.2rem'}}>
+                        <div className="occupancy-status">
+                          <div className="status-label">
                             Estado de Ocupación
                           </div>
-                          <div style={{
-                            fontSize: '0.8rem',
-                            color: occupancy.percentage > 80 ? '#e74c3c' : 
-                                   occupancy.percentage > 50 ? '#f39c12' : 
-                                   occupancy.percentage > 0 ? '#27ae60' : '#95a5a6',
-                            fontWeight: 600
-                          }}>
+                          <div className={`status-text status-${occupancy.percentage > 80 ? 'high' : occupancy.percentage > 50 ? 'medium' : 'low'}`}>
                             {occupancy.percentage > 80 ? '🔴 Alta ocupación' : 
                              occupancy.percentage > 50 ? '🟡 Ocupación media' : 
                              occupancy.percentage > 0 ? '🟢 Ocupación baja' : '⚪ Sin citas'}
@@ -670,110 +554,44 @@ const CitasAdmin: React.FC = () => {
                         </div>
                         
                         {/* Barra de progreso */}
-                        <div style={{
-                          width: '100%',
-                          height: '6px',
-                          background: '#ecf0f1',
-                          borderRadius: '3px',
-                          overflow: 'hidden',
-                          marginBottom: '0.5rem'
-                        }}>
-                          <div style={{
-                            width: `${occupancy.percentage}%`,
-                            height: '100%',
-                            background: occupancy.percentage > 80 ? '#e74c3c' : 
-                                       occupancy.percentage > 50 ? '#f39c12' : '#27ae60',
-                            transition: 'width 0.3s ease',
-                            borderRadius: '3px'
-                          }} />
+                        <div className="progress-bar">
+                          <div 
+                            className={`progress-fill progress-${occupancy.percentage > 80 ? 'high' : occupancy.percentage > 50 ? 'medium' : 'low'}`}
+                            style={{width: `${occupancy.percentage}%`}}
+                          />
                         </div>
                       </>
                     );
                   })()}
                 </div>
               ) : (
-                <div style={{
-                  textAlign: 'center',
-                  color: '#666',
-                  fontSize: '0.9rem',
-                  padding: '1rem'
-                }}>
+                <div className="no-selection-message">
                   Haz clic en un día del calendario para ver su ocupación
                 </div>
               )}
             </div>
             
             {/* Sección de citas del día */}
-            <div style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              minHeight: 0,
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                fontWeight: 600,
-                marginBottom: '1rem',
-                color: '#1976d2',
-                fontSize: '1.1rem',
-                flexShrink: 0
-              }}>
+            <div className="day-events-section">
+              <div className="section-title">
                 📅 Citas del Día
               </div>
               
-              <div style={{
-                flex: 1,
-                overflowY: 'auto',
-                background: '#f8f9fa',
-                borderRadius: 8,
-                padding: '0.5rem',
-                minHeight: 0,
-                maxHeight: '100%'
-              }}>
+              <div className="events-list">
                 {selectedDate ? (
                   getDayEvents(selectedDate).length === 0 ? (
-                    <div style={{
-                      textAlign: 'center',
-                      padding: '2rem',
-                      color: '#666',
-                      fontSize: '0.9rem'
-                    }}>
+                    <div className="no-events-message">
                       No hay citas para este día
                     </div>
                   ) : (
-                    <div style={{display: 'flex', flexDirection: 'column', gap: '0.8rem'}}>
+                    <div className="events-container">
                       {getDayEvents(selectedDate).map((event, index) => (
-                        <div key={index} style={{
-                          background: '#fff',
-                          borderRadius: 8,
-                          padding: '0.8rem',
-                          border: '1px solid #e9ecef',
-                          transition: 'all 0.3s ease',
-                          flexShrink: 0
-                        }} onMouseEnter={(e) => {
-                          e.currentTarget.style.background = '#e3f2fd';
-                          e.currentTarget.style.transform = 'translateY(-1px)';
-                        }} onMouseLeave={(e) => {
-                          e.currentTarget.style.background = '#fff';
-                          e.currentTarget.style.transform = 'translateY(0)';
-                        }}>
-                          <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'flex-start',
-                            marginBottom: '0.5rem'
-                          }}>
-                            <div style={{fontWeight: 600, color: '#1976d2', fontSize: '0.9rem'}}>
+                        <div key={index} className="event-card">
+                          <div className="event-header">
+                            <div className="event-title">
                               {event.title}
                             </div>
-                            <div style={{
-                              background: event.statusColor || '#43b94a',
-                              color: '#fff',
-                              padding: '0.2rem 0.4rem',
-                              borderRadius: 6,
-                              fontSize: '0.7rem',
-                              fontWeight: 600
-                            }}>
+                            <div className={`event-status-badge status-${event.status}`}>
                               {event.status === 'pendiente' ? '⏳' : 
                                event.status === 'en_curso' ? '🔄' : 
                                event.status === 'completada' ? '✅' : 
@@ -781,59 +599,36 @@ const CitasAdmin: React.FC = () => {
                             </div>
                           </div>
                           
-                          <div style={{color: '#666', fontSize: '0.8rem', marginBottom: '0.3rem'}}>
-                            <strong>Servicio:</strong> {event.servicio?.nombre || 'Sin servicio'}
-                          </div>
-                          
-                          <div style={{color: '#666', fontSize: '0.8rem', marginBottom: '0.3rem'}}>
-                            <strong>Cliente:</strong> {event.usuario?.nombre || 'Sin cliente'}
-                          </div>
-                          
-                          <div style={{color: '#666', fontSize: '0.8rem', marginBottom: '0.3rem'}}>
-                            <strong>Teléfono:</strong> {event.usuario?.telefono || 'Sin teléfono'}
-                          </div>
-                          
-                          <div style={{color: '#666', fontSize: '0.8rem', marginBottom: '0.3rem'}}>
-                            <strong>Hora:</strong> {moment(event.start).format('HH:mm')} - {moment(event.end).format('HH:mm')}
-                          </div>
-                          
-                          <div style={{color: '#666', fontSize: '0.8rem', marginBottom: '0.5rem'}}>
-                            <strong>Precio:</strong> {event.servicio?.precio?.toFixed(2) || '0.00'} €
+                          <div className="event-details">
+                            <div className="event-detail">
+                              <strong>Servicio:</strong> {event.servicio?.nombre || 'Sin servicio'}
+                            </div>
+                            
+                            <div className="event-detail">
+                              <strong>Cliente:</strong> {event.usuario?.nombre || 'Sin cliente'}
+                            </div>
+                            
+                            <div className="event-detail">
+                              <strong>Teléfono:</strong> {event.usuario?.telefono || 'Sin teléfono'}
+                            </div>
+                            
+                            <div className="event-detail">
+                              <strong>Hora:</strong> {moment(event.start).format('HH:mm')} - {moment(event.end).format('HH:mm')}
+                            </div>
+                            
+                            <div className="event-detail">
+                              <strong>Precio:</strong> {event.servicio?.precio?.toFixed(2) || '0.00'} €
+                            </div>
                           </div>
                           
                           {/* Botón para hacer periódica - solo si no es periódica */}
                           {!(event.fija && event.periodicidadDias > 0) && (
-                            <div style={{
-                              display: 'flex',
-                              justifyContent: 'center',
-                              marginTop: '0.5rem'
-                            }}>
+                            <div className="periodic-button-container">
                               <button
                                 onClick={() => handleMakePeriodic(event)}
-                                style={{
-                                  background: 'linear-gradient(135deg, #9c27b0, #7b1fa2)',
-                                  color: '#fff',
-                                  border: 'none',
-                                  borderRadius: '6px',
-                                  padding: '0.4rem 0.8rem',
-                                  fontSize: '0.75rem',
-                                  fontWeight: '600',
-                                  cursor: 'pointer',
-                                  transition: 'all 0.3s ease',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '0.3rem'
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.transform = 'translateY(-1px)';
-                                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(156,39,176,0.3)';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.transform = 'translateY(0)';
-                                  e.currentTarget.style.boxShadow = 'none';
-                                }}
+                                className="make-periodic-btn"
                               >
-                                <FaCalendarAlt style={{fontSize: '0.7rem'}} />
+                                <FaCalendarAlt />
                                 Hacer Periódica
                               </button>
                             </div>
@@ -841,26 +636,9 @@ const CitasAdmin: React.FC = () => {
                           
                           {/* Indicador de cita periódica */}
                           {event.fija && event.periodicidadDias > 0 && (
-                            <div style={{
-                              display: 'flex',
-                              justifyContent: 'center',
-                              marginTop: '0.5rem'
-                            }}>
-                              <div style={{
-                                background: 'linear-gradient(135deg, #ff9800, #f57c00)',
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: '6px',
-                                padding: '0.4rem 0.8rem',
-                                fontSize: '0.75rem',
-                                fontWeight: '600',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.3rem'
-                              }}>
-                                <FaCalendarAlt style={{fontSize: '0.7rem'}} />
-                                Periódica ({event.periodicidadDias} días)
-                              </div>
+                            <div className="periodic-indicator">
+                              <FaCalendarAlt />
+                              Periódica ({event.periodicidadDias} días)
                             </div>
                           )}
                         </div>
@@ -868,12 +646,7 @@ const CitasAdmin: React.FC = () => {
                     </div>
                   )
                 ) : (
-                  <div style={{
-                    textAlign: 'center',
-                    padding: '2rem',
-                    color: '#666',
-                    fontSize: '0.9rem'
-                  }}>
+                  <div className="no-selection-message">
                     Selecciona un día para ver las citas
                   </div>
                 )}
@@ -882,174 +655,97 @@ const CitasAdmin: React.FC = () => {
           </div>
           
           {/* Calendario principal */}
-          <div style={{
-            background: '#fff',
-            borderRadius: 16,
-            padding: '1.5rem',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-            flex: 1,
-            position: 'relative'
-          }}>
-        <Calendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
+          <div className="calendar-container">
+            <Calendar
+              localizer={localizer}
+              events={events}
+              startAccessor="start"
+              endAccessor="end"
               date={currentDate}
               style={{ height: '100%' }}
-          messages={{
-            next: 'Sig.',
-            previous: 'Ant.',
-            today: 'Hoy',
-            month: 'Mes',
-            week: 'Semana',
-            day: 'Día',
-            agenda: 'Agenda',
-            date: 'Fecha',
-            time: 'Hora',
-            event: 'Cita',
-            noEventsInRange: 'No hay citas en este rango',
-          }}
-          views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
-          popup
-          selectable
+              messages={{
+                next: 'Sig.',
+                previous: 'Ant.',
+                today: 'Hoy',
+                month: 'Mes',
+                week: 'Semana',
+                day: 'Día',
+                agenda: 'Agenda',
+                date: 'Fecha',
+                time: 'Hora',
+                event: 'Cita',
+                noEventsInRange: 'No hay citas en este rango',
+              }}
+              views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
+              popup
+              selectable
               onSelectEvent={handleSelectEvent}
               onSelectSlot={handleSelectSlot}
               onNavigate={handleNavigate}
               onDoubleClickSlot={handleDoubleClickSlot}
-          components={{
-            toolbar: (props: any) => <CustomToolbar {...props} />, // Removed setShowBookingModal
-            event: EventComponent,
-          }}
-        />
-            
-
+              components={{
+                toolbar: (props: any) => <CustomToolbar {...props} />,
+                event: EventComponent,
+              }}
+            />
           </div>
         </div>
       )}
 
+      {/* Overlay para móvil */}
+      {isMobile && showSidebar && (
+        <div 
+          className="sidebar-overlay"
+          onClick={() => setShowSidebar(false)}
+        />
+      )}
+
       {/* Modal de eventos del día */}
       {showDayEvents && selectedDate && (
-        <div style={{
-          position:'fixed',
-          top:0,
-          left:0,
-          width:'100vw',
-          height:'100vh',
-          background:'rgba(0,0,0,0.5)',
-          zIndex:2000,
-          display:'flex',
-          alignItems:'center',
-          justifyContent:'center'
-        }} onClick={() => setShowDayEvents(false)}>
-          <div style={{
-            background:'#fff',
-            borderRadius:16,
-            padding:'2rem',
-            minWidth:400,
-            maxWidth:600,
-            maxHeight:'80vh',
-            overflow:'auto',
-            boxShadow:'0 8px 32px rgba(25,118,210,0.2)',
-            color:'#222',
-            position:'relative'
-          }} onClick={e => e.stopPropagation()}>
-            <button onClick={() => setShowDayEvents(false)} style={{
-              position:'absolute',
-              top:18,
-              right:18,
-              background:'none',
-              border:'none',
-              fontSize:22,
-              color:'#1976d2',
-              cursor:'pointer',
-              fontWeight:700
-            }}>×</button>
+        <div className="modal-overlay" onClick={() => setShowDayEvents(false)}>
+          <div className="modal-content day-events-modal" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowDayEvents(false)} className="modal-close-btn">×</button>
             
-            <h3 style={{
-              color:'#1976d2',
-              fontWeight:800,
-              marginTop:0,
-              marginBottom:20,
-              fontSize:'1.5rem'
-            }}>
+            <h3 className="modal-title">
               Eventos del {moment(selectedDate).format('DD [de] MMMM [de] YYYY')}
             </h3>
             
             {getDayEvents(selectedDate).length === 0 ? (
-              <div style={{
-                textAlign: 'center',
-                color: '#666',
-                padding: '2rem',
-                fontSize: '1.1rem'
-              }}>
+              <div className="no-events-message">
                 No hay citas programadas para este día
               </div>
             ) : (
-              <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+              <div className="modal-events-list">
                 {getDayEvents(selectedDate).map((event, index) => (
-                  <div key={index} style={{
-                    background: event.statusBgColor || '#f0f9ff',
-                    border: `2px solid ${event.statusBorderColor || '#43b94a'}`,
-                    borderRadius: 12,
-                    padding: '1rem',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    opacity: event.status === 'cancelada' ? 0.7 : 1,
-                    textDecoration: event.status === 'cancelada' ? 'line-through' : 'none'
-                  }} onClick={() => {
-                    setSelectedEvent(event);
-                    setShowDayEvents(false);
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: '0.5rem'
-                    }}>
-                      <span style={{
-                        fontWeight: 700,
-                        color: event.statusColor || '#43b94a',
-                        fontSize: '1.1rem'
-                      }}>
+                  <div key={index} className={`modal-event-card status-${event.status}`}>
+                    <div className="modal-event-header">
+                      <span className="modal-event-service">
                         {event.servicio?.nombre}
-                </span>
-                      <span style={{
-                        background: event.statusColor || '#43b94a',
-                        color: '#fff',
-                        padding: '0.3rem 0.8rem',
-                        borderRadius: 20,
-                        fontSize: '0.8rem',
-                        fontWeight: 600
-                      }}>
+                      </span>
+                      <span className="modal-event-status">
                         {event.statusLabel || 'Pendiente'}
-                </span>
+                      </span>
                     </div>
                     
-                    <div style={{marginBottom: '0.5rem'}}>
-                      <span style={{fontWeight: 600, color: '#666'}}>Cliente: </span>
-                      <span style={{color: '#1976d2'}}>{event.usuario?.nombre}</span>
-                    </div>
-                    
-                    <div style={{marginBottom: '0.5rem'}}>
-                      <span style={{fontWeight: 600, color: '#666'}}>Hora: </span>
-                      <span>{moment(event.start).format('HH:mm')} - {moment(event.end).format('HH:mm')}</span>
-                    </div>
-                    
-                    <div style={{marginBottom: '0.5rem'}}>
-                      <span style={{fontWeight: 600, color: '#666'}}>Precio: </span>
-                      <span style={{color: '#43b94a', fontWeight: 700}}>{event.servicio?.precio?.toFixed(2)} €</span>
+                    <div className="modal-event-details">
+                      <div className="modal-event-detail">
+                        <span className="detail-label">Cliente: </span>
+                        <span className="detail-value">{event.usuario?.nombre}</span>
+                      </div>
+                      
+                      <div className="modal-event-detail">
+                        <span className="detail-label">Hora: </span>
+                        <span>{moment(event.start).format('HH:mm')} - {moment(event.end).format('HH:mm')}</span>
+                      </div>
+                      
+                      <div className="modal-event-detail">
+                        <span className="detail-label">Precio: </span>
+                        <span className="detail-price">{event.servicio?.precio?.toFixed(2)} €</span>
+                      </div>
                     </div>
                     
                     {event.comentario && (
-                      <div style={{
-                        background: '#f8f9fa',
-                        padding: '0.5rem',
-                        borderRadius: 6,
-                        fontSize: '0.9rem',
-                        color: '#666',
-                        fontStyle: 'italic'
-                      }}>
+                      <div className="modal-event-comment">
                         "{event.comentario}"
                       </div>
                     )}
@@ -1063,232 +759,102 @@ const CitasAdmin: React.FC = () => {
 
       {/* Modal de detalles de cita */}
       {selectedEvent && (
-        <div style={{
-          position:'fixed',
-          top:0,
-          left:0,
-          width:'100vw',
-          height:'100vh',
-          background:'rgba(0,0,0,0.5)',
-          zIndex:2000,
-          display:'flex',
-          alignItems:'center',
-          justifyContent:'center'
-        }} onClick={() => setSelectedEvent(null)}>
-          <div style={{
-            background:'#fff',
-            borderRadius:16,
-            padding:'2.2rem 2.5rem',
-            minWidth:320,
-            maxWidth:420,
-            boxShadow:'0 8px 32px rgba(25,118,210,0.2)',
-            color:'#222',
-            position:'relative'
-          }} onClick={e => e.stopPropagation()}>
-            <button onClick={() => setSelectedEvent(null)} style={{
-              position:'absolute',
-              top:18,
-              right:18,
-              background:'none',
-              border:'none',
-              fontSize:22,
-              color:'#1976d2',
-              cursor:'pointer',
-              fontWeight:700
-            }}>×</button>
+        <div className="modal-overlay" onClick={() => setSelectedEvent(null)}>
+          <div className="modal-content event-details-modal" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setSelectedEvent(null)} className="modal-close-btn">×</button>
             
-            <h3 style={{
-              color:'#1976d2',
-              fontWeight:800,
-              marginTop:0,
-              marginBottom:18,
-              fontSize:'1.4rem'
-            }}>Detalles de la cita</h3>
+            <h3 className="modal-title">Detalles de la cita</h3>
             
-            <div style={{marginBottom:10}}>
-              <b>Servicio:</b> <span style={{color:'#1976d2',fontWeight:600}}>{selectedEvent.servicio?.nombre}</span>
-            </div>
-            <div style={{marginBottom:10}}>
-              <b>Descripción:</b> <span style={{color:'#444'}}>{selectedEvent.servicio?.descripcion}</span>
-            </div>
-            <div style={{marginBottom:10}}>
-              <b>Precio:</b> <span style={{color:'#43b94a',fontWeight:700}}>{selectedEvent.servicio?.precio?.toFixed(2)} €</span>
-            </div>
-            <div style={{marginBottom:10}}>
-              <b>Duración:</b> <span>{selectedEvent.servicio?.duracionMinutos} min</span>
-            </div>
-            <div style={{marginBottom:10}}>
-              <b>Cliente:</b> <span style={{color:'#1976d2'}}>{selectedEvent.usuario?.nombre} ({selectedEvent.usuario?.email})</span>
-            </div>
-            <div style={{marginBottom:10}}>
-              <b>Fecha:</b> <span>{moment(selectedEvent.start).format('DD/MM/YYYY')}</span>
-            </div>
-            <div style={{marginBottom:10}}>
-              <b>Hora:</b> <span>{moment(selectedEvent.start).format('HH:mm')} - {moment(selectedEvent.end).format('HH:mm')}</span>
-            </div>
-            {selectedEvent.comentario && (
-              <div style={{marginBottom:10}}>
-                <b>Comentario:</b> <span style={{color:'#444'}}>{selectedEvent.comentario}</span>
+            <div className="event-details-list">
+              <div className="event-detail-item">
+                <b>Servicio:</b> <span className="detail-value">{selectedEvent.servicio?.nombre}</span>
               </div>
-            )}
-            <div style={{marginBottom:10}}>
-              <b>Confirmada:</b> <span style={{
-                color:selectedEvent.confirmada?'#43b94a':'#e74c3c',
-                fontWeight:700
-              }}>{selectedEvent.confirmada ? 'Sí' : 'No'}</span>
-            </div>
-            {selectedEvent.fija && selectedEvent.periodicidadDias > 0 && (
-              <div style={{
-                marginBottom: 10,
-                padding: '8px 12px',
-                background: 'linear-gradient(135deg, #ff9800, #f57c00)',
-                borderRadius: '6px',
-                color: '#fff'
-              }}>
-                <div style={{fontWeight: 700, marginBottom: '4px'}}>
-                  <FaCalendarAlt style={{marginRight: '6px', fontSize: '0.9rem'}} />
-                  Cita Periódica
-                </div>
-                <div style={{fontSize: '0.9rem'}}>
-                  Se repite cada <strong>{selectedEvent.periodicidadDias} días</strong>
-                </div>
+              <div className="event-detail-item">
+                <b>Descripción:</b> <span className="detail-value">{selectedEvent.servicio?.descripcion}</span>
               </div>
-            )}
+              <div className="event-detail-item">
+                <b>Precio:</b> <span className="detail-price">{selectedEvent.servicio?.precio?.toFixed(2)} €</span>
+              </div>
+              <div className="event-detail-item">
+                <b>Duración:</b> <span>{selectedEvent.servicio?.duracionMinutos} min</span>
+              </div>
+              <div className="event-detail-item">
+                <b>Cliente:</b> <span className="detail-value">{selectedEvent.usuario?.nombre} ({selectedEvent.usuario?.email})</span>
+              </div>
+              <div className="event-detail-item">
+                <b>Fecha:</b> <span>{moment(selectedEvent.start).format('DD/MM/YYYY')}</span>
+              </div>
+              <div className="event-detail-item">
+                <b>Hora:</b> <span>{moment(selectedEvent.start).format('HH:mm')} - {moment(selectedEvent.end).format('HH:mm')}</span>
+              </div>
+              {selectedEvent.comentario && (
+                <div className="event-detail-item">
+                  <b>Comentario:</b> <span className="detail-value">{selectedEvent.comentario}</span>
+                </div>
+              )}
+              <div className="event-detail-item">
+                <b>Confirmada:</b> <span className={`confirmation-status ${selectedEvent.confirmada ? 'confirmed' : 'not-confirmed'}`}>
+                  {selectedEvent.confirmada ? 'Sí' : 'No'}
+                </span>
+              </div>
+              {selectedEvent.fija && selectedEvent.periodicidadDias > 0 && (
+                <div className="periodic-info">
+                  <div className="periodic-header">
+                    <FaCalendarAlt />
+                    Cita Periódica
+                  </div>
+                  <div className="periodic-details">
+                    Se repite cada <strong>{selectedEvent.periodicidadDias} días</strong>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
 
       {/* Modal de periodicidad */}
       {showPeriodicModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          background: 'rgba(0,0,0,0.7)',
-          zIndex: 2000,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backdropFilter: 'blur(4px)'
-        }} onClick={() => setShowPeriodicModal(false)}>
-          <div style={{
-            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-            color: '#fff',
-            borderRadius: 20,
-            padding: '1.5rem',
-            width: '95%',
-            maxWidth: '480px',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            position: 'relative',
-            animation: 'modalSlideIn 0.3s ease-out'
-          }} onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay periodic-modal-overlay" onClick={() => setShowPeriodicModal(false)}>
+          <div className="modal-content periodic-modal" onClick={e => e.stopPropagation()}>
             
             {/* Header del modal con diseño mejorado */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.8rem',
-              marginBottom: '1.2rem',
-              paddingBottom: '0.8rem',
-              borderBottom: '2px solid rgba(25,118,210,0.3)',
-              position: 'relative'
-            }}>
-              <div style={{
-                background: 'linear-gradient(135deg, #1976d2, #1565c0)',
-                borderRadius: '50%',
-                width: '45px',
-                height: '45px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 12px rgba(25,118,210,0.4)'
-              }}>
-                <FaCalendarAlt style={{fontSize: '1.3rem', color: '#fff'}} />
+            <div className="periodic-modal-header">
+              <div className="periodic-modal-icon">
+                <FaCalendarAlt />
               </div>
-              <div>
-                <h3 style={{
-                  margin: 0,
-                  fontSize: '1.3rem',
-                  fontWeight: 700,
-                  color: '#fff',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                }}>Crear Cita Periódica</h3>
-                <p style={{
-                  margin: '0.1rem 0 0 0',
-                  fontSize: '0.85rem',
-                  color: '#b0b0b0',
-                  fontWeight: 400
-                }}>Configura la periodicidad de la cita</p>
+              <div className="periodic-modal-title">
+                <h3>Crear Cita Periódica</h3>
+                <p>Configura la periodicidad de la cita</p>
               </div>
             </div>
 
-            <form onSubmit={handlePeriodicSubmit} style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '1.2rem'
-            }}>
+            <form onSubmit={handlePeriodicSubmit} className="periodic-form">
               
               {/* Información de la cita original con diseño mejorado */}
-              <div style={{
-                background: 'linear-gradient(135deg, rgba(25,118,210,0.1) 0%, rgba(25,118,210,0.05) 100%)',
-                padding: '1rem',
-                borderRadius: 12,
-                border: '1px solid rgba(25,118,210,0.2)',
-                position: 'relative',
-                overflow: 'hidden'
-              }}>
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '4px',
-                  height: '100%',
-                  background: 'linear-gradient(135deg, #1976d2, #1565c0)'
-                }}></div>
-                <div style={{
-                  fontSize: '0.85rem', 
-                  color: '#1976d2', 
-                  fontWeight: 700, 
-                  marginBottom: '0.6rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
-                }}>
+              <div className="original-cita-info">
+                <div className="info-header">
                   📅 Cita Original
                 </div>
-                <div style={{
-                  display: 'grid',
-                  gap: '0.4rem',
-                  fontSize: '0.85rem',
-                  color: '#e0e0e0'
-                }}>
-                  <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                    <span style={{fontWeight: 600, color: '#b0b0b0'}}>Cliente:</span>
-                    <span style={{color: '#fff', fontWeight: 500}}>{selectedCitaForPeriodic?.usuario?.nombre}</span>
+                <div className="info-details">
+                  <div className="info-row">
+                    <span className="info-label">Cliente:</span>
+                    <span className="info-value">{selectedCitaForPeriodic?.usuario?.nombre}</span>
                   </div>
-                  <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                    <span style={{fontWeight: 600, color: '#b0b0b0'}}>Servicio:</span>
-                    <span style={{color: '#fff', fontWeight: 500}}>{selectedCitaForPeriodic?.servicio?.nombre}</span>
+                  <div className="info-row">
+                    <span className="info-label">Servicio:</span>
+                    <span className="info-value">{selectedCitaForPeriodic?.servicio?.nombre}</span>
                   </div>
-                  <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                    <span style={{fontWeight: 600, color: '#b0b0b0'}}>Hora:</span>
-                    <span style={{color: '#fff', fontWeight: 500}}>{moment(selectedCitaForPeriodic?.start).format('HH:mm')}</span>
+                  <div className="info-row">
+                    <span className="info-label">Hora:</span>
+                    <span className="info-value">{moment(selectedCitaForPeriodic?.start).format('HH:mm')}</span>
                   </div>
                 </div>
               </div>
 
               {/* Periodicidad con diseño mejorado */}
-              <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: '0.5rem',
-                  fontSize: '0.9rem',
-                  fontWeight: 600,
-                  color: '#fff',
-                  textShadow: '0 1px 2px rgba(0,0,0,0.3)'
-                }}>
+              <div className="form-group">
+                <label className="form-label">
                   🔄 Periodicidad (días)
                 </label>
                 <input
@@ -1298,49 +864,17 @@ const CitasAdmin: React.FC = () => {
                   onChange={handlePeriodicFormChange}
                   min="1"
                   max="365"
-                  style={{
-                    width: 'calc(100% - 2px)',
-                    padding: '0.6rem 0.8rem',
-                    borderRadius: 12,
-                    border: '2px solid rgba(25,118,210,0.3)',
-                    background: 'rgba(255,255,255,0.05)',
-                    color: '#fff',
-                    fontSize: '0.9rem',
-                    outline: 'none',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    boxSizing: 'border-box'
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = '#1976d2';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(25,118,210,0.2)';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = 'rgba(25,118,210,0.3)';
-                    e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-                  }}
+                  className="form-input"
                   required
                 />
-                <div style={{
-                  fontSize: '0.75rem',
-                  color: '#b0b0b0',
-                  marginTop: '0.3rem',
-                  fontStyle: 'italic'
-                }}>
+                <div className="form-help">
                   Ejemplo: 7 días = cada semana, 30 días = cada mes
                 </div>
               </div>
 
               {/* Fecha de inicio con diseño mejorado */}
-              <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: '0.5rem',
-                  fontSize: '0.9rem',
-                  fontWeight: 600,
-                  color: '#fff',
-                  textShadow: '0 1px 2px rgba(0,0,0,0.3)'
-                }}>
+              <div className="form-group">
+                <label className="form-label">
                   📅 Fecha de inicio
                 </label>
                 <input
@@ -1348,77 +882,21 @@ const CitasAdmin: React.FC = () => {
                   name="fechaInicio"
                   value={periodicForm.fechaInicio}
                   onChange={handlePeriodicFormChange}
-                  style={{
-                    width: 'calc(100% - 2px)',
-                    padding: '0.6rem 0.8rem',
-                    borderRadius: 12,
-                    border: '2px solid rgba(25,118,210,0.3)',
-                    background: 'rgba(255,255,255,0.05)',
-                    color: '#fff',
-                    fontSize: '0.9rem',
-                    outline: 'none',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    boxSizing: 'border-box'
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = '#1976d2';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(25,118,210,0.2)';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = 'rgba(25,118,210,0.3)';
-                    e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-                  }}
+                  className="form-input"
                   required
                 />
-                <div style={{
-                  fontSize: '0.75rem',
-                  color: '#b0b0b0',
-                  marginTop: '0.3rem',
-                  fontStyle: 'italic'
-                }}>
+                <div className="form-help">
                   La primera cita se creará a partir de esta fecha
                 </div>
               </div>
 
               {/* Botones con diseño mejorado */}
-              <div style={{
-                display: 'flex',
-                gap: '0.8rem',
-                justifyContent: 'flex-end',
-                marginTop: '0.8rem',
-                paddingTop: '0.8rem',
-                borderTop: '1px solid rgba(255,255,255,0.1)'
-              }}>
+              <div className="form-buttons">
                 <button
                   type="button"
                   onClick={() => setShowPeriodicModal(false)}
                   disabled={periodicLoading}
-                  style={{
-                    background: 'linear-gradient(135deg, #6c757d 0%, #495057 100%)',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 12,
-                    padding: '0.7rem 1.3rem',
-                    fontSize: '0.9rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                    boxShadow: '0 4px 12px rgba(108,117,125,0.3)',
-                    minWidth: '110px',
-                    justifyContent: 'center'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(108,117,125,0.4)';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(108,117,125,0.3)';
-                  }}
+                  className="btn btn-cancel"
                 >
                   <FaTimes />
                   Cancelar
@@ -1426,31 +904,7 @@ const CitasAdmin: React.FC = () => {
                 <button
                   type="submit"
                   disabled={periodicLoading}
-                  style={{
-                    background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 12,
-                    padding: '0.7rem 1.3rem',
-                    fontSize: '0.9rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                    boxShadow: '0 4px 12px rgba(25,118,210,0.3)',
-                    minWidth: '150px',
-                    justifyContent: 'center'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(25,118,210,0.4)';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(25,118,210,0.3)';
-                  }}
+                  className="btn btn-submit"
                 >
                   <FaSave />
                   {periodicLoading ? 'Creando...' : 'Crear Periódica'}
@@ -1459,21 +913,7 @@ const CitasAdmin: React.FC = () => {
 
               {/* Mensaje de estado con diseño mejorado */}
               {periodicMsg && (
-                <div style={{
-                  marginTop: '0.8rem',
-                  padding: '0.8rem',
-                  borderRadius: 12,
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  textAlign: 'center',
-                  background: periodicMsg.startsWith('¡') 
-                    ? 'linear-gradient(135deg, rgba(76,175,80,0.15) 0%, rgba(46,125,50,0.15) 100%)'
-                    : 'linear-gradient(135deg, rgba(244,67,54,0.15) 0%, rgba(198,40,40,0.15) 100%)',
-                  color: periodicMsg.startsWith('¡') ? '#4caf50' : '#f44336',
-                  border: `2px solid ${periodicMsg.startsWith('¡') ? 'rgba(76,175,80,0.3)' : 'rgba(244,67,54,0.3)'}`,
-                  boxShadow: `0 4px 12px ${periodicMsg.startsWith('¡') ? 'rgba(76,175,80,0.2)' : 'rgba(244,67,54,0.2)'}`,
-                  animation: 'messageSlideIn 0.3s ease-out'
-                }}>
+                <div className={`status-message ${periodicMsg.startsWith('¡') ? 'success' : 'error'}`}>
                   {periodicMsg}
                 </div>
               )}

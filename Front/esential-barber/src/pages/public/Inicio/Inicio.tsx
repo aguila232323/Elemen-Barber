@@ -8,7 +8,6 @@ import 'swiper/css/effect-coverflow';
 import { useServicios } from '../../../hooks/useServicios';
 import ColorDemo from '../../../components/ColorDemo/ColorDemo';
 
-
 const reviews = [
   { 
     text: 'Excelente servicio y atención. ¡Repetiré sin duda! El ambiente es increíble y el resultado perfecto.', 
@@ -56,7 +55,7 @@ const reviews = [
 
 const getStars = (rating: number) => '★'.repeat(rating) + '☆'.repeat(5 - rating);
 
-const bannerImg = 'https://static.vecteezy.com/system/resources/previews/005/121/041/non_2x/hairdressers-cut-their-clients-in-barbershop-advertising-and-barber-shop-concept-free-photo.jpg'; // panorámica barbería
+const bannerImg = 'https://static.vecteezy.com/system/resources/previews/005/121/041/non_2x/hairdressers-cut-their-clients-in-barbershop-advertising-and-barber-shop-concept-free-photo.jpg';
 
 const getUserName = () => {
   try {
@@ -80,181 +79,70 @@ const Inicio: React.FC = () => {
   
   return (
     <>
-      <div style={{
-        width: '100%',
-        minHeight: '400px',
-        position: 'relative',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: '2.5rem',
-        overflow: 'hidden',
-        boxShadow: '0 4px 32px rgba(0,0,0,0.09)',
-      }}>
+      {/* Banner Principal */}
+      <div className={styles.heroBanner}>
         <img
           src={bannerImg}
           alt="Barbería panorámica"
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            filter: 'grayscale(1) brightness(0.55)',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            zIndex: 1,
-          }}
+          className={styles.heroImage}
         />
-        <div style={{
-          position: 'relative',
-          zIndex: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '100%',
-        }}>
-                  <span style={{
-          color: '#fff',
-          fontSize: '4.2rem',
-          fontWeight: 'bold',
-          letterSpacing: '2px',
-          textShadow: '0 4px 24px #000, 0 1px 2px #000',
-          fontFamily: 'serif',
-          lineHeight: 1.05,
-          textAlign: 'center',
-        }}>
-          ELEMEN
-        </span>
-        <span style={{
-          color: '#fff',
-          fontSize: '1.45rem',
-          fontWeight: 400,
-          letterSpacing: '2.5px',
-          textShadow: '0 2px 12px #000, 0 1px 2px #000',
-          fontFamily: 'sans-serif',
-          marginTop: '0.3rem',
-          textAlign: 'center',
-        }}>
-          BARBER STUDIO
-        </span>
+        <div className={styles.heroContent}>
+          <span className={styles.heroTitle}>
+            ELEMEN
+          </span>
+          <span className={styles.heroSubtitle}>
+            BARBER STUDIO
+          </span>
         </div>
       </div>
 
-      <div style={{
-        width: '100%',
-        background: '#111',
-        color: '#fff',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: '6rem',
-        padding: '1.7rem 2vw', // aumentar el alto de la barra
-        fontSize: '0.92rem',
-        letterSpacing: '1px',
-        zIndex: 10,
-      }}>
+      {/* Barra de Información */}
+      <div className={styles.infoBar}>
         {/* Horario */}
-        <span style={{display: 'flex', alignItems: 'center', gap: '0.7rem'}}>
-          <span style={{
-            background: '#222',
-            borderRadius: '12px',
-            width: '38px',
-            height: '38px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <FaClock style={{color: 'var(--primary-color)', fontSize: '1.2rem'}} />
+        <span className={styles.infoItem}>
+          <span className={styles.infoIcon}>
+            <FaClock />
           </span>
-          <span style={{display: 'flex', flexDirection: 'column', lineHeight: 1.1}}>
-            <span style={{fontWeight: 600, fontSize: '0.93em'}}>Martes - Sábado</span>
-            <span style={{fontSize: '0.85em', color: '#ccc'}}>9:00 - 21:15</span>
+          <span className={styles.infoContent}>
+            <span className={styles.infoTitle}>Martes - Sábado</span>
+            <span className={styles.infoSubtitle}>9:00 - 21:15</span>
           </span>
         </span>
+        
         {/* Peluquero */}
-        <span style={{display: 'flex', alignItems: 'center', gap: '0.7rem'}}>
-          <span style={{
-            background: '#222',
-            borderRadius: '12px',
-            width: '38px',
-            height: '38px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <FaUser style={{color: 'var(--primary-color)', fontSize: '1.2rem'}} />
+        <span className={styles.infoItem}>
+          <span className={styles.infoIcon}>
+            <FaUser />
           </span>
-          <span style={{display: 'flex', flexDirection: 'column', lineHeight: 1.1}}>
-            <span style={{fontWeight: 600, fontSize: '0.93em'}}>Luis</span>
-            <span style={{fontSize: '0.85em', color: '#ccc'}}>Barbero principal</span>
+          <span className={styles.infoContent}>
+            <span className={styles.infoTitle}>Luis</span>
+            <span className={styles.infoSubtitle}>Barbero principal</span>
           </span>
         </span>
+        
         {/* Ubicación */}
-        <span style={{display: 'flex', alignItems: 'center', gap: '0.7rem'}}>
-          <span style={{
-            background: '#222',
-            borderRadius: '12px',
-            width: '38px',
-            height: '38px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <FaMapMarkerAlt style={{color: 'var(--primary-color)', fontSize: '1.2rem'}} />
+        <span className={styles.infoItem}>
+          <span className={styles.infoIcon}>
+            <FaMapMarkerAlt />
           </span>
-          <span style={{display: 'flex', flexDirection: 'column', lineHeight: 1.1}}>
-            <span style={{fontWeight: 600, fontSize: '0.93em'}}>4 Paseo Dr. Revuelta</span>
-            <span style={{fontSize: '0.85em', color: '#ccc'}}>Begíjar, Andalucía</span>
+          <span className={styles.infoContent}>
+            <span className={styles.infoTitle}>4 Paseo Dr. Revuelta</span>
+            <span className={styles.infoSubtitle}>Begíjar, Andalucía</span>
           </span>
         </span>
       </div>
-      {/* Reviews Carrusel Moderno */}
-      <div style={{
-        width: '100%',
-        background: 'linear-gradient(180deg, #121212 0%, #0a0a0a 15%, #1a1a1a 30%, #2d2d2d 50%, #1a1a1a 70%, #0a0a0a 85%, #121212 100%)',
-        margin: '3rem 0',
-        padding: '4rem 2rem',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
 
-        
-        {/* Título de la sección */}
-        <div style={{
-          textAlign: 'center',
-          marginBottom: '3rem',
-          position: 'relative',
-          zIndex: 2
-        }}>
-          <h2 style={{
-            color: '#fff',
-            fontSize: '2.5rem',
-            fontWeight: 'bold',
-            margin: '0 0 1rem 0',
-            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-          }}>
-            Lo que opinan nuestros clientes
-          </h2>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '0.5rem',
-            marginTop: '1rem'
-          }}>
-            <span style={{color: 'var(--primary-color)', fontSize: '2rem'}}>★★★★★</span>
-            <span style={{color: '#fff', fontSize: '1.1rem', marginLeft: '0.5rem'}}>4.9/5</span>
+      {/* Reviews Carrusel */}
+      <div className={styles.reviewsSection}>
+        <div className={styles.reviewsTitle}>
+          <h2>Lo que opinan nuestros clientes</h2>
+          <div className={styles.reviewsRating}>
+            <span className={styles.reviewsStars}>★★★★★</span>
+            <span className={styles.reviewsScore}>4.9/5</span>
           </div>
         </div>
 
-        {/* Carrusel de reviews */}
-        <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          position: 'relative',
-          zIndex: 2
-        }}>
+        <div className={styles.reviewsContainer}>
           <Swiper
             modules={[Autoplay, EffectCoverflow]}
             slidesPerView={3}
@@ -274,30 +162,36 @@ const Inicio: React.FC = () => {
             slidesOffsetAfter={32}
             breakpoints={{
               0: { 
-                slidesPerView: 1, 
+                slidesPerView: 1.2, 
                 centeredSlides: false, 
-                slidesOffsetBefore: 0, 
-                slidesOffsetAfter: 0,
-                coverflowEffect: { depth: 100, modifier: 1.5 }
+                slidesOffsetBefore: 10, 
+                slidesOffsetAfter: 10,
+                coverflowEffect: { depth: 30, modifier: 0.8 }
+              },
+              480: { 
+                slidesPerView: 1.5, 
+                centeredSlides: false, 
+                slidesOffsetBefore: 15, 
+                slidesOffsetAfter: 15,
+                coverflowEffect: { depth: 50, modifier: 1 }
               },
               600: { 
-                slidesPerView: 2, 
-                centeredSlides: true, 
-                slidesOffsetBefore: 40, 
+                slidesPerView: 2.2, 
+                centeredSlides: false, 
+                slidesOffsetBefore: 20, 
                 slidesOffsetAfter: 20,
-                coverflowEffect: { depth: 120, modifier: 2 }
+                coverflowEffect: { depth: 80, modifier: 1.5 }
               },
               900: { 
-                slidesPerView: 3, 
-                centeredSlides: true, 
-                slidesOffsetBefore: 80, 
-                slidesOffsetAfter: 32,
-                coverflowEffect: { depth: 150, modifier: 2.5 }
+                slidesPerView: 3.2, 
+                centeredSlides: false, 
+                slidesOffsetBefore: 40, 
+                slidesOffsetAfter: 40,
+                coverflowEffect: { depth: 120, modifier: 2 }
               }
             }}
           >
             {reviews.map((review, idx) => {
-              // Colores variados para las cards
               const colors = [
                 { bg: '#2c3e50', text: '#fff', accent: '#3498db' },
                 { bg: '#e74c3c', text: '#fff', accent: '#f39c12' },
@@ -313,19 +207,20 @@ const Inicio: React.FC = () => {
                   <div style={{
                     background: color.bg,
                     color: color.text,
-                    borderRadius: '25px',
-                    padding: '2.5rem',
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
+                    borderRadius: '20px',
+                    padding: '1.8rem',
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.3)',
                     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                     position: 'relative',
                     cursor: 'pointer',
-                    minHeight: '320px',
+                    minHeight: '280px',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
                     border: `2px solid ${color.accent}20`,
                     backdropFilter: 'blur(10px)',
-                    transform: 'translateZ(0)'
+                    transform: 'translateZ(0)',
+                    margin: '0 0.5rem'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateZ(20px) scale(1.05)';
@@ -336,7 +231,6 @@ const Inicio: React.FC = () => {
                     e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.4)';
                   }}>
                     
-                    {/* Contenido del review */}
                     <div>
                       <p style={{
                         fontSize: '1.2rem',
@@ -348,7 +242,6 @@ const Inicio: React.FC = () => {
                         "{review.text}"
                       </p>
                       
-                      {/* Estrellas con bordes redondeados */}
                       <div style={{
                         display: 'flex',
                         justifyContent: 'center',
@@ -376,7 +269,6 @@ const Inicio: React.FC = () => {
                       </div>
                     </div>
                     
-                    {/* Información del autor */}
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -426,160 +318,92 @@ const Inicio: React.FC = () => {
           </Swiper>
         </div>
       </div>
-      {/* Servicios destacados tipo caja dorada */}
-      <div style={{
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: '2.5rem',
-        margin: '2.5rem 0 3.5rem 0',
-        flexWrap: 'wrap',
-      }}>
+
+      {/* Servicios Destacados */}
+      <div className={styles.featuredServices}>
         {[
           {
-            // Emoji de tijeras para cortes
             icon: <span style={{fontSize:'2.7rem'}} role="img" aria-label="Tijeras">✂️</span>,
             title: 'CORTES',
             desc: 'Corte de pelo profesional adaptado a tu estilo. Asesoría personalizada, técnicas modernas y acabado impecable para que siempre luzcas tu mejor versión.'
           },
           {
-            // Emoji de bote de tinte
             icon: <span style={{fontSize:'2.7rem'}} role="img" aria-label="Tinte">🧴</span>,
             title: 'TINTES',
             desc: 'Coloración y matiz para un look renovado. Trabajamos con productos de alta calidad para cuidar tu cabello y lograr el tono perfecto que buscas.'
           },
           {
-            // Emoji de barba
-            icon: <span style={{fontSize:'2.7rem'}} role="img" aria-label="Barba">🧔</span>,
-            title: 'BARBAS',
-            desc: 'Arreglo, perfilado y cuidado de barba. Disfruta de un tratamiento completo para tu barba, desde el recorte hasta el cuidado con aceites especiales.'
+            icon: <span style={{fontSize:'2.7rem'}} role="img" aria-label="Mechas">✨</span>,
+            title: 'MECHAS',
+            desc: 'Mechas y coloración profesional para dar vida a tu cabello. Técnicas modernas de mechado que resaltan tu personalidad y estilo único.'
           },
         ].map((serv, idx) => (
-          <div key={idx} style={{
-            border: '2px solid var(--primary-color)',
-            borderRadius: '20px',
-            padding: '2.5rem 2rem 2rem 2rem',
-            background: 'linear-gradient(145deg, #121212 0%, #1a1a1a 100%)',
-            minWidth: 240,
-            maxWidth: 290,
-            minHeight: 300,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            boxShadow: 'var(--shadow-primary)',
-            position: 'relative',
-            transition: 'all 0.3s ease',
-            cursor: 'pointer',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
-            e.currentTarget.style.boxShadow = 'var(--shadow-primary-hover)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0) scale(1)';
-            e.currentTarget.style.boxShadow = 'var(--shadow-primary)';
-          }}>
-            <div style={{
-              marginBottom: '1.5rem',
-              padding: '1rem',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, var(--primary-color), var(--primary-color-hover))',
-              boxShadow: 'var(--shadow-primary-icon)'
-            }}>{serv.icon}</div>
-            <div style={{
-              color:'var(--primary-color)', 
-              fontWeight:900, 
-              fontSize:'1.3rem', 
-              letterSpacing:2, 
-              marginBottom:12,
-              textShadow: 'var(--shadow-primary-text)'
-            }}>{serv.title}</div>
-            <div style={{
-              color:'#ddd', 
-              textAlign:'center', 
-              fontSize:'1.05rem',
-              lineHeight: '1.6',
-              opacity: '0.9'
-            }}>{serv.desc}</div>
+          <div key={idx} className={styles.serviceCard}>
+            <div className={styles.serviceIcon}>{serv.icon}</div>
+            <div className={styles.serviceTitle}>{serv.title}</div>
+            <div className={styles.serviceDesc}>{serv.desc}</div>
           </div>
         ))}
       </div>
-      <div className={styles.content}>
-        <section className={styles.hero}>
-          <h1>Bienvenido a Esential Barber</h1>
-          <p>Tu barbería de confianza. Estilo, elegancia y profesionalismo en cada corte.</p>
-        </section>
-        {/* Apartado de servicios mejorado */}
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #121212 0%, #1a1a1a 50%, #121212 100%)',
-            borderRadius: '40px',
-            margin: '3rem auto',
-            maxWidth: 1100,
-            boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
-            padding: '4rem 2vw 4rem 2vw',
-            position: 'relative',
-            border: '2px solid var(--primary-color)',
-            overflow: 'hidden',
-          }}
-        >
-          <div style={{textAlign:'center', marginBottom:'3rem'}}>
-            <div style={{display:'flex', alignItems:'center', justifyContent:'center', gap:12, marginBottom:15}}>
-              <span style={{height:3, width:80, background:'linear-gradient(90deg, transparent, var(--primary-color), transparent)', borderRadius:2, display:'inline-block'}}></span>
-              <span style={{height:12, width:12, background:'var(--primary-color)', borderRadius:'50%', display:'inline-block', boxShadow: '0 0 20px var(--primary-color)'}}></span>
-              <span style={{height:3, width:80, background:'linear-gradient(90deg, transparent, var(--primary-color), transparent)', borderRadius:2, display:'inline-block'}}></span>
+
+      {/* Sección de Servicios */}
+      <div className={styles.servicesSection}>
+        <div className={styles.servicesHeader}>
+          <div className={styles.servicesDivider}>
+            <span className={styles.servicesDividerLine}></span>
+            <span className={styles.servicesDividerDot}></span>
+            <span className={styles.servicesDividerLine}></span>
+          </div>
+          <h2 className={styles.servicesTitle}>Servicios de Barbería</h2>
+          <p className={styles.servicesSubtitle}>Profesionales al servicio de tu estilo</p>
+          <div className={styles.servicesDivider}>
+            <span className={styles.servicesDividerLine}></span>
+            <span className={styles.servicesDividerDot}></span>
+            <span className={styles.servicesDividerLine}></span>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className={styles.loadingState}>
+            <div className={styles.loadingIcon}>⏳</div>
+            <p>Cargando servicios...</p>
+          </div>
+        ) : error ? (
+          <div className={styles.errorState}>
+            <div className={styles.errorIcon}>❌</div>
+            <p>{error}</p>
+          </div>
+        ) : servicios.length > 0 ? (
+          <div className={styles.servicesGrid}>
+            {/* Columna izquierda */}
+            <div className={styles.servicesColumn}>
+              {servicios.slice(0, Math.ceil(servicios.length / 2)).map((servicio) => (
+                <ServiceRow 
+                  key={servicio.id}
+                  name={servicio.nombre} 
+                  price={`${servicio.precio}€`} 
+                  desc={servicio.descripcion || `Duración: ${servicio.duracionMinutos} minutos`} 
+                />
+              ))}
             </div>
-            <h2 style={{fontSize:'3rem', fontWeight:900, letterSpacing:3, color:'var(--primary-color)', margin:0, textTransform:'uppercase', textShadow: 'var(--shadow-primary-text)'}}>Servicios de Barbería</h2>
-            <p style={{color:'#ccc', fontSize:'1.2rem', marginTop:'1rem', fontStyle:'italic'}}>Profesionales al servicio de tu estilo</p>
-            <div style={{display:'flex', alignItems:'center', justifyContent:'center', gap:12, marginTop:15}}>
-              <span style={{height:3, width:80, background:'linear-gradient(90deg, transparent, var(--primary-color), transparent)', borderRadius:2, display:'inline-block'}}></span>
-              <span style={{height:12, width:12, background:'var(--primary-color)', borderRadius:'50%', display:'inline-block', boxShadow: '0 0 20px var(--primary-color)'}}></span>
-              <span style={{height:3, width:80, background:'linear-gradient(90deg, transparent, var(--primary-color), transparent)', borderRadius:2, display:'inline-block'}}></span>
+            {/* Columna derecha */}
+            <div className={styles.servicesColumn}>
+              {servicios.slice(Math.ceil(servicios.length / 2)).map((servicio) => (
+                <ServiceRow 
+                  key={servicio.id}
+                  name={servicio.nombre} 
+                  price={`${servicio.precio}€`} 
+                  desc={servicio.descripcion || `Duración: ${servicio.duracionMinutos} minutos`} 
+                />
+              ))}
             </div>
           </div>
-          {loading ? (
-            <div style={{textAlign: 'center', padding: '2rem'}}>
-              <div style={{fontSize: '1.5rem', marginBottom: '1rem'}}>⏳</div>
-              <p>Cargando servicios...</p>
-            </div>
-          ) : error ? (
-            <div style={{textAlign: 'center', padding: '2rem', color: '#d32f2f'}}>
-              <div style={{fontSize: '1.5rem', marginBottom: '1rem'}}>❌</div>
-              <p>{error}</p>
-            </div>
-          ) : servicios.length > 0 ? (
-            <div style={{display:'flex', gap:'3.5rem', justifyContent:'center', flexWrap:'wrap'}}>
-              {/* Columna izquierda */}
-              <div style={{flex:'1 1 320px', minWidth:260, maxWidth:400}}>
-                {servicios.slice(0, Math.ceil(servicios.length / 2)).map((servicio) => (
-                  <ServiceRow 
-                    key={servicio.id}
-                    name={servicio.nombre} 
-                    price={`${servicio.precio}€`} 
-                    desc={servicio.descripcion || `Duración: ${servicio.duracionMinutos} minutos`} 
-                  />
-                ))}
-              </div>
-              {/* Columna derecha */}
-              <div style={{flex:'1 1 320px', minWidth:260, maxWidth:400}}>
-                {servicios.slice(Math.ceil(servicios.length / 2)).map((servicio) => (
-                  <ServiceRow 
-                    key={servicio.id}
-                    name={servicio.nombre} 
-                    price={`${servicio.precio}€`} 
-                    desc={servicio.descripcion || `Duración: ${servicio.duracionMinutos} minutos`} 
-                  />
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div style={{textAlign: 'center', padding: '2rem', color: '#666'}}>
-              <div style={{fontSize: '1.5rem', marginBottom: '1rem'}}>📋</div>
-              <p>No hay servicios disponibles en este momento.</p>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className={styles.emptyState}>
+            <div className={styles.emptyIcon}>📋</div>
+            <p>No hay servicios disponibles en este momento.</p>
+          </div>
+        )}
       </div>
       
       {/* Componente de demostración de colores */}
@@ -590,59 +414,19 @@ const Inicio: React.FC = () => {
 
 export default Inicio
 
-// Componente auxiliar para una fila de servicio mejorado
+// Componente auxiliar para una fila de servicio
 function ServiceRow({name, price, desc}:{name:string, price:string, desc:string}) {
   return (
-    <div style={{
-      display:'flex', 
-      alignItems:'flex-start', 
-      justifyContent:'space-between', 
-      marginBottom:'2.5rem', 
-      fontSize:'1.15rem',
-      padding: '1.5rem',
-      background: 'var(--gradient-primary-light)',
-      borderRadius: '15px',
-      border: '1px solid var(--border-primary-light)',
-      transition: 'all 0.3s ease',
-      cursor: 'pointer',
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.background = 'var(--gradient-primary-hover)';
-      e.currentTarget.style.border = '1px solid var(--border-primary-hover)';
-      e.currentTarget.style.transform = 'translateX(5px)';
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.background = 'var(--gradient-primary-light)';
-      e.currentTarget.style.border = '1px solid var(--border-primary-light)';
-      e.currentTarget.style.transform = 'translateX(0)';
-    }}>
-      <div style={{flex:1, fontWeight:700, color:'var(--primary-color)', fontSize:'1.2rem'}}>
+    <div className={styles.serviceRow}>
+      <div className={styles.serviceRowContent}>
         {name}
-        <div style={{
-          fontWeight:400, 
-          color:'#ccc', 
-          fontSize:'1rem', 
-          marginTop:8,
-          lineHeight: '1.5'
-        }}>
+        <div className={styles.serviceRowDesc}>
           {desc}
         </div>
       </div>
-      <div style={{flex:'0 0 100px', display:'flex', alignItems:'center', justifyContent:'flex-end'}}>
-        <span style={{
-          flex:1, 
-          borderBottom:'2px dotted var(--primary-color)', 
-          margin:'0 1rem 0 1.5rem', 
-          height:2, 
-          minWidth:40, 
-          opacity:0.8
-        }}></span>
-        <span style={{
-          fontWeight:700, 
-          color:'var(--primary-color)', 
-          fontSize:'1.3rem',
-                      textShadow: '0 2px 4px rgba(33,150,243,0.3)'
-        }}>
+      <div className={styles.serviceRowPrice}>
+        <span className={styles.serviceRowDots}></span>
+        <span className={styles.serviceRowAmount}>
           {price}
         </span>
       </div>

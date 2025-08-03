@@ -105,7 +105,14 @@ const ContactoResenas: React.FC = () => (
             target="_blank" 
             rel="noopener noreferrer" 
             className={styles.mapaLink}
+            style={{
+              backgroundImage: `url('/mapa.png?v=${Date.now()}')`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
           >
+            {/* Pin posicionado en la ubicación real del mapa */}
             <FaMapMarkerAlt className={styles.mapaIcon} />
           </a>
         </div>

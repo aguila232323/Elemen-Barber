@@ -54,8 +54,8 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
   const [busquedaUsuario, setBusquedaUsuario] = useState<string>('');
   const [mostrarDropdown, setMostrarDropdown] = useState(false);
 
-  // Obtener la mayor duración de los servicios seleccionados (por si se seleccionan varios)
-  const duracion = servicio.length > 0 ? Math.max(...servicio.map(s => s.duracionMinutos)) : 45;
+  // Obtener la duración del servicio seleccionado (ahora solo se puede seleccionar uno)
+  const duracion = servicio.length > 0 ? servicio[0].duracionMinutos : 45;
 
   // Días del mes
   const diasEnMes = new Date(anio, mes + 1, 0).getDate();
@@ -188,9 +188,10 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
     const fechaStr = diaSeleccionado && horaSeleccionada ? `${String(diaSeleccionado).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}/${anio}` : '';
     const servicioPrincipal = servicio[0];
     return (
-      <div style={{width:'100vw',height:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#f5f5f5'}}>
-        <div style={{background:'#fff',padding:36,borderRadius:18,boxShadow:'0 4px 32px rgba(0,0,0,0.18)',minWidth:360, maxWidth:420, color:'#222', display:'flex', flexDirection:'column', alignItems:'center'}}>
-          <h2 style={{color:'#1976d2',marginTop:0,marginBottom:8, fontWeight:800, fontSize:'2rem', letterSpacing:1}}>Confirmar cita</h2>
+            <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,0.5)',zIndex:9999}}>
+        <div style={{background:'#fff',padding:'1.5rem',borderRadius:18,boxShadow:'0 4px 32px rgba(0,0,0,0.18)',width:'90%',maxWidth:420,minWidth:320,color:'#222',display:'flex',flexDirection:'column',alignItems:'center',position:'relative',maxHeight:'90vh',overflowY:'auto'}}>
+          <button onClick={onClose} style={{position:'absolute',top:8,right:8,background:'none',border:'none',fontSize:'1.5rem',cursor:'pointer',color:'#999',width:32,height:32,display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
+          <h2 style={{color:'#1976d2',marginTop:0,marginBottom:8, fontWeight:800, fontSize:'1.5rem', letterSpacing:1}}>Confirmar cita</h2>
           <div style={{width:'100%',margin:'1.5rem 0',background:'#f8f8f8',borderRadius:12,padding:'1.2rem 1.5rem',boxShadow:'0 2px 12px rgba(25,118,210,0.07)',fontSize:'1.08rem',color:'#222'}}>
             <div style={{marginBottom:10}}><b>Servicio:</b> <span style={{color:'#1976d2',fontWeight:600}}>{servicioPrincipal?.nombre}</span></div>
             <div style={{marginBottom:10}}><b>Descripción:</b> <span style={{color:'#444'}}>{servicioPrincipal?.descripcion}</span></div>
@@ -353,18 +354,19 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
   }
 
   return (
-    <div style={{width:'100vw',height:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#f5f5f5'}}>
-      <div style={{background:'#fff',padding:32,borderRadius:16,boxShadow:'0 4px 32px rgba(0,0,0,0.18)',minWidth:360, maxWidth:420, color:'#222'}}>
-        <h2 style={{color:'#1976d2',marginTop:0,marginBottom:8}}>Selecciona día y hora</h2>
-        <div style={{fontWeight:500,marginBottom:16, color:'#222'}}>Servicios: <span style={{color:'#1976d2'}}>{nombresServicios}</span></div>
+    <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,0.5)',zIndex:9999}}>
+      <div style={{background:'#fff',padding:'1.5rem',borderRadius:16,boxShadow:'0 4px 32px rgba(0,0,0,0.18)',width:'90%',maxWidth:420,minWidth:320,color:'#222',position:'relative',maxHeight:'90vh',overflowY:'auto'}}>
+        <button onClick={onClose} style={{position:'absolute',top:8,right:8,background:'none',border:'none',fontSize:'1.5rem',cursor:'pointer',color:'#999',width:32,height:32,display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
+        <h2 style={{color:'#1976d2',marginTop:0,marginBottom:8,fontSize:'1.5rem'}}>Selecciona día y hora</h2>
+                  <div style={{fontWeight:500,marginBottom:16, color:'#222'}}>Servicio: <span style={{color:'#1976d2'}}>{nombresServicios}</span></div>
         {user?.rol !== 'ADMIN' && (
           <div style={{
             background: '#fff3cd',
             border: '1px solid #ffeaa7',
             borderRadius: '8px',
-            padding: '12px',
+            padding: '0.75rem',
             marginBottom: '16px',
-            fontSize: '0.9rem',
+            fontSize: '0.85rem',
             color: '#856404'
           }}>
             <strong>Recordatorio:</strong> Debes reservar con al menos {tiempoMinimo} {tiempoMinimo === 1 ? 'hora' : 'horas'} de antelación.
@@ -373,14 +375,14 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
           <button 
             onClick={()=>cambiarMes(-1)} 
-            style={{background:'none',border:'none',fontSize:22,cursor: (anio > today.getFullYear() || (anio === today.getFullYear() && mes > today.getMonth())) ? 'pointer' : 'not-allowed',color:'#1976d2', opacity: (anio > today.getFullYear() || (anio === today.getFullYear() && mes > today.getMonth())) ? 1 : 0.4}}
+            style={{background:'none',border:'none',fontSize:18,cursor: (anio > today.getFullYear() || (anio === today.getFullYear() && mes > today.getMonth())) ? 'pointer' : 'not-allowed',color:'#1976d2', opacity: (anio > today.getFullYear() || (anio === today.getFullYear() && mes > today.getMonth())) ? 1 : 0.4}}
             disabled={anio < today.getFullYear() || (anio === today.getFullYear() && mes <= today.getMonth())}
           >&lt;</button>
-          <span style={{flex:1, textAlign:'center', fontWeight:800, fontSize:'1.25rem', textTransform:'capitalize', color:'#1976d2', letterSpacing:1, margin:'0 1.5rem', display:'block'}}>{new Date(anio, mes).toLocaleString('es-ES',{month:'long',year:'numeric'})}</span>
-          <button onClick={()=>cambiarMes(1)} style={{background:'none',border:'none',fontSize:22,cursor:'pointer',color:'#1976d2'}}>&gt;</button>
+          <span style={{flex:1, textAlign:'center', fontWeight:800, fontSize:'1.1rem', textTransform:'capitalize', color:'#1976d2', letterSpacing:1, margin:'0 1rem', display:'block'}}>{new Date(anio, mes).toLocaleString('es-ES',{month:'long',year:'numeric'})}</span>
+          <button onClick={()=>cambiarMes(1)} style={{background:'none',border:'none',fontSize:18,cursor:'pointer',color:'#1976d2'}}>&gt;</button>
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:4,marginBottom:8}}>
-          {['L','M','X','J','V','S','D'].map(dia=>(<div key={dia} style={{textAlign:'center',fontWeight:700,color:'#1976d2',fontSize:'1.08rem'}}>{dia}</div>))}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'0.25rem',marginBottom:8}}>
+          {['L','M','X','J','V','S','D'].map(dia=>(<div key={dia} style={{textAlign:'center',fontWeight:700,color:'#1976d2',fontSize:'0.9rem'}}>{dia}</div>))}
           {Array(primerDiaSemana===0?6:primerDiaSemana-1).fill(null).map((_,i)=>(<div key={'empty'+i}></div>))}
           {Array.from({length:diasEnMes},(_,i)=>{
             const dia = i+1;
@@ -397,17 +399,17 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
             return (
               <div key={dia} style={{display:'flex',flexDirection:'column',alignItems:'center',cursor: esSeleccionable?'pointer':'not-allowed',opacity:esSeleccionable?1:0.45}} onClick={()=>{if(esSeleccionable){setDiaSeleccionado(dia);setHoraSeleccionada(null);}}}>
                 <div style={{
-                  width:34,height:34,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
+                  width:'2rem',height:'2rem',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
                   background: diaSeleccionado===dia?'#1976d2':sinSlotsDisponibles?'#f5f5f5':'#fff',
                   color: diaSeleccionado===dia?'#fff':sinSlotsDisponibles?'#999':'#1976d2',
                   border: diaSeleccionado===dia?'2px solid #1976d2':sinSlotsDisponibles?'1.5px solid #ddd':'1.5px solid #1976d2',
                   fontWeight:800,marginBottom:2,
-                  fontSize:'1.13rem',
+                  fontSize:'0.9rem',
                   boxShadow: diaSeleccionado===dia?'0 2px 8px rgba(25,118,210,0.10)':'none',
                   transition:'all 0.18s',
                   letterSpacing:0.5
                 }}>{dia}</div>
-                <div style={{width:24,height:5,borderRadius:3,background:sinSlotsDisponibles?'#ddd':colorBarra,marginBottom:2}}></div>
+                <div style={{width:'1.2rem',height:'0.25rem',borderRadius:3,background:sinSlotsDisponibles?'#ddd':colorBarra,marginBottom:2}}></div>
               </div>
             )
           })}
@@ -425,7 +427,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
                 }
               </div>
             ) : (
-            <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+            <div style={{display:'flex',gap:'0.5rem',flexWrap:'wrap'}}>
               {horasLibres.map(hora=>{
                 // Deshabilitar horas en el pasado si es hoy
                 let esHoraPasada = false;
@@ -439,7 +441,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
                       background:horaSeleccionada===hora?'#1976d2':'#fff',
                       color:horaSeleccionada===hora?'#fff':'#1976d2',
                       border:'2px solid #1976d2',
-                      borderRadius:7,padding:'0.4rem 1.1rem',fontWeight:600,cursor:esHoraPasada?'not-allowed':'pointer',transition:'all 0.2s',opacity:esHoraPasada?0.45:1
+                      borderRadius:7,padding:'0.3rem 0.8rem',fontWeight:600,cursor:esHoraPasada?'not-allowed':'pointer',transition:'all 0.2s',opacity:esHoraPasada?0.45:1,fontSize:'0.9rem'
                     }}
                     disabled={esHoraPasada}
                   >{hora}</button>
@@ -451,14 +453,14 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
         )}
         <button
           style={{
-            marginTop: '1.2rem',
+            marginTop: '1rem',
             width: '100%',
             background: diaSeleccionado && horaSeleccionada ? '#1976d2' : '#b0b0b0',
             color: '#fff',
             border: 'none',
             borderRadius: 8,
-            padding: '0.8rem 0',
-            fontSize: '1.1rem',
+            padding: '0.7rem 0',
+            fontSize: '1rem',
             fontWeight: 700,
             cursor: diaSeleccionado && horaSeleccionada ? 'pointer' : 'not-allowed',
             transition: 'background 0.2s',
@@ -472,7 +474,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
         >
           Continuar
         </button>
-        <button onClick={onClose} style={{marginTop:12,background:'none',color:'#1976d2',border:'none',borderRadius:8,padding:'0.7rem 1.5rem',fontWeight:600,cursor:'pointer',display:'block',width:'100%'}}>Cancelar</button>
+        <button onClick={onClose} style={{marginTop:8,background:'none',color:'#1976d2',border:'none',borderRadius:8,padding:'0.6rem 1rem',fontWeight:600,cursor:'pointer',display:'block',width:'100%',fontSize:'0.9rem'}}>Cancelar</button>
       </div>
     </div>
   );

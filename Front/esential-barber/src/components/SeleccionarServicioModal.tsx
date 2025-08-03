@@ -55,7 +55,7 @@ const SeleccionarServicioModal: React.FC<Props> = ({ serviciosSeleccionados, set
     <div className={styles.citasModalBg}>
       <div className={styles.citasModal}>
         <button onClick={onClose} className={styles.citasCloseBtn}>×</button>
-        <h2 style={{marginTop:0, marginBottom:'1.5rem', textAlign:'center', color:'#1976d2'}}>Selecciona tus servicios</h2>
+        <h2 style={{marginTop:0, marginBottom:'1.5rem', textAlign:'center', color:'#1976d2'}}>Selecciona un servicio</h2>
         {loading ? (
           <div style={{textAlign:'center', color:'#1976d2'}}>Cargando servicios...</div>
         ) : error ? (
@@ -86,7 +86,12 @@ const SeleccionarServicioModal: React.FC<Props> = ({ serviciosSeleccionados, set
                       : styles.citasServicioBtn
                   }
                   onClick={() => {
-                    setServiciosSeleccionados(sel => seleccionado ? sel.filter(s=>s.nombre!==serv.nombre) : [...sel, serv]);
+                    // Solo permite seleccionar un servicio a la vez
+                    if (seleccionado) {
+                      setServiciosSeleccionados([]); // Deseleccionar
+                    } else {
+                      setServiciosSeleccionados([serv]); // Seleccionar solo este servicio
+                    }
                   }}
                 >
                   {seleccionado ? 'Añadido' : 'Añadir'}
@@ -101,7 +106,7 @@ const SeleccionarServicioModal: React.FC<Props> = ({ serviciosSeleccionados, set
           disabled={!serviciosSeleccionados.length}
           onClick={onContinuar}
         >
-          Continuar
+                     Continuar
         </button>
       </div>
     </div>
