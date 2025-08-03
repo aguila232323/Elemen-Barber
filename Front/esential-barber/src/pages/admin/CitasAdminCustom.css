@@ -2564,136 +2564,241 @@
   font-size: 0.9rem;
 }
 
-/* Modal de cita periódica */
+/* Modal de cita periódica - Estilo original */
 .periodic-modal {
   max-width: 500px;
   width: 90%;
+  background: #1a1a2e;
+  border-radius: 12px;
+  border: 1px solid #16213e;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.periodic-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 20px 0 20px;
+  margin-bottom: 20px;
+}
+
+.periodic-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #64B5F6;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.periodic-header-text {
+  flex: 1;
+}
+
+.periodic-modal .modal-title {
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.modal-subtitle {
+  color: #64B5F6;
+  font-size: 12px;
+  font-weight: 400;
+  margin: 0;
 }
 
 .periodic-modal-content {
-  padding: 1rem 0;
+  padding: 0 20px 20px 20px;
+}
+
+.periodic-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.periodic-section-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
 .periodic-cita-info {
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: #f8f9fa;
+  background: #16213e;
+  border: 1px solid #64b5f6;
   border-radius: 8px;
-  border-left: 4px solid #9c27b0;
+  padding: 15px;
+  margin-bottom: 20px;
 }
 
 .periodic-cita-info h4 {
-  margin: 0 0 0.8rem 0;
-  color: #9c27b0;
-  font-size: 1rem;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
 }
 
 .periodic-cita-details {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
 .periodic-detail {
-  font-size: 0.9rem;
-  color: #495057;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  font-size: 14px;
 }
 
-.periodic-detail strong {
-  color: #6c757d;
-  margin-right: 0.5rem;
+.detail-label {
+  color: #64B5F6;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.detail-value {
+  color: white;
+  font-size: 14px;
+  font-weight: 400;
 }
 
 .periodic-settings {
-  margin-bottom: 1.5rem;
+  margin-bottom: 20px;
 }
 
 .periodic-settings h4 {
-  margin: 0 0 1rem 0;
-  color: #9c27b0;
-  font-size: 1rem;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
 }
 
 .periodic-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 8px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
 .form-group label {
-  font-weight: 600;
-  color: #495057;
-  font-size: 0.9rem;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .periodic-input {
-  padding: 0.6rem 0.8rem;
-  border: 2px solid #e9ecef;
+  padding: 10px 12px;
+  border: 1px solid #64b5f6;
   border-radius: 6px;
-  font-size: 0.9rem;
-  transition: border-color 0.2s ease;
+  font-size: 14px;
+  background: #16213e;
+  color: white;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.date-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.date-input {
+  padding-right: 40px;
+}
+
+.date-picker-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
 }
 
 .periodic-input:focus {
   outline: none;
-  border-color: #9c27b0;
-  box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.1);
+  border-color: #64b5f6;
+  box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.2);
+}
+
+.periodic-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.periodic-help-text {
+  color: #64b5f6;
+  font-size: 12px;
+  margin-top: 4px;
 }
 
 .periodic-actions {
   display: flex;
-  gap: 1rem;
+  gap: 12px;
   justify-content: flex-end;
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e9ecef;
+  margin-top: 20px;
 }
 
 .periodic-cancel-btn {
-  padding: 0.6rem 1.2rem;
-  background: #6c757d;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #424242;
   color: white;
   border: none;
   border-radius: 6px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-size: 14px;
+  flex: 1;
+  justify-content: center;
 }
 
 .periodic-cancel-btn:hover {
-  background: #5a6268;
-  transform: translateY(-1px);
+  background: #616161;
 }
 
 .periodic-create-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.2rem;
-  background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+  gap: 8px;
+  padding: 10px 16px;
+  background: #1976d2;
   color: white;
   border: none;
   border-radius: 6px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(156, 39, 176, 0.2);
+  font-size: 14px;
+  flex: 1;
+  justify-content: center;
 }
 
 .periodic-create-btn:hover {
-  background: linear-gradient(135deg, #7b1fa2 0%, #6a1b9a 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(156, 39, 176, 0.3);
-}
-
-.periodic-create-btn svg {
-  font-size: 0.9rem;
+  background: #1565c0;
 }
 
 /* Responsive para botón inline */

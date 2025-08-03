@@ -894,81 +894,143 @@ const CitasAdmin: React.FC = () => {
       )}
 
       {/* Modal de cita periódica */}
-      {showPeriodicModal && selectedCitaForPeriodic && (
-        <div className="modal-overlay" onClick={handleClosePeriodicModal}>
-          <div className="modal-content periodic-modal" onClick={e => e.stopPropagation()}>
-            <button onClick={handleClosePeriodicModal} className="modal-close-btn">×</button>
-            
-            <h3 className="modal-title">Crear Cita Periódica</h3>
-            
-            <div className="periodic-modal-content">
-              <div className="periodic-cita-info">
-                <h4>Información de la cita base:</h4>
-                <div className="periodic-cita-details">
-                  <div className="periodic-detail">
-                    <strong>Cliente:</strong> {selectedCitaForPeriodic.usuario?.nombre}
-                  </div>
-                  <div className="periodic-detail">
-                    <strong>Servicio:</strong> {selectedCitaForPeriodic.servicio?.nombre}
-                  </div>
-                  <div className="periodic-detail">
-                    <strong>Hora:</strong> {moment(selectedCitaForPeriodic.start).format('HH:mm')} - {moment(selectedCitaForPeriodic.end).format('HH:mm')}
-                  </div>
-                  <div className="periodic-detail">
-                    <strong>Precio:</strong> {selectedCitaForPeriodic.servicio?.precio?.toFixed(2)} €
-                  </div>
+                              {showPeriodicModal && selectedCitaForPeriodic && (
+                <div className="modal-overlay" onClick={handleClosePeriodicModal}>
+                    <div className="modal-content periodic-modal" onClick={e => e.stopPropagation()}>
+                        <button onClick={handleClosePeriodicModal} className="modal-close-btn">×</button>
+
+                        <div className="periodic-modal-header">
+                            <div className="periodic-header-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="#64B5F6"/>
+                                    <line x1="16" y1="2" x2="16" y2="6" stroke="#64B5F6" strokeWidth="2"/>
+                                    <line x1="8" y1="2" x2="8" y2="6" stroke="#64B5F6" strokeWidth="2"/>
+                                    <line x1="3" y1="10" x2="21" y2="10" stroke="#64B5F6" strokeWidth="2"/>
+                                    <circle cx="8.5" cy="13.5" r="1.5" fill="white"/>
+                                    <circle cx="15.5" cy="13.5" r="1.5" fill="white"/>
+                                    <circle cx="8.5" cy="17.5" r="1.5" fill="white"/>
+                                    <circle cx="15.5" cy="17.5" r="1.5" fill="white"/>
+                                </svg>
+                            </div>
+                            <div className="periodic-header-text">
+                                <h3 className="modal-title">Crear Cita Periódica</h3>
+                                <p className="modal-subtitle">Configura la periodicidad de la cita</p>
+                            </div>
+                        </div>
+
+                        <div className="periodic-modal-content">
+                            <div className="periodic-cita-info">
+                                <div className="periodic-section-header">
+                                    <div className="periodic-section-icon">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="#F44336"/>
+                                            <line x1="16" y1="2" x2="16" y2="6" stroke="#F44336" strokeWidth="2"/>
+                                            <line x1="8" y1="2" x2="8" y2="6" stroke="#F44336" strokeWidth="2"/>
+                                            <line x1="3" y1="10" x2="21" y2="10" stroke="#F44336" strokeWidth="2"/>
+                                        </svg>
+                                    </div>
+                                    <h4>CITA ORIGINAL</h4>
+                                </div>
+                                <div className="periodic-cita-details">
+                                    <div className="periodic-detail">
+                                        <span className="detail-label">Cliente:</span>
+                                        <span className="detail-value">{selectedCitaForPeriodic.usuario?.nombre}</span>
+                                    </div>
+                                    <div className="periodic-detail">
+                                        <span className="detail-label">Servicio:</span>
+                                        <span className="detail-value">{selectedCitaForPeriodic.servicio?.nombre}</span>
+                                    </div>
+                                    <div className="periodic-detail">
+                                        <span className="detail-label">Hora:</span>
+                                        <span className="detail-value">{moment(selectedCitaForPeriodic.start).format('HH:mm')}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="periodic-settings">
+                                <div className="periodic-section-header">
+                                    <div className="periodic-section-icon">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="10" fill="#64B5F6"/>
+                                            <path d="M12 6v6l4 2" stroke="white" strokeWidth="2" fill="none"/>
+                                        </svg>
+                                    </div>
+                                    <h4>Periodicidad (días)</h4>
+                                </div>
+                                <div className="periodic-form">
+                                    <div className="form-group">
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="365"
+                                            defaultValue="7"
+                                            className="periodic-input"
+                                        />
+                                        <div className="periodic-help-text">
+                                            Ejemplo: 7 días = cada semana, 30 días = cada mes
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="periodic-settings">
+                                <div className="periodic-section-header">
+                                    <div className="periodic-section-icon">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="#F44336"/>
+                                            <line x1="16" y1="2" x2="16" y2="6" stroke="#F44336" strokeWidth="2"/>
+                                            <line x1="8" y1="2" x2="8" y2="6" stroke="#F44336" strokeWidth="2"/>
+                                            <line x1="3" y1="10" x2="21" y2="10" stroke="#F44336" strokeWidth="2"/>
+                                        </svg>
+                                    </div>
+                                    <h4>Fecha de inicio</h4>
+                                </div>
+                                <div className="periodic-form">
+                                    <div className="form-group">
+                                        <div className="date-input-container">
+                                            <input
+                                                type="date"
+                                                defaultValue={moment(selectedCitaForPeriodic.start).format('YYYY-MM-DD')}
+                                                className="periodic-input date-input"
+                                            />
+                                            <div className="date-picker-icon">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="white"/>
+                                                    <line x1="16" y1="2" x2="16" y2="6" stroke="white" strokeWidth="2"/>
+                                                    <line x1="8" y1="2" x2="8" y2="6" stroke="white" strokeWidth="2"/>
+                                                    <line x1="3" y1="10" x2="21" y2="10" stroke="white" strokeWidth="2"/>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <div className="periodic-help-text">
+                                            La primera cita se creará a partir de esta fecha
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="periodic-actions">
+                                <button className="periodic-cancel-btn" onClick={handleClosePeriodicModal}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                        <line x1="18" y1="6" x2="6" y2="18" stroke="white" strokeWidth="2"/>
+                                        <line x1="6" y1="6" x2="18" y2="18" stroke="white" strokeWidth="2"/>
+                                    </svg>
+                                    Cancelar
+                                </button>
+                                <button className="periodic-create-btn">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="white"/>
+                                        <line x1="16" y1="2" x2="16" y2="6" stroke="white" strokeWidth="2"/>
+                                        <line x1="8" y1="2" x2="8" y2="6" stroke="white" strokeWidth="2"/>
+                                        <line x1="3" y1="10" x2="21" y2="10" stroke="white" strokeWidth="2"/>
+                                    </svg>
+                                    Crear Periódica
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              </div>
-              
-              <div className="periodic-settings">
-                <h4>Configuración de periodicidad:</h4>
-                <div className="periodic-form">
-                  <div className="form-group">
-                    <label>Frecuencia (días):</label>
-                    <input 
-                      type="number" 
-                      min="1" 
-                      max="365" 
-                      defaultValue="7"
-                      className="periodic-input"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label>Número de repeticiones:</label>
-                    <input 
-                      type="number" 
-                      min="1" 
-                      max="52" 
-                      defaultValue="4"
-                      className="periodic-input"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label>Fecha de inicio:</label>
-                    <input 
-                      type="date" 
-                      defaultValue={moment(selectedCitaForPeriodic.start).format('YYYY-MM-DD')}
-                      className="periodic-input"
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="periodic-actions">
-                <button className="periodic-cancel-btn" onClick={handleClosePeriodicModal}>
-                  Cancelar
-                </button>
-                <button className="periodic-create-btn">
-                  <FaCalendarAlt />
-                  Crear Citas Periódicas
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+            )}
     </div>
   );
 };
