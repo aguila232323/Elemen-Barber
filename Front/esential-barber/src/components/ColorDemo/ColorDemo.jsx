@@ -4,6 +4,7 @@ import { changePrimaryColor, COLORS } from '../../config/theme';
 const ColorDemo = () => {
   const [customColor, setCustomColor] = useState('#2196F3');
   const [showCustomInput, setShowCustomInput] = useState(false);
+  const [isRetracted, setIsRetracted] = useState(false);
 
   const handleChangeToBlue = () => {
     changePrimaryColor('#2196F3');
@@ -41,11 +42,15 @@ const ColorDemo = () => {
     setShowCustomInput(!showCustomInput);
   };
 
+  const toggleRetracted = () => {
+    setIsRetracted(!isRetracted);
+  };
+
   return (
     <div style={{
       position: 'fixed',
-      top: '120px', // Desplazado hacia abajo
-      right: '20px',
+      top: '120px',
+      right: isRetracted ? '-220px' : '20px',
       background: 'var(--background-card)',
       padding: '1.2rem',
       borderRadius: 'var(--border-radius-md)',
@@ -53,8 +58,42 @@ const ColorDemo = () => {
       zIndex: 9999,
       boxShadow: 'var(--shadow-lg)',
       minWidth: '200px',
-      maxWidth: '220px'
+      maxWidth: '220px',
+      transition: 'right 0.3s ease',
+      opacity: isRetracted ? 0 : 1,
+      visibility: isRetracted ? 'hidden' : 'visible'
     }}>
+      {/* Botón para retraer/expandir */}
+      <button
+        onClick={toggleRetracted}
+        style={{
+          position: 'absolute',
+          left: isRetracted ? '10px' : '-40px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          background: 'var(--primary-color)',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '50%',
+          width: '40px',
+          height: '40px',
+          cursor: 'pointer',
+          fontSize: '1.2rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: 'var(--shadow-md)',
+          transition: 'all 0.3s ease',
+          zIndex: 10000,
+          opacity: 1,
+          visibility: 'visible'
+        }}
+        onMouseEnter={(e) => e.target.style.transform = 'translateY(-50%) scale(1.1)'}
+        onMouseLeave={(e) => e.target.style.transform = 'translateY(-50%) scale(1)'}
+      >
+        {isRetracted ? '🎨' : '◀️'}
+      </button>
+
       <h3 style={{ 
         color: 'var(--primary-color)', 
         marginBottom: '1rem',

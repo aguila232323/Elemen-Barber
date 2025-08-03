@@ -324,155 +324,7 @@
   animation: slideIn 0.3s ease;
 }
 
-/* Responsive Design Mejorado para Perfil */
-@media (max-width: 768px) {
-  .perfilCont {
-    margin: 2rem 1rem 0 1rem;
-    padding: 2rem 1.5vw;
-    border-radius: 1rem;
-  }
-  
-  .perfilHeader {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
-  }
-  
-  .perfilTitulo {
-    font-size: 1.5rem;
-  }
-  
-  .logoutBtn {
-    font-size: 0.9rem;
-    padding: 0.6rem 1rem;
-  }
-  
-  .campoContainer {
-    padding: 1.2rem;
-  }
-  
-  .campoLabel {
-    font-size: 1rem;
-  }
-  
-  .campoValor {
-    font-size: 1rem;
-  }
-  
-  .campoInput {
-    font-size: 1rem;
-    padding: 0.7rem 0.8rem;
-  }
-  
-  .passwordLabel {
-    font-size: 0.9rem;
-  }
-  
-  .passwordInputContainer .campoInput {
-    padding-right: 2.5rem;
-  }
-  
-  .passwordToggle {
-    width: 28px;
-    height: 28px;
-    padding: 0.3rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .perfilCont {
-    margin: 1rem 0.5rem 0 0.5rem;
-    padding: 1.5rem 1vw;
-    border-radius: 0.8rem;
-  }
-  
-  .perfilTitulo {
-    font-size: 1.3rem;
-  }
-  
-  .perfilIcon {
-    font-size: 1.2rem;
-  }
-  
-  .logoutBtn {
-    font-size: 0.8rem;
-    padding: 0.5rem 0.8rem;
-  }
-  
-  .campoContainer {
-    padding: 1rem;
-  }
-  
-  .campoHeader {
-    gap: 0.5rem;
-  }
-  
-  .campoIcon {
-    font-size: 1rem;
-  }
-  
-  .campoLabel {
-    font-size: 0.9rem;
-  }
-  
-  .campoValor {
-    font-size: 0.9rem;
-  }
-  
-  .campoInput {
-    font-size: 0.9rem;
-    padding: 0.6rem 0.7rem;
-  }
-  
-  .btnEditar, .btnGuardar, .btnCancelar {
-    width: 32px;
-    height: 32px;
-    font-size: 0.9rem;
-  }
-  
-  .campoEditando {
-    gap: 0.5rem;
-  }
-  
-  .campoBotones {
-    gap: 0.3rem;
-  }
-  
-  .passwordFields {
-    gap: 0.8rem;
-  }
-  
-  .passwordLabel {
-    font-size: 0.85rem;
-  }
-  
-  .passwordInputContainer .campoInput {
-    padding-right: 2.2rem;
-    font-size: 0.9rem;
-  }
-  
-  .passwordToggle {
-    width: 24px;
-    height: 24px;
-    padding: 0.2rem;
-    font-size: 0.8rem;
-  }
-}
-
-/* Mejoras para dispositivos táctiles */
-@media (hover: none) and (pointer: coarse) {
-  .btnEditar, .btnGuardar, .btnCancelar, .logoutBtn, .passwordToggle {
-    min-height: 44px;
-    min-width: 44px;
-  }
-  
-  .campoInput {
-    font-size: 16px; /* Evita zoom en iOS */
-  }
-}
-
- 
-
+/* Estilos para la imagen de perfil */
 .profileImageSection {
   width: 100%;
   display: flex;
@@ -480,6 +332,7 @@
   align-items: center;
   margin-bottom: 1.2rem;
 }
+
 .profileImageContainer {
   position: relative;
   width: 120px;
@@ -492,6 +345,7 @@
   box-shadow: 0 4px 24px rgba(25,118,210,0.18), 0 1.5px 8px 0 rgba(0,0,0,0.10);
   padding: 6px;
 }
+
 .profileImage {
   width: 108px;
   height: 108px;
@@ -501,6 +355,7 @@
   background: #fff;
   box-shadow: 0 2px 12px rgba(25,118,210,0.10);
 }
+
 .profileImageEdit {
   position: absolute;
   bottom: 8px;
@@ -520,7 +375,480 @@
   transition: background 0.2s, transform 0.2s;
   z-index: 2;
 }
+
 .profileImageEdit:hover {
   background: #1251a3;
   transform: scale(1.08);
+}
+
+/* ===== RESPONSIVE DESIGN MEJORADO ===== */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 1024px) {
+  .perfilCont {
+    max-width: 90%;
+    margin: 2rem auto 0 auto;
+    padding: 2rem 1.5vw;
+  }
+  
+  .perfilHeader {
+    margin-bottom: 2rem;
+  }
+  
+  .perfilTitulo {
+    font-size: 1.6rem;
+  }
+  
+  .logoutBtn {
+    font-size: 0.95rem;
+    padding: 0.6rem 1rem;
+  }
+}
+
+/* Tablets pequeñas y móviles grandes */
+@media (max-width: 768px) {
+  .perfilCont {
+    margin: 1.5rem 1rem 0 1rem;
+    padding: 1.8rem 1.2vw;
+    border-radius: 1rem;
+    max-width: 95%;
+  }
+  
+  .perfilHeader {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding-bottom: 1.2rem;
+  }
+  
+  .perfilTitulo {
+    font-size: 1.4rem;
+    gap: 0.6rem;
+  }
+  
+  .perfilIcon {
+    font-size: 1.3rem;
+  }
+  
+  .logoutBtn {
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+    align-self: flex-end;
+  }
+  
+  .campoContainer {
+    padding: 1.3rem;
+  }
+  
+  .campoHeader {
+    gap: 0.6rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  .campoIcon {
+    font-size: 1.1rem;
+  }
+  
+  .campoLabel {
+    font-size: 1.1rem;
+  }
+  
+  .campoValor {
+    font-size: 1rem;
+  }
+  
+  .campoInput {
+    font-size: 1rem;
+    padding: 0.7rem 0.9rem;
+  }
+  
+  .passwordLabel {
+    font-size: 0.9rem;
+  }
+  
+  .passwordInputContainer .campoInput {
+    padding-right: 2.8rem;
+  }
+  
+  .passwordToggle {
+    width: 30px;
+    height: 30px;
+    padding: 0.4rem;
+  }
+  
+  /* Ajustes para la imagen de perfil */
+  .profileImageContainer {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .profileImage {
+    width: 88px;
+    height: 88px;
+  }
+  
+  .profileImageEdit {
+    width: 32px;
+    height: 32px;
+    font-size: 1.1rem;
+    bottom: 6px;
+    right: 6px;
+  }
+}
+
+/* Móviles medianos */
+@media (max-width: 600px) {
+  .perfilCont {
+    margin: 1rem 0.8rem 0 0.8rem;
+    padding: 1.5rem 1vw;
+    border-radius: 0.9rem;
+  }
+  
+  .perfilTitulo {
+    font-size: 1.3rem;
+  }
+  
+  .perfilIcon {
+    font-size: 1.2rem;
+  }
+  
+  .logoutBtn {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.9rem;
+  }
+  
+  .campoContainer {
+    padding: 1.1rem;
+  }
+  
+  .campoHeader {
+    gap: 0.5rem;
+  }
+  
+  .campoIcon {
+    font-size: 1rem;
+  }
+  
+  .campoLabel {
+    font-size: 1rem;
+  }
+  
+  .campoValor {
+    font-size: 0.95rem;
+  }
+  
+  .campoInput {
+    font-size: 0.95rem;
+    padding: 0.6rem 0.8rem;
+  }
+  
+  .btnEditar, .btnGuardar, .btnCancelar {
+    width: 34px;
+    height: 34px;
+    font-size: 0.9rem;
+  }
+  
+  .campoEditando {
+    gap: 0.6rem;
+  }
+  
+  .campoBotones {
+    gap: 0.4rem;
+  }
+  
+  .passwordFields {
+    gap: 0.9rem;
+  }
+  
+  .passwordLabel {
+    font-size: 0.85rem;
+  }
+  
+  .passwordInputContainer .campoInput {
+    padding-right: 2.5rem;
+    font-size: 0.95rem;
+  }
+  
+  .passwordToggle {
+    width: 28px;
+    height: 28px;
+    padding: 0.3rem;
+    font-size: 0.9rem;
+  }
+  
+  /* Ajustes para la imagen de perfil */
+  .profileImageContainer {
+    width: 90px;
+    height: 90px;
+  }
+  
+  .profileImage {
+    width: 78px;
+    height: 78px;
+  }
+  
+  .profileImageEdit {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+    bottom: 5px;
+    right: 5px;
+  }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+  .perfilCont {
+    margin: 0.8rem 0.5rem 0 0.5rem;
+    padding: 1.3rem 0.8vw;
+    border-radius: 0.8rem;
+  }
+  
+  .perfilHeader {
+    gap: 0.8rem;
+    margin-bottom: 1.8rem;
+    padding-bottom: 1rem;
+  }
+  
+  .perfilTitulo {
+    font-size: 1.2rem;
+    gap: 0.5rem;
+  }
+  
+  .perfilIcon {
+    font-size: 1.1rem;
+  }
+  
+  .logoutBtn {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.8rem;
+  }
+  
+  .campoContainer {
+    padding: 1rem;
+  }
+  
+  .campoHeader {
+    gap: 0.4rem;
+    margin-bottom: 0.7rem;
+  }
+  
+  .campoIcon {
+    font-size: 0.9rem;
+  }
+  
+  .campoLabel {
+    font-size: 0.9rem;
+  }
+  
+  .campoValor {
+    font-size: 0.9rem;
+  }
+  
+  .campoInput {
+    font-size: 0.9rem;
+    padding: 0.6rem 0.7rem;
+  }
+  
+  .btnEditar, .btnGuardar, .btnCancelar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+  }
+  
+  .campoEditando {
+    gap: 0.5rem;
+  }
+  
+  .campoBotones {
+    gap: 0.3rem;
+  }
+  
+  .passwordFields {
+    gap: 0.8rem;
+  }
+  
+  .passwordLabel {
+    font-size: 0.8rem;
+  }
+  
+  .passwordInputContainer .campoInput {
+    padding-right: 2.2rem;
+    font-size: 0.9rem;
+  }
+  
+  .passwordToggle {
+    width: 26px;
+    height: 26px;
+    padding: 0.2rem;
+    font-size: 0.8rem;
+  }
+  
+  /* Ajustes para la imagen de perfil */
+  .profileImageContainer {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .profileImage {
+    width: 68px;
+    height: 68px;
+  }
+  
+  .profileImageEdit {
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+    bottom: 4px;
+    right: 4px;
+  }
+  
+  .perfilMsg, .perfilError {
+    font-size: 0.9rem;
+    padding: 0.7rem;
+    margin-top: 0.8rem;
+  }
+}
+
+/* Móviles muy pequeños */
+@media (max-width: 360px) {
+  .perfilCont {
+    margin: 0.5rem 0.3rem 0 0.3rem;
+    padding: 1.2rem 0.6vw;
+    border-radius: 0.7rem;
+  }
+  
+  .perfilTitulo {
+    font-size: 1.1rem;
+  }
+  
+  .perfilIcon {
+    font-size: 1rem;
+  }
+  
+  .logoutBtn {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.7rem;
+  }
+  
+  .campoContainer {
+    padding: 0.9rem;
+  }
+  
+  .campoHeader {
+    gap: 0.3rem;
+  }
+  
+  .campoIcon {
+    font-size: 0.85rem;
+  }
+  
+  .campoLabel {
+    font-size: 0.85rem;
+  }
+  
+  .campoValor {
+    font-size: 0.85rem;
+  }
+  
+  .campoInput {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.6rem;
+  }
+  
+  .btnEditar, .btnGuardar, .btnCancelar {
+    width: 30px;
+    height: 30px;
+    font-size: 0.8rem;
+  }
+  
+  .passwordLabel {
+    font-size: 0.75rem;
+  }
+  
+  .passwordInputContainer .campoInput {
+    padding-right: 2rem;
+    font-size: 0.85rem;
+  }
+  
+  .passwordToggle {
+    width: 24px;
+    height: 24px;
+    padding: 0.15rem;
+    font-size: 0.75rem;
+  }
+  
+  /* Ajustes para la imagen de perfil */
+  .profileImageContainer {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .profileImage {
+    width: 58px;
+    height: 58px;
+  }
+  
+  .profileImageEdit {
+    width: 24px;
+    height: 24px;
+    font-size: 0.8rem;
+    bottom: 3px;
+    right: 3px;
+  }
+}
+
+/* Mejoras para dispositivos táctiles */
+@media (hover: none) and (pointer: coarse) {
+  .btnEditar, .btnGuardar, .btnCancelar, .logoutBtn, .passwordToggle, .profileImageEdit {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .campoInput {
+    font-size: 16px; /* Evita zoom en iOS */
+  }
+  
+  .campoInput:focus {
+    transform: none; /* Evita animaciones que pueden causar problemas en móviles */
+  }
+}
+
+/* Orientación landscape en móviles */
+@media (max-width: 768px) and (orientation: landscape) {
+  .perfilCont {
+    margin: 1rem 2rem 0 2rem;
+    padding: 1.5rem 1.5vw;
+  }
+  
+  .perfilHeader {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0;
+  }
+  
+  .logoutBtn {
+    align-self: auto;
+  }
+  
+  .perfilCampos {
+    gap: 1.2rem;
+  }
+  
+  .campoContainer {
+    padding: 1.2rem;
+  }
+}
+
+/* Mejoras para pantallas de alta densidad */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .perfilCont {
+    box-shadow: 0 2px 16px rgba(0,0,0,0.15);
+  }
+  
+  .profileImageContainer {
+    box-shadow: 0 2px 12px rgba(25,118,210,0.15), 0 1px 4px 0 rgba(0,0,0,0.08);
+  }
 } 

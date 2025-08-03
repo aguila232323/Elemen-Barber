@@ -1,83 +1,643 @@
-.resenas-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2rem;
-  justify-content: center;
-}
-.resena-card {
-  background: #fafafa;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-  padding: 1.5rem 1.2rem;
-  max-width: 320px;
-  min-width: 220px;
-  flex: 1 1 220px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  font-style: italic;
-  border-left: 4px solid #111;
-}
-.resena-card .autor {
-  font-weight: bold;
-  margin-top: 1rem;
-  color: #222;
-  font-style: normal;
-}
-.contacto-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
-  margin-bottom: 1rem;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
-}
-.contacto-form input,
-.contacto-form textarea {
-  padding: 0.9rem;
-  border: 1px solid #111;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  background: #fff;
-  color: #111;
-  outline: none;
-  transition: border 0.2s;
-}
-.contacto-form input:focus,
-.contacto-form textarea:focus {
-  border: 1.5px solid #222;
-}
-.contacto-form button {
-  background: #111;
+/* ===== PÁGINA DE CONTACTO RESPONSIVE ===== */
+
+/* Contenedor principal */
+.contactoContainer {
+  background: #121212;
+  min-height: 100vh;
   color: #fff;
-  border: none;
-  padding: 0.9rem;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.contacto-form button:hover {
-  background: #333;
-}
-.content {
-  flex: 1;
-  max-width: 900px;
-  margin: 7.5rem auto 2rem auto;
-  padding: 2.5rem 2rem;
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.09);
-  min-height: 60vh;
+  padding: 0;
+  font-family: inherit;
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
 }
 
-@media (max-width: 700px) {
-  .content {
-    padding: 1rem;
-    margin: 5rem 0.5rem 1rem 0.5rem;
+.contactoContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 2vw 2rem 2vw;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.5rem;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Columna de contacto */
+.contactoColumna {
+  flex: 1 1 340px;
+  min-width: 320px;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.contactoHeader {
+  display: flex;
+  flex-direction: column;
+}
+
+.contactoLabel {
+  color: var(--primary-color);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.contactoIcon {
+  font-size: 1.1rem;
+}
+
+.contactoTitulo {
+  font-size: 3rem;
+  font-weight: 900;
+  margin: 0.2em 0 0 0;
+  line-height: 1.05;
+}
+
+/* Información de contacto */
+.contactoInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  font-size: 1.08rem;
+}
+
+.contactoItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.contactoIconContainer {
+  background: #222;
+  border-radius: 8px;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.iconLocation {
+  color: var(--primary-color);
+}
+
+.iconWhatsapp {
+  color: #25D366;
+}
+
+.iconEmail {
+  color: var(--primary-color);
+}
+
+.contactoTexto {
+  line-height: 1.4;
+}
+
+.contactoSubtitulo {
+  color: #aaa;
+  font-size: 0.97em;
+}
+
+/* Botones sociales */
+.socialButtons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.2rem;
+}
+
+.socialBtn {
+  background: none;
+  color: #fff;
+  border: 2px solid var(--primary-color);
+  border-radius: 6px;
+  padding: 0.5em 1.2em;
+  font-weight: 600;
+  font-size: 1em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.socialBtn:hover {
+  background: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+}
+
+/* Columna de horarios */
+.horariosColumna {
+  flex: 1 1 340px;
+  min-width: 320px;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  justify-content: flex-start;
+}
+
+.horariosCard {
+  background: #222;
+  border-radius: 1rem;
+  padding: 2rem 2.5rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  max-width: 400px;
+  margin-top: 4.5rem;
+}
+
+.horariosTable {
+  width: 100%;
+  color: #fff;
+  font-size: 1.08rem;
+  border-collapse: collapse;
+}
+
+.horarioDia {
+  color: #aaa;
+  padding: 0.3em 0;
+}
+
+.horarioHora {
+  text-align: right;
+  font-weight: 600;
+  padding: 0.3em 0;
+}
+
+/* Mapa */
+.mapaContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mapaLink {
+  width: 100%;
+  max-width: 400px;
+  min-height: 260px;
+  background: radial-gradient(circle at 60% 40%, rgba(33,150,243,0.2) 0%, #121212 80%);
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mapaLink:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(25, 118, 210, 0.2);
+}
+
+.mapaIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--primary-color);
+  font-size: 3.5rem;
+  filter: var(--shadow-primary-pin);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 1024px) {
+  .contactoContent {
+    max-width: 95%;
+    padding: 2.5rem 1.5vw 2rem 1.5vw;
+    gap: 2rem;
+  }
+  
+  .contactoTitulo {
+    font-size: 2.5rem;
+  }
+  
+  .contactoInfo {
+    font-size: 1rem;
+  }
+  
+  .horariosCard {
+    margin-top: 3rem;
+    padding: 1.8rem 2rem;
+  }
+  
+  .horariosTable {
+    font-size: 1rem;
+  }
+}
+
+/* Tablets pequeñas y móviles grandes */
+@media (max-width: 768px) {
+  .contactoContent {
+    padding: 2rem 1vw 1.5rem 1vw;
+    gap: 1.5rem;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .contactoColumna {
+    flex: none;
+    min-width: auto;
+    max-width: none;
+    gap: 2rem;
+  }
+  
+  .contactoHeader {
+    text-align: center;
+  }
+  
+  .contactoTitulo {
+    font-size: 2.2rem;
+  }
+  
+  .contactoLabel {
+    font-size: 0.9rem;
+    justify-content: center;
+  }
+  
+  .contactoInfo {
+    gap: 1.2rem;
+    font-size: 0.95rem;
+  }
+  
+  .contactoItem {
+    gap: 12px;
+  }
+  
+  .contactoIconContainer {
+    width: 34px;
+    height: 34px;
+    font-size: 1.1rem;
+  }
+  
+  .socialButtons {
+    justify-content: center;
+    gap: 0.8rem;
+  }
+  
+  .socialBtn {
+    font-size: 0.9rem;
+    padding: 0.4em 1em;
+  }
+  
+  .horariosColumna {
+    flex: none;
+    min-width: auto;
+    max-width: none;
+    gap: 1.5rem;
+  }
+  
+  .horariosCard {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    padding: 1.5rem 1.8rem;
+    max-width: none;
+  }
+  
+  .horariosTable {
+    font-size: 0.95rem;
+  }
+  
+  .mapaLink {
+    min-height: 200px;
+    max-width: none;
+  }
+  
+  .mapaIcon {
+    font-size: 3rem;
+  }
+}
+
+/* Móviles medianos */
+@media (max-width: 600px) {
+  .contactoContent {
+    padding: 1.5rem 0.8vw 1rem 0.8vw;
+    gap: 1.2rem;
+  }
+  
+  .contactoColumna {
+    gap: 1.5rem;
+  }
+  
+  .contactoTitulo {
+    font-size: 1.8rem;
+  }
+  
+  .contactoLabel {
+    font-size: 0.85rem;
+  }
+  
+  .contactoInfo {
+    gap: 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .contactoItem {
+    gap: 10px;
+  }
+  
+  .contactoIconContainer {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+  
+  .socialButtons {
+    gap: 0.6rem;
+  }
+  
+  .socialBtn {
+    font-size: 0.85rem;
+    padding: 0.35em 0.8em;
+  }
+  
+  .horariosColumna {
+    gap: 1.2rem;
+  }
+  
+  .horariosCard {
+    padding: 1.2rem 1.5rem;
+  }
+  
+  .horariosTable {
+    font-size: 0.9rem;
+  }
+  
+  .mapaLink {
+    min-height: 180px;
+  }
+  
+  .mapaIcon {
+    font-size: 2.5rem;
+  }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+  .contactoContent {
+    padding: 1rem 0.5vw 0.8rem 0.5vw;
+    gap: 1rem;
+  }
+  
+  .contactoColumna {
+    gap: 1.2rem;
+  }
+  
+  .contactoTitulo {
+    font-size: 1.6rem;
+  }
+  
+  .contactoLabel {
+    font-size: 0.8rem;
+  }
+  
+  .contactoInfo {
+    gap: 0.8rem;
+    font-size: 0.85rem;
+  }
+  
+  .contactoItem {
+    gap: 8px;
+  }
+  
+  .contactoIconContainer {
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+  }
+  
+  .contactoSubtitulo {
+    font-size: 0.9em;
+  }
+  
+  .socialButtons {
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  
+  .socialBtn {
+    font-size: 0.8rem;
+    padding: 0.3em 0.7em;
+    gap: 6px;
+  }
+  
+  .horariosColumna {
+    gap: 1rem;
+  }
+  
+  .horariosCard {
+    padding: 1rem 1.2rem;
+  }
+  
+  .horariosTable {
+    font-size: 0.85rem;
+  }
+  
+  .horarioDia, .horarioHora {
+    padding: 0.25em 0;
+  }
+  
+  .mapaLink {
+    min-height: 160px;
+  }
+  
+  .mapaIcon {
+    font-size: 2.2rem;
+  }
+}
+
+/* Móviles muy pequeños */
+@media (max-width: 360px) {
+  .contactoContent {
+    padding: 0.8rem 0.3vw 0.6rem 0.3vw;
+    gap: 0.8rem;
+  }
+  
+  .contactoColumna {
+    gap: 1rem;
+  }
+  
+  .contactoTitulo {
+    font-size: 1.4rem;
+  }
+  
+  .contactoLabel {
+    font-size: 0.75rem;
+  }
+  
+  .contactoInfo {
+    gap: 0.7rem;
+    font-size: 0.8rem;
+  }
+  
+  .contactoItem {
+    gap: 6px;
+  }
+  
+  .contactoIconContainer {
+    width: 26px;
+    height: 26px;
+    font-size: 0.85rem;
+  }
+  
+  .socialButtons {
+    gap: 0.4rem;
+  }
+  
+  .socialBtn {
+    font-size: 0.75rem;
+    padding: 0.25em 0.6em;
+    gap: 4px;
+  }
+  
+  .horariosColumna {
+    gap: 0.8rem;
+  }
+  
+  .horariosCard {
+    padding: 0.8rem 1rem;
+  }
+  
+  .horariosTable {
+    font-size: 0.8rem;
+  }
+  
+  .mapaLink {
+    min-height: 140px;
+  }
+  
+  .mapaIcon {
+    font-size: 2rem;
+  }
+}
+
+/* Orientación landscape en móviles */
+@media (max-width: 768px) and (orientation: landscape) {
+  .contactoContent {
+    padding: 1rem 2rem 0.8rem 2rem;
+    gap: 1rem;
+  }
+  
+  .contactoColumna {
+    gap: 1.2rem;
+  }
+  
+  .contactoTitulo {
+    font-size: 1.8rem;
+  }
+  
+  .contactoInfo {
+    gap: 0.8rem;
+    font-size: 0.9rem;
+  }
+  
+  .socialButtons {
+    gap: 0.6rem;
+  }
+  
+  .socialBtn {
+    font-size: 0.85rem;
+    padding: 0.3em 0.8em;
+  }
+  
+  .horariosCard {
+    padding: 1rem 1.5rem;
+  }
+  
+  .horariosTable {
+    font-size: 0.9rem;
+  }
+  
+  .mapaLink {
+    min-height: 120px;
+  }
+  
+  .mapaIcon {
+    font-size: 2rem;
+  }
+}
+
+/* Mejoras para dispositivos táctiles */
+@media (hover: none) and (pointer: coarse) {
+  .socialBtn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .contactoIconContainer {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .mapaLink {
+    min-height: 200px;
+  }
+}
+
+/* Mejoras para pantallas de alta densidad */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .contactoContainer {
+    background: #121212;
+  }
+  
+  .horariosCard {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  
+  .mapaLink {
+    box-shadow: 0 4px 16px rgba(25, 118, 210, 0.15);
+  }
+}
+
+/* Animaciones suaves */
+.contactoContainer {
+  animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.socialBtn {
+  animation: slideInUp 0.4s ease;
+  animation-fill-mode: both;
+}
+
+.socialBtn:nth-child(1) { animation-delay: 0.1s; }
+.socialBtn:nth-child(2) { animation-delay: 0.2s; }
+.socialBtn:nth-child(3) { animation-delay: 0.3s; }
+.socialBtn:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 } 

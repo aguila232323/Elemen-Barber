@@ -1,19 +1,39 @@
-.portafolio {
+/* ===== PORTFOLIO RESPONSIVE ===== */
+
+/* Contenedor principal */
+.portafolioContainer {
+  background: #121212;
+  min-height: 100vh;
+  padding: 2.5rem 0;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.09);
-
 }
 
-.portafolio h2 {
+.portafolioSection {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 4vw;
+}
+
+.portafolioTitulo {
+  color: #fff;
   text-align: center;
+  margin-bottom: 2rem;
 }
 
+.portafolioContent {
+  background: #fff;
+  border-radius: 1.2rem;
+  padding: 2.5rem 3vw;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Galería de fotos */
 .galeria {
   width: 100%;
   max-width: 900px;
@@ -21,8 +41,21 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
+  animation: fadeInUp 0.6s ease;
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fotos individuales */
 .foto {
   width: 100%;
   aspect-ratio: 3 / 4;
@@ -31,36 +64,423 @@
   background-position: center;
   border-radius: 18px;
   box-shadow: 0 16px 48px 0 rgba(0,0,0,0.38), 0 2px 8px 0 rgba(0,0,0,0.18);
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: default;
 }
 
-.foto:hover {
+.fotoClickable {
+  cursor: pointer;
+}
+
+.fotoClickable:hover {
   transform: scale(1.06);
   z-index: 2;
   box-shadow: 0 32px 80px 0 rgba(0,0,0,0.48), 0 4px 16px 0 rgba(0,0,0,0.22);
 }
 
-/* RESPONSIVE */
+.fotoClickable:focus {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Overlay para fotos clickeables */
+.fotoClickable::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.fotoClickable:hover::after {
+  opacity: 1;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modalContent {
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  border-radius: 0;
+  max-width: 400px;
+  width: 100%;
+  min-width: 326px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: slideInUp 0.3s ease;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modalCloseBtn {
+  position: absolute;
+  top: -18px;
+  right: -18px;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transition: all 0.3s ease;
+}
+
+.modalCloseBtn:hover {
+  background: #333;
+  transform: scale(1.1);
+}
+
+.closeIcon {
+  display: block;
+  width: 100%;
+  text-align: center;
+  line-height: 36px;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.instagramEmbed {
+  width: 100%;
+  max-width: 400px;
+  min-width: 326px;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 1024px) {
+  .portafolioSection {
+    padding: 0 3vw;
+  }
+  
+  .portafolioContent {
+    padding: 2rem 2.5vw;
+    max-width: 95%;
+  }
+  
+  .galeria {
+    gap: 1.5rem;
+  }
+  
+  .foto {
+    min-height: 300px;
+  }
+}
+
+/* Tablets pequeñas */
 @media (max-width: 900px) {
+  .portafolioSection {
+    padding: 0 2.5vw;
+  }
+  
   .galeria {
     grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  
+  .foto {
+    min-height: 280px;
+  }
+  
+  .portafolioContent {
+    padding: 1.8rem 2vw;
   }
 }
 
+/* Móviles grandes */
+@media (max-width: 768px) {
+  .portafolioContainer {
+    padding: 2rem 0;
+  }
+  
+  .portafolioSection {
+    padding: 0 2vw;
+  }
+  
+  .portafolioContent {
+    padding: 1.5rem 1.5vw;
+    border-radius: 1rem;
+  }
+  
+  .galeria {
+    gap: 1.2rem;
+  }
+  
+  .foto {
+    min-height: 250px;
+    border-radius: 12px;
+  }
+  
+  .fotoClickable:hover {
+    transform: scale(1.04);
+  }
+}
+
+/* Móviles medianos */
 @media (max-width: 600px) {
+  .portafolioSection {
+    padding: 0 1.5vw;
+  }
+  
   .galeria {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
+  
   .foto {
     min-height: 220px;
+    border-radius: 10px;
+  }
+  
+  .portafolioContent {
+    padding: 1.2rem 1.5vw;
+  }
+  
+  .fotoClickable:hover {
+    transform: scale(1.02);
   }
 }
 
+/* Móviles pequeños */
+@media (max-width: 480px) {
+  .portafolioContainer {
+    padding: 1.5rem 0;
+  }
+  
+  .portafolioSection {
+    padding: 0 1vw;
+  }
+  
+  .portafolioContent {
+    padding: 1rem 1.2vw;
+    border-radius: 0.8rem;
+  }
+  
+  .galeria {
+    gap: 0.8rem;
+  }
+  
+  .foto {
+    min-height: 200px;
+    border-radius: 8px;
+  }
+  
+  .modalContent {
+    max-width: 95%;
+    min-width: 280px;
+  }
+  
+  .modalCloseBtn {
+    width: 32px;
+    height: 32px;
+    top: -16px;
+    right: -16px;
+  }
+  
+  .closeIcon {
+    line-height: 32px;
+    font-size: 1.1rem;
+  }
+  
+  .instagramEmbed {
+    max-width: 95%;
+    min-width: 280px;
+  }
+}
 
+/* Móviles muy pequeños */
+@media (max-width: 360px) {
+  .portafolioContainer {
+    padding: 1rem 0;
+  }
+  
+  .portafolioSection {
+    padding: 0 0.8vw;
+  }
+  
+  .portafolioContent {
+    padding: 0.8rem 1vw;
+    border-radius: 0.6rem;
+  }
+  
+  .galeria {
+    gap: 0.6rem;
+  }
+  
+  .foto {
+    min-height: 180px;
+    border-radius: 6px;
+  }
+  
+  .modalContent {
+    max-width: 98%;
+    min-width: 260px;
+  }
+  
+  .instagramEmbed {
+    max-width: 98%;
+    min-width: 260px;
+  }
+}
 
-@media (max-width: 700px) {
-  .portafolio {
-    padding: 1rem;
-    margin: 5rem 0.5rem 1rem 0.5rem;
+/* Orientación landscape en móviles */
+@media (max-width: 768px) and (orientation: landscape) {
+  .portafolioContainer {
+    padding: 1rem 0;
+  }
+  
+  .portafolioSection {
+    padding: 0 3vw;
+  }
+  
+  .galeria {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .foto {
+    min-height: 180px;
+  }
+  
+  .modalContent {
+    max-width: 80%;
+  }
+}
+
+/* Mejoras para dispositivos táctiles */
+@media (hover: none) and (pointer: coarse) {
+  .fotoClickable:hover {
+    transform: none;
+  }
+  
+  .fotoClickable:active {
+    transform: scale(0.98);
+  }
+  
+  .modalCloseBtn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .foto {
+    min-height: 200px;
+  }
+}
+
+/* Mejoras para pantallas de alta densidad */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .foto {
+    box-shadow: 0 8px 24px 0 rgba(0,0,0,0.3), 0 1px 4px 0 rgba(0,0,0,0.12);
+  }
+  
+  .fotoClickable:hover {
+    box-shadow: 0 16px 40px 0 rgba(0,0,0,0.4), 0 2px 8px 0 rgba(0,0,0,0.15);
+  }
+}
+
+/* Animaciones escalonadas para las fotos */
+.foto {
+  animation: fadeInUp 0.6s ease;
+  animation-fill-mode: both;
+}
+
+.foto:nth-child(1) { animation-delay: 0.1s; }
+.foto:nth-child(2) { animation-delay: 0.2s; }
+.foto:nth-child(3) { animation-delay: 0.3s; }
+.foto:nth-child(4) { animation-delay: 0.4s; }
+.foto:nth-child(5) { animation-delay: 0.5s; }
+.foto:nth-child(6) { animation-delay: 0.6s; }
+.foto:nth-child(7) { animation-delay: 0.7s; }
+.foto:nth-child(8) { animation-delay: 0.8s; }
+.foto:nth-child(9) { animation-delay: 0.9s; }
+
+/* Mejoras de accesibilidad */
+.fotoClickable:focus-visible {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Optimización para carga de imágenes */
+.foto {
+  background-color: #f5f5f5;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Efectos de carga */
+.foto::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.foto.loading::before {
+  opacity: 1;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }
