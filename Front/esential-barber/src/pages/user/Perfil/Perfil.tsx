@@ -1,8 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import styles from './Perfil.module.css';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSave, FaTimes, FaSignOutAlt, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSave, FaTimes, FaSignOutAlt, FaLock, FaEye, FaEyeSlash, FaCheckCircle } from 'react-icons/fa';
 import defaultProfile from '../../../assets/images/usuario.png';
+import { 
+  validateSpanishPhone, 
+  normalizePhoneForStorage, 
+  getPhoneErrorMessage,
+  handlePhoneChange,
+  handlePhoneBlur,
+  formatPhoneForDisplay
+} from '../../../utils/phoneUtils';
 
 interface Usuario {
   nombre: string;
@@ -73,7 +81,15 @@ const Perfil: React.FC = () => {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUsuario({ ...usuario, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    if (name === 'telefono') {
+      handlePhoneChange(value, (newValue) => {
+        setUsuario({ ...usuario, telefono: newValue });
+      });
+    } else {
+      setUsuario({ ...usuario, [name]: value });
+    }
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -191,14 +207,38 @@ const Perfil: React.FC = () => {
         setPasswordData({ passwordActual: '', passwordNueva: '', passwordConfirmar: '' });
         setShowPasswords({ actual: false, nueva: false, confirmar: false });
       } else {
-        const res = await fetch('http://localhost:8080/api/usuarios/perfil', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(usuario)
-        });
+        // Validar teléfono si es el campo que se está editando
+        let res;
+        if (campo === 'telefono') {
+          const phoneError = getPhoneErrorMessage(usuario.telefono);
+          if (phoneError) {
+            setError(phoneError);
+            setGuardando(null);
+            return;
+          }
+          
+          // Normalizar teléfono para almacenamiento
+          const normalizedPhone = normalizePhoneForStorage(usuario.telefono);
+          const usuarioConTelefonoNormalizado = { ...usuario, telefono: normalizedPhone };
+          
+          res = await fetch('http://localhost:8080/api/usuarios/perfil', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(usuarioConTelefonoNormalizado)
+          });
+        } else {
+          res = await fetch('http://localhost:8080/api/usuarios/perfil', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(usuario)
+          });
+        }
         
         if (!res.ok) {
           let errorMessage = 'No se pudo actualizar el perfil';
@@ -336,46 +376,27 @@ const Perfil: React.FC = () => {
             <span className={styles.campoLabel}>Email</span>
           </div>
           <div className={styles.campoContent}>
-            {campoEditando.email ? (
-              <div className={styles.campoEditando}>
-                <input
-                  className={styles.campoInput}
-                  type="email"
-                  name="email"
-                  value={usuario.email}
-                  onChange={handleChange}
-                  required
-                />
-                <div className={styles.campoBotones}>
-                  <button 
-                    type="button" 
-                    className={styles.btnGuardar}
-                    onClick={() => guardarCampo('email')}
-                    disabled={guardando === 'email'}
-                  >
-                    {guardando === 'email' ? 'Guardando...' : <FaSave />}
-                  </button>
-                  <button 
-                    type="button" 
-                    className={styles.btnCancelar}
-                    onClick={() => cancelarEdicion('email')}
-                  >
-                    <FaTimes />
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className={styles.campoMostrar}>
+            <div className={styles.campoMostrar}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span className={styles.campoValor}>{usuario.email}</span>
-                <button 
-                  type="button" 
-                  className={styles.btnEditar}
-                  onClick={() => iniciarEdicion('email')}
-                >
-                  <FaEdit />
-                </button>
+                <FaCheckCircle 
+                  style={{ 
+                    color: '#28a745', 
+                    fontSize: '16px',
+                    filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))'
+                  }} 
+                  title="Email verificado"
+                />
               </div>
-            )}
+              <div style={{ 
+                fontSize: '12px', 
+                color: '#6c757d', 
+                fontStyle: 'italic',
+                marginTop: '4px'
+              }}>
+                El email no se puede modificar
+              </div>
+            </div>
           </div>
         </div>
 
@@ -394,6 +415,10 @@ const Perfil: React.FC = () => {
                   name="telefono"
                   value={usuario.telefono}
                   onChange={handleChange}
+                  onBlur={() => handlePhoneBlur(usuario.telefono, (newValue) => {
+                    setUsuario({ ...usuario, telefono: newValue });
+                  })}
+                  placeholder="Ej: 612 345 678"
                 />
                 <div className={styles.campoBotones}>
                   <button 

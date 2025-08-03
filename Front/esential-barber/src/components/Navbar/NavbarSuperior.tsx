@@ -48,6 +48,7 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
   const [mensajeCita, setMensajeCita] = useState('');
   const [userName, setUserName] = useState<string | null>(getUserName());
   const [serviciosDisponibles, setServiciosDisponibles] = useState<any[]>([]);
+  const [isInVerificationMode, setIsInVerificationMode] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -169,10 +170,29 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
         </div>
       )}
       {showRegister && (
-        <div className={styles.modalOverlay} onClick={()=>setShowRegister(false)}>
+        <div className={styles.modalOverlay} onClick={(e) => {
+          // No cerrar si está en modo de verificación
+          if (!isInVerificationMode) {
+            const target = e.target as HTMLElement;
+            if (target.classList.contains(styles.modalOverlay)) {
+              setShowRegister(false);
+            }
+          }
+        }}>
           <div className={styles.modalContent} onClick={e=>e.stopPropagation()}>
-            <button className={styles.closeModal} onClick={()=>setShowRegister(false)}>×</button>
-            <Register onClose={()=>setShowRegister(false)} onSwitchToLogin={handleSwitchToLogin} />
+            <button 
+              className={styles.closeModal} 
+              onClick={() => !isInVerificationMode && setShowRegister(false)}
+              style={{ opacity: isInVerificationMode ? 0.5 : 1, cursor: isInVerificationMode ? 'not-allowed' : 'pointer' }}
+              title={isInVerificationMode ? 'No se puede cerrar durante la verificación' : 'Cerrar'}
+            >
+              ×
+            </button>
+            <Register 
+              onClose={() => !isInVerificationMode && setShowRegister(false)} 
+              onSwitchToLogin={handleSwitchToLogin}
+              onVerificationModeChange={setIsInVerificationMode}
+            />
           </div>
         </div>
       )}

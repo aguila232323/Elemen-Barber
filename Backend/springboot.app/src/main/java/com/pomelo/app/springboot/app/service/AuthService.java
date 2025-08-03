@@ -39,9 +39,15 @@ public class AuthService {
         authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
-        // Si la autenticación es correcta, obtener el usuario y generar el token JWT
+        // Si la autenticación es correcta, obtener el usuario y verificar que esté verificado
         Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        
+        // Verificar que el email esté verificado
+        if (!Boolean.TRUE.equals(usuario.getIsEmailVerified())) {
+            throw new RuntimeException("Tu cuenta no está verificada. Por favor, verifica tu correo electrónico antes de iniciar sesión.");
+        }
+        
         String token = jwtUtils.generateJwtToken(request.getEmail(), usuario.getNombre());
         return new JwtResponse(token);
     }

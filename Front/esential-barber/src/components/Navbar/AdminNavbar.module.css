@@ -11,8 +11,31 @@
   background: #000000;
   box-shadow: 0 -2px 16px rgba(0,0,0,0.18);
   backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes gentleGlow {
+  0% {
+    filter: brightness(0) saturate(100%) invert(100%);
+  }
+  50% {
+    filter: brightness(0) saturate(100%) invert(100%);
+  }
+  100% {
+    filter: brightness(0) saturate(100%) invert(100%);
+  }
 }
 
 .bottomBtn {
@@ -28,9 +51,32 @@
   padding: 0.2rem 0;
   transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
-  border-radius: 8px;
-  margin: 0 0.2rem;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.bottomBtn:nth-child(1) { animation: fadeIn 0.3s ease 0.1s both; }
+.bottomBtn:nth-child(2) { animation: fadeIn 0.3s ease 0.2s both; }
+.bottomBtn:nth-child(3) { animation: fadeIn 0.3s ease 0.3s both; }
+.bottomBtn:nth-child(4) { animation: fadeIn 0.3s ease 0.4s both; }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bottomBtn:hover {
+  transform: translateY(-1px);
+}
+
+.bottomBtn:active {
+  transform: translateY(0px) scale(0.98);
 }
 
 .bottomIconActive {
@@ -44,6 +90,7 @@
   transition: all 0.3s ease;
   position: relative;
   z-index: 1;
+  animation: gentleGlow 2s ease-in-out infinite;
 }
 
 .bottomIconInactive {
@@ -57,6 +104,16 @@
   transition: all 0.3s ease;
   position: relative;
   z-index: 1;
+  opacity: 0.8;
+}
+
+.bottomIconActive:hover {
+  transform: scale(1.05);
+}
+
+.bottomIconInactive:hover {
+  transform: scale(1.02);
+  opacity: 1;
 }
 
 .bottomBtnLabel {
@@ -67,6 +124,12 @@
   transition: all 0.3s ease;
   position: relative;
   z-index: 1;
+  opacity: 0.9;
+}
+
+.bottomBtn:hover .bottomBtnLabel {
+  opacity: 1;
+  transform: translateY(-1px);
 }
 
 .bottomBtn:focus, .bottomBtn:active {
@@ -74,6 +137,58 @@
   border: none;
   background: none;
   box-shadow: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .bottomNavbar {
+    padding: 0.4rem 0 0.1rem 0;
+  }
+  
+  .bottomIconActive,
+  .bottomIconInactive {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .bottomBtnLabel {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .bottomNavbar {
+    padding: 0.3rem 0 0.1rem 0;
+  }
+  
+  .bottomIconActive,
+  .bottomIconInactive {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .bottomBtnLabel {
+    font-size: 0.75rem;
+  }
+}
+
+/* Touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .bottomBtn {
+    min-height: 60px;
+    min-width: 60px;
+    padding: 0.5rem 0;
+  }
+  
+  .bottomIconActive,
+  .bottomIconInactive {
+    width: 26px;
+    height: 26px;
+  }
+  
+  .bottomBtnLabel {
+    font-size: 0.8rem;
+  }
 }
 
 

@@ -31,6 +31,49 @@ public class VerificacionController {
         }
     }
 
+    @PostMapping("/reenviar-codigo")
+    public ResponseEntity<?> reenviarCodigoVerificacion(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            if (email == null || email.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Email requerido"));
+            }
+
+            // Verificar si el usuario existe y no está verificado
+            var usuario = usuarioService.findByEmail(email);
+            if (usuario == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Usuario no encontrado"));
+            }
+
+            if (Boolean.TRUE.equals(usuario.getIsEmailVerified())) {
+                return ResponseEntity.badRequest().body(Map.of("error", "El usuario ya está verificado"));
+            }
+
+            usuarioService.enviarCodigoVerificacion(email);
+            return ResponseEntity.ok(Map.of("message", "Código de verificación reenviado correctamente"));
+            
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Error al reenviar código: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/reenviar-simple")
+    public ResponseEntity<?> reenviarCodigoSimple(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            if (email == null || email.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Email requerido"));
+            }
+
+            // Enviar código sin validaciones estrictas
+            usuarioService.enviarCodigoVerificacion(email);
+            return ResponseEntity.ok(Map.of("message", "Código de verificación enviado correctamente"));
+            
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Error al enviar código: " + e.getMessage()));
+        }
+    }
+
     @PostMapping("/verificar-codigo")
     public ResponseEntity<?> verificarCodigo(@RequestBody Map<String, String> request) {
         try {

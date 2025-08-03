@@ -79,8 +79,21 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "Iniciar sesión", description = "Autentica un usuario existente")
-    public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        try {
+            JwtResponse response = authService.login(request);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("no está verificada")) {
+                return ResponseEntity.status(401).body(Map.of(
+                    "error", "EMAIL_NOT_VERIFIED",
+                    "message", e.getMessage()
+                ));
+            }
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Error al iniciar sesión: " + e.getMessage()));
+        }
     }
 
     @PostMapping("/forgot-password")

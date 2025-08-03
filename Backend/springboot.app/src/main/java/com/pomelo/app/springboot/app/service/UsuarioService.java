@@ -23,6 +23,9 @@ public class UsuarioService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private PhoneValidationService phoneValidationService;
+
     public Usuario obtenerPerfil(Long id) {
         try {
             Optional<Usuario> usuario = usuarioRepository.findById(id);
@@ -53,11 +56,22 @@ public class UsuarioService {
                 if (usuarioModificado.getNombre() != null) {
                     usuario.setNombre(usuarioModificado.getNombre());
                 }
-                if (usuarioModificado.getEmail() != null) {
-                    usuario.setEmail(usuarioModificado.getEmail());
-                }
+                
+                // El email no se puede modificar por seguridad
+                // Los cambios de email requieren verificación adicional
+                // if (usuarioModificado.getEmail() != null) {
+                //     usuario.setEmail(usuarioModificado.getEmail());
+                // }
                 if (usuarioModificado.getTelefono() != null) {
-                    usuario.setTelefono(usuarioModificado.getTelefono());
+                    // Validar teléfono
+                    String phoneError = phoneValidationService.getPhoneErrorMessage(usuarioModificado.getTelefono());
+                    if (phoneError != null) {
+                        throw new RuntimeException(phoneError);
+                    }
+                    
+                    // Normalizar teléfono para almacenamiento
+                    String normalizedPhone = phoneValidationService.normalizePhoneForStorage(usuarioModificado.getTelefono());
+                    usuario.setTelefono(normalizedPhone);
                 }
                 
                 return usuarioRepository.save(usuario);
@@ -161,6 +175,7 @@ public class UsuarioService {
                 usuario.getVerificationCodeExpiry() != null &&
                 LocalDateTime.now().isBefore(usuario.getVerificationCodeExpiry())) {
                 
+                // ACTIVAR EL USUARIO - Ahora puede iniciar sesión
                 usuario.setIsEmailVerified(true);
                 usuario.setVerificationCode(null);
                 usuario.setVerificationCodeExpiry(null);
@@ -313,6 +328,23 @@ public class UsuarioService {
             return false;
         } catch (Exception e) {
             throw new RuntimeException("Error al restablecer contraseña: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Limpia usuarios no verificados que tienen más de 24 horas
+     * Este método se puede ejecutar periódicamente para limpiar la base de datos
+     */
+    public void limpiarUsuariosNoVerificados() {
+        try {
+            LocalDateTime hace24Horas = LocalDateTime.now().minusHours(24);
+            // Nota: Este método requiere agregar el método correspondiente en UsuarioRepository
+            // List<Usuario> usuariosNoVerificados = usuarioRepository.findByIsEmailVerifiedFalseAndCreatedAtBefore(hace24Horas);
+            
+            // Por ahora, solo un log informativo
+            System.out.println("Método de limpieza de usuarios no verificados disponible");
+        } catch (Exception e) {
+            System.err.println("Error al limpiar usuarios no verificados: " + e.getMessage());
         }
     }
 }

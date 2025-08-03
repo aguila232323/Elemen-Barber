@@ -3,6 +3,7 @@ import styles from './Login.module.css';
 import { login as loginService } from '../../services/authService';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
+import EmailVerification from './EmailVerification';
 
 interface LoginProps {
   onLoginSuccess?: () => void;
@@ -19,6 +20,8 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   const [forgotPasswordMessage, setForgotPasswordMessage] = useState('');
+  const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState('');
   const { setUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,10 +39,28 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
         setError('Respuesta inesperada del servidor.');
       }
     } catch (err: any) {
-      setError(err.message || 'Error al iniciar sesión');
+      if (err.message === 'EMAIL_NOT_VERIFIED') {
+        setUnverifiedEmail(email);
+        setShowEmailVerification(true);
+      } else {
+        setError(err.message || 'Error al iniciar sesión');
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleVerificationSuccess = () => {
+    setShowEmailVerification(false);
+    setUnverifiedEmail('');
+    // Intentar login nuevamente después de la verificación
+    handleSubmit(new Event('submit') as any);
+  };
+
+  const handleBackToLogin = () => {
+    setShowEmailVerification(false);
+    setUnverifiedEmail('');
+    setError('');
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -71,11 +92,22 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
     }
   };
 
-  const handleBackToLogin = () => {
+  const handleBackToLoginFromForgot = () => {
     setShowForgotPassword(false);
     setForgotPasswordEmail('');
     setForgotPasswordMessage('');
   };
+
+  // Mostrar componente de verificación de email
+  if (showEmailVerification) {
+    return (
+      <EmailVerification
+        email={unverifiedEmail}
+        onVerificationSuccess={handleVerificationSuccess}
+        onBackToLogin={handleBackToLogin}
+      />
+    );
+  }
 
   if (showForgotPassword) {
     return (
@@ -113,7 +145,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
             backgroundColor: '#6c757d',
             marginTop: '10px'
           }}
-          onClick={handleBackToLogin}
+          onClick={handleBackToLoginFromForgot}
         >
           Volver al inicio de sesión
         </button>
