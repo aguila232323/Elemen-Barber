@@ -4,6 +4,8 @@ import { login as loginService } from '../../services/authService';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import EmailVerification from './EmailVerification';
+import { useGoogleLogin } from '@react-oauth/google';
+import GooglePhoneModal from './GooglePhoneModal';
 
 interface LoginProps {
   onLoginSuccess?: () => void;
@@ -22,6 +24,8 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
   const [forgotPasswordMessage, setForgotPasswordMessage] = useState('');
   const [showEmailVerification, setShowEmailVerification] = useState(false);
   const [unverifiedEmail, setUnverifiedEmail] = useState('');
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [googleUserEmail, setGoogleUserEmail] = useState('');
   const { setUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -98,6 +102,89 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
     setForgotPasswordMessage('');
   };
 
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (response) => {
+      try {
+        setLoading(true);
+        setError('');
+        
+        console.log('Google login response:', response);
+        
+        // Obtener información del usuario de Google usando el access token
+        const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${response.access_token}` },
+        }).then(res => res.json());
+
+        console.log('Google user info:', userInfo);
+        
+        // Verificar si el usuario tiene teléfono en Google
+        const telefono = userInfo.phone_number || null;
+        
+        // Enviar datos al backend
+        const backendResponse = await fetch('http://localhost:8080/api/auth/google', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            idToken: response.access_token,
+            email: userInfo.email,
+            name: userInfo.name,
+            picture: userInfo.picture,
+            telefono: telefono
+          }),
+        });
+
+        console.log('Backend response status:', backendResponse.status);
+        
+        const data = await backendResponse.json();
+        console.log('Backend response data:', data);
+        
+        if (backendResponse.ok && data.token) {
+          // Si no hay teléfono, mostrar modal para solicitarlo
+          if (!telefono) {
+            setGoogleUserEmail(userInfo.email);
+            setShowPhoneModal(true);
+            setLoading(false);
+            return;
+          }
+          
+          localStorage.setItem('authToken', data.token);
+          setUser('reload');
+          if (onLoginSuccess) onLoginSuccess();
+          if (onClose) onClose();
+        } else {
+          setError(data.error || 'Error en la autenticación con Google');
+        }
+      } catch (err: any) {
+        console.error('Google login error:', err);
+        setError('Error al iniciar sesión con Google: ' + (err.message || 'Error desconocido'));
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: (error) => {
+      console.error('Google OAuth error:', error);
+      setError('Error al iniciar sesión con Google: ' + (error.error_description || error.error || 'Error desconocido'));
+      setLoading(false);
+    }
+  });
+
+  const handlePhoneComplete = (telefono: string) => {
+    setShowPhoneModal(false);
+    setGoogleUserEmail('');
+    
+    // El token ya se guardó en el modal, ahora actualizar el contexto de autenticación
+    setUser('reload');
+    if (onLoginSuccess) onLoginSuccess();
+    if (onClose) onClose();
+  };
+
+  const handlePhoneCancel = () => {
+    setShowPhoneModal(false);
+    setGoogleUserEmail('');
+  };
+
   // Mostrar componente de verificación de email
   if (showEmailVerification) {
     return (
@@ -105,6 +192,17 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
         email={unverifiedEmail}
         onVerificationSuccess={handleVerificationSuccess}
         onBackToLogin={handleBackToLogin}
+      />
+    );
+  }
+
+  // Mostrar modal de teléfono para Google
+  if (showPhoneModal) {
+    return (
+      <GooglePhoneModal
+        email={googleUserEmail}
+        onComplete={handlePhoneComplete}
+        onCancel={handlePhoneCancel}
       />
     );
   }
@@ -174,9 +272,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
       {error && <div className={styles.loginError}>{error}</div>}
       <button type='submit' className={styles.loginButton} disabled={loading}>{loading ? 'Entrando...' : 'Entrar'}</button>
       <div className={styles.loginDivider}>o</div>
-      <button type='button' className={styles.loginGoogle} disabled={loading}>
+      <button 
+        type='button' 
+        className={styles.loginGoogle} 
+        disabled={loading}
+        onClick={() => handleGoogleLogin()}
+      >
         <svg width='22' height='22' viewBox='0 0 48 48' style={{marginRight:8}}><g><path fill='#4285F4' d='M24 9.5c3.54 0 6.7 1.22 9.19 3.23l6.85-6.85C35.64 2.36 30.18 0 24 0 14.82 0 6.73 5.82 2.69 14.09l7.98 6.2C12.36 13.09 17.73 9.5 24 9.5z'/><path fill='#34A853' d='M46.1 24.55c0-1.64-.15-3.22-.42-4.74H24v9.01h12.42c-.54 2.9-2.18 5.36-4.64 7.01l7.19 5.6C43.98 37.36 46.1 31.45 46.1 24.55z'/><path fill='#FBBC05' d='M9.67 28.29c-1.09-3.25-1.09-6.74 0-9.99l-7.98-6.2C-1.06 17.18-1.06 30.82 1.69 39.91l7.98-6.2z'/><path fill='#EA4335' d='M24 46c6.18 0 11.64-2.36 15.99-6.45l-7.19-5.6c-2.01 1.35-4.6 2.15-7.8 2.15-6.27 0-11.64-3.59-13.33-8.59l-7.98 6.2C6.73 42.18 14.82 48 24 48z'/></g></svg>
-        Ingresar con Google
+        {loading ? 'Conectando...' : 'Ingresar con Google'}
       </button>
       <div className={styles.loginRegister}>
         ¿No tienes cuenta?{' '}

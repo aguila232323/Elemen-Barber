@@ -2,10 +2,14 @@ package com.pomelo.app.springboot.app.controller;
 
 import com.pomelo.app.springboot.app.dto.LoginRequest;
 import com.pomelo.app.springboot.app.dto.RegisterRequest;
+import com.pomelo.app.springboot.app.dto.GoogleAuthRequest;
 import com.pomelo.app.springboot.app.dto.JwtResponse;
 import com.pomelo.app.springboot.app.entity.Usuario;
 import com.pomelo.app.springboot.app.service.AuthService;
+import com.pomelo.app.springboot.app.service.GoogleAuthService;
 import com.pomelo.app.springboot.app.service.UsuarioService;
+import com.pomelo.app.springboot.app.repository.UsuarioRepository;
+import com.pomelo.app.springboot.app.config.JwtUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -21,13 +26,18 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final GoogleAuthService googleAuthService;
+    private final UsuarioService usuarioService;
+    private final UsuarioRepository usuarioRepository;
+    private final JwtUtils jwtUtils;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, GoogleAuthService googleAuthService, UsuarioService usuarioService, UsuarioRepository usuarioRepository, JwtUtils jwtUtils) {
         this.authService = authService;
+        this.googleAuthService = googleAuthService;
+        this.usuarioService = usuarioService;
+        this.usuarioRepository = usuarioRepository;
+        this.jwtUtils = jwtUtils;
     }
-
-    @Autowired
-    private UsuarioService usuarioService;
 
     @PostMapping("/register")
     @Operation(summary = "Registrar nuevo usuario", description = "Crea una nueva cuenta de usuario y envía código de verificación")
@@ -93,6 +103,49 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", "Error al iniciar sesión: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/google")
+    @Operation(summary = "Iniciar sesión con Google", description = "Autentica un usuario con Google OAuth")
+    public ResponseEntity<?> googleAuth(@RequestBody GoogleAuthRequest request) {
+        try {
+            JwtResponse response = googleAuthService.authenticateWithGoogle(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Error en autenticación con Google: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/google/complete")
+    @Operation(summary = "Completar registro con Google", description = "Completa el registro agregando teléfono")
+    public ResponseEntity<?> completeGoogleAuth(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            String telefono = request.get("telefono");
+            
+            if (email == null || email.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Email requerido"));
+            }
+            if (telefono == null || telefono.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Teléfono requerido"));
+            }
+
+            // Buscar usuario y actualizar teléfono
+            Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+            if (usuarioOpt.isPresent()) {
+                Usuario usuario = usuarioOpt.get();
+                usuario.setTelefono(telefono);
+                usuarioRepository.save(usuario);
+                
+                // Generar nuevo JWT token
+                String token = jwtUtils.generateJwtToken(usuario.getEmail(), usuario.getNombre());
+                return ResponseEntity.ok(new JwtResponse(token));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of("error", "Usuario no encontrado"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Error al completar registro: " + e.getMessage()));
         }
     }
 

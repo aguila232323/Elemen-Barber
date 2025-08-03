@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import styles from '../pages/user/Citas/Citas.module.css';
-import { FaCut, FaPaintBrush, FaMagic, FaUserTie, FaQuestion } from 'react-icons/fa';
-
-// Eliminar el array de servicios inventados
-// const servicios = [...]
+import styles from './SeleccionarServicioModal.module.css';
+import { FaCut, FaPaintBrush, FaMagic, FaUserTie, FaQuestion, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
 
 interface Servicio {
   id: number;
@@ -22,11 +19,11 @@ interface Props {
 
 const iconForService = (nombre: string) => {
   const lower = nombre.toLowerCase();
-  if (lower.includes('corte')) return <FaCut style={{color:'#1976d2', fontSize:'1.6rem'}} />;
-  if (lower.includes('tinte')) return <FaPaintBrush style={{color:'var(--primary-color)', fontSize:'1.6rem'}} />;
-  if (lower.includes('mecha')) return <FaMagic style={{color:'#43b94a', fontSize:'1.6rem'}} />;
-  if (lower.includes('barba') || lower.includes('bigote')) return <FaUserTie style={{color:'#8d5524', fontSize:'1.6rem'}} />;
-  return <FaQuestion style={{color:'#888', fontSize:'1.6rem'}} />;
+  if (lower.includes('corte')) return <FaCut style={{color:'#64b5f6', fontSize:'1.4rem'}} />;
+  if (lower.includes('tinte')) return <FaPaintBrush style={{color:'#64b5f6', fontSize:'1.4rem'}} />;
+  if (lower.includes('mecha')) return <FaMagic style={{color:'#4caf50', fontSize:'1.4rem'}} />;
+  if (lower.includes('barba') || lower.includes('bigote')) return <FaUserTie style={{color:'#ff9800', fontSize:'1.4rem'}} />;
+  return <FaQuestion style={{color:'#888', fontSize:'1.4rem'}} />;
 };
 
 const SeleccionarServicioModal: React.FC<Props> = ({ serviciosSeleccionados, setServiciosSeleccionados, onClose, onContinuar }) => {
@@ -52,62 +49,91 @@ const SeleccionarServicioModal: React.FC<Props> = ({ serviciosSeleccionados, set
   }, []);
 
   return (
-    <div className={styles.citasModalBg}>
-      <div className={styles.citasModal}>
-        <button onClick={onClose} className={styles.citasCloseBtn}>×</button>
-        <h2 style={{marginTop:0, marginBottom:'1.5rem', textAlign:'center', color:'#1976d2'}}>Selecciona un servicio</h2>
-        {loading ? (
-          <div style={{textAlign:'center', color:'#1976d2'}}>Cargando servicios...</div>
-        ) : error ? (
-          <div style={{textAlign:'center', color:'#e74c3c'}}>{error}</div>
-        ) : (
-        <div className={styles.citasServicios}>
-          {servicios.map((serv) => {
-            const seleccionado = serviciosSeleccionados.some(s => s.nombre === serv.nombre);
-            return (
-              <div key={serv.id} className={styles.citasServicio + ' ' + (seleccionado ? styles.citasServicioSeleccionado : '')}>
-                <div style={{display:'flex', flexDirection:'row', alignItems:'center', gap:16}}>
-                  <div>{iconForService(serv.nombre)}</div>
-                  <div style={{display:'flex', flexDirection:'column', gap:2}}>
-                    <div className={styles.citasServicioNombre} style={{fontWeight:700, fontSize:'1.13rem', color:'#222'}}>{serv.nombre}</div>
-                    <div className={styles.citasServicioDetalle}>{serv.descripcion}</div>
-                    <div style={{display:'flex', alignItems:'center', gap:8, marginTop:4}}>
-                      <span style={{fontWeight:900, color:'#1976d2', fontSize:'1.08rem', background:'#fff', borderRadius:4, padding:'0 6px', border:'1.5px solid #1976d2'}}>{serv.precio}€</span>
-                      {serv.duracionMinutos > 0 && (
-                        <span style={{color:'#888', fontSize:'0.98rem', background:'#fff', borderRadius:4, padding:'0 6px', border:'1.5px solid #bbb'}}>{serv.duracionMinutos} min</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <button
-                  className={
-                    seleccionado
-                      ? `${styles.citasServicioBtn} ${styles.selected}`
-                      : styles.citasServicioBtn
-                  }
-                  onClick={() => {
-                    // Solo permite seleccionar un servicio a la vez
-                    if (seleccionado) {
-                      setServiciosSeleccionados([]); // Deseleccionar
-                    } else {
-                      setServiciosSeleccionados([serv]); // Seleccionar solo este servicio
-                    }
-                  }}
-                >
-                  {seleccionado ? 'Añadido' : 'Añadir'}
-                </button>
-              </div>
-            );
-          })}
+    <div className={styles.modalOverlay}>
+      <div className={styles.modalContent}>
+        <div className={styles.modalHeader}>
+          <h2 className={styles.modalTitle}>Selecciona un servicio</h2>
+          <button className={styles.closeButton} onClick={onClose}>
+            <FaTimes />
+          </button>
         </div>
-        )}
-        <button
-          className={styles.citasContinuarBtn}
-          disabled={!serviciosSeleccionados.length}
-          onClick={onContinuar}
-        >
-                     Continuar
-        </button>
+        
+        <div className={styles.modalBody}>
+          {loading ? (
+            <div className={styles.loadingContainer}>
+              <div className={styles.loadingSpinner}></div>
+              <div className={styles.loadingText}>Cargando servicios...</div>
+            </div>
+          ) : error ? (
+            <div className={styles.errorContainer}>
+              <FaExclamationTriangle className={styles.errorIcon} />
+              <div className={styles.errorText}>{error}</div>
+            </div>
+          ) : (
+            <>
+              <div className={styles.servicesContainer}>
+                {servicios.map((serv) => {
+                  const seleccionado = serviciosSeleccionados.some(s => s.nombre === serv.nombre);
+                  return (
+                    <div 
+                      key={serv.id} 
+                      className={`${styles.serviceCard} ${seleccionado ? styles.selected : ''}`}
+                      onClick={() => {
+                        // Solo permite seleccionar un servicio a la vez
+                        if (seleccionado) {
+                          setServiciosSeleccionados([]); // Deseleccionar
+                        } else {
+                          setServiciosSeleccionados([serv]); // Seleccionar solo este servicio
+                        }
+                      }}
+                    >
+                      <div className={styles.serviceContent}>
+                        <div className={styles.serviceIcon}>
+                          {iconForService(serv.nombre)}
+                        </div>
+                        
+                        <div className={styles.serviceInfo}>
+                          <h3 className={styles.serviceName}>{serv.nombre}</h3>
+                          <p className={styles.serviceDescription}>
+                            {serv.descripcion || `Duración: ${serv.duracionMinutos} minutos`}
+                          </p>
+                          <div className={styles.serviceDetails}>
+                            <span className={styles.servicePrice}>{serv.precio}€</span>
+                            {serv.duracionMinutos > 0 && (
+                              <span className={styles.serviceDuration}>{serv.duracionMinutos} min</span>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <button
+                          className={`${styles.addButton} ${seleccionado ? styles.selected : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (seleccionado) {
+                              setServiciosSeleccionados([]);
+                            } else {
+                              setServiciosSeleccionados([serv]);
+                            }
+                          }}
+                        >
+                          {seleccionado ? 'Añadido' : 'Añadir'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              <button
+                className={styles.continueButton}
+                disabled={!serviciosSeleccionados.length}
+                onClick={onContinuar}
+              >
+                Continuar
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

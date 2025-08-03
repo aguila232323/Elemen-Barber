@@ -377,7 +377,7 @@ const Inicio: React.FC = () => {
           <div className={styles.servicesGrid}>
             {/* Columna izquierda */}
             <div className={styles.servicesColumn}>
-              {servicios.slice(0, Math.ceil(servicios.length / 2)).map((servicio) => (
+              {servicios.slice(0, Math.floor(servicios.length / 2)).map((servicio) => (
                 <ServiceRow 
                   key={servicio.id}
                   name={servicio.nombre} 
@@ -388,7 +388,7 @@ const Inicio: React.FC = () => {
             </div>
             {/* Columna derecha */}
             <div className={styles.servicesColumn}>
-              {servicios.slice(Math.ceil(servicios.length / 2)).map((servicio) => (
+              {servicios.slice(Math.floor(servicios.length / 2), servicios.length % 2 === 0 ? undefined : -1).map((servicio) => (
                 <ServiceRow 
                   key={servicio.id}
                   name={servicio.nombre} 
@@ -397,6 +397,21 @@ const Inicio: React.FC = () => {
                 />
               ))}
             </div>
+            {/* Último servicio centrado si hay número impar */}
+            {servicios.length % 2 !== 0 && (
+              <div style={{ 
+                gridColumn: '1 / -1',
+                display: 'flex',
+                justifyContent: 'center',
+              }}>
+                <ServiceRow 
+                  key={servicios[servicios.length - 1].id}
+                  name={servicios[servicios.length - 1].nombre} 
+                  price={`${servicios[servicios.length - 1].precio}€`} 
+                  desc={servicios[servicios.length - 1].descripcion || `Duración: ${servicios[servicios.length - 1].duracionMinutos} minutos`} 
+                />
+              </div>
+            )}
           </div>
         ) : (
           <div className={styles.emptyState}>
