@@ -164,6 +164,7 @@ public class CitaController {
 
     // Para admin
     @GetMapping("/todas")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Todas las citas", description = "Lista todas las citas (solo para administradores)")
     public ResponseEntity<?> listarTodas() {
         try {
