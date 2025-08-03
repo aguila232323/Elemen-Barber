@@ -152,6 +152,11 @@ const Configuracion: React.FC = () => {
     };
   }, [mostrarDropdownAdd]);
 
+  // Cargar tiempo mínimo actual al montar el componente
+  useEffect(() => {
+    fetchTiempoMinimoActual();
+  }, []);
+
   // Fetch citas periódicas - solo una por usuario
   const fetchCitasPeriodicas = async () => {
     setCitasLoading(true);
@@ -256,6 +261,30 @@ const Configuracion: React.FC = () => {
     setCitasModal(null);
     
     setTiempoMinimoModal(true);
+    fetchTiempoMinimoActual();
+  };
+
+  // Función para obtener el tiempo mínimo actual
+  const fetchTiempoMinimoActual = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch('http://localhost:8080/api/configuracion/tiempo-minimo', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        if (data.horasMinimas) {
+          setTiempoMinimo(data.horasMinimas);
+          setTiempoMinimoForm({ horas: data.horasMinimas.toString() });
+        }
+      }
+    } catch (error) {
+      console.error('Error al obtener tiempo mínimo actual:', error);
+      // Mantener valores por defecto si hay error
+      setTiempoMinimo(24);
+      setTiempoMinimoForm({ horas: '24' });
+    }
   };
 
   const openVacacionesModal = () => {
@@ -313,7 +342,7 @@ const Configuracion: React.FC = () => {
 
       if (res.ok) {
         const data = await res.json();
-        setHorasDisponibles(data.horasDisponibles || []);
+        setHorasDisponibles(data.horasLibres || []);
       } else {
         setHorasDisponibles([]);
       }
@@ -878,7 +907,7 @@ const Configuracion: React.FC = () => {
           </button>
           <button className={`${styles.configBtn} ${styles.editBtn} ${styles.tiempoMinimoBtn}`} onClick={openTiempoMinimoModal}>
             <FaCog className={styles.btnIcon} />
-            <span>Configurar Tiempo Mínimo</span>
+            <span>Configurar Tiempo Mínimo ({tiempoMinimo} horas)</span>
           </button>
         </div>
       </div>
@@ -957,31 +986,74 @@ const Configuracion: React.FC = () => {
           <form className={styles.formModal} onSubmit={handleAddCitaSubmit}>
             {/* Campo de usuario con búsqueda */}
             <div style={{ position: 'relative' }} className="user-dropdown-add">
-              <input
-                type="text"
-                value={busquedaUsuarioAdd}
-                onChange={(e) => {
-                  setBusquedaUsuarioAdd(e.target.value);
-                  setMostrarDropdownAdd(true);
-                }}
-                onFocus={() => setMostrarDropdownAdd(true)}
-                placeholder="Buscar usuario..."
-                className={styles.input}
-                required
-              />
+              <div style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  left: '12px',
+                  zIndex: 1,
+                  color: 'rgba(255,255,255,0.6)',
+                  fontSize: '1rem'
+                }}>
+                  👤
+                </div>
+                <input
+                  type="text"
+                  value={busquedaUsuarioAdd}
+                  onChange={(e) => {
+                    setBusquedaUsuarioAdd(e.target.value);
+                    setMostrarDropdownAdd(true);
+                  }}
+                  onFocus={(e) => {
+                    setMostrarDropdownAdd(true);
+                    (e.target as HTMLInputElement).style.border = '1px solid rgba(100, 181, 246, 0.5)';
+                    (e.target as HTMLInputElement).style.boxShadow = '0 0 0 2px rgba(100, 181, 246, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    (e.target as HTMLInputElement).style.border = '1px solid rgba(100, 181, 246, 0.2)';
+                    (e.target as HTMLInputElement).style.boxShadow = 'none';
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.target as HTMLInputElement).style.border = '1px solid rgba(100, 181, 246, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (document.activeElement !== e.target) {
+                      (e.target as HTMLInputElement).style.border = '1px solid rgba(100, 181, 246, 0.2)';
+                    }
+                  }}
+                  placeholder="Buscar usuario por nombre o email..."
+                  className={styles.input}
+                  style={{
+                    paddingLeft: '40px',
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+                    border: '1px solid rgba(100, 181, 246, 0.2)',
+                    borderRadius: '8px',
+                    transition: 'all 0.3s ease'
+                  }}
+                  required
+                />
+              </div>
               {mostrarDropdownAdd && (
                 <div style={{
                   position: 'absolute',
                   top: '100%',
                   left: 0,
                   right: 0,
-                  background: '#fff',
-                  border: '1px solid #ccc',
-                  borderRadius: 6,
-                  maxHeight: 200,
+                  background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+                  border: '1px solid rgba(100, 181, 246, 0.3)',
+                  borderRadius: '12px',
+                  maxHeight: '250px',
                   overflowY: 'auto',
                   zIndex: 1000,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 4px 16px rgba(100, 181, 246, 0.1)',
+                  backdropFilter: 'blur(10px)',
+                  marginTop: '4px',
+                  borderTop: 'none',
+                  borderTopLeftRadius: '0',
+                  borderTopRightRadius: '0'
                 }}>
                   {usuarios
                     .filter(usuario => 
@@ -997,22 +1069,91 @@ const Configuracion: React.FC = () => {
                           setMostrarDropdownAdd(false);
                         }}
                         style={{
-                          padding: '8px 12px',
+                          padding: '12px 16px',
                           cursor: 'pointer',
-                          borderBottom: '1px solid #eee',
-                          fontSize: '0.9rem'
+                          borderBottom: '1px solid rgba(255,255,255,0.05)',
+                          fontSize: '0.9rem',
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px'
                         }}
                         onMouseOver={(e) => {
-                          e.currentTarget.style.background = '#f5f5f5';
+                          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(100, 181, 246, 0.15) 0%, rgba(100, 181, 246, 0.05) 100%)';
+                          e.currentTarget.style.transform = 'translateX(4px)';
                         }}
                         onMouseOut={(e) => {
-                          e.currentTarget.style.background = '#fff';
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.transform = 'translateX(0)';
                         }}
                       >
-                        <div style={{fontWeight: 600}}>{usuario.nombre}</div>
-                        <div style={{color: '#666', fontSize: '0.8rem'}}>{usuario.email}</div>
+                        {/* Avatar/Icono del usuario */}
+                        <div style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '50%',
+                          background: 'linear-gradient(135deg, #64b5f6 0%, #1976d2 100%)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#fff',
+                          fontSize: '0.8rem',
+                          fontWeight: 'bold',
+                          flexShrink: 0
+                        }}>
+                          {usuario.nombre.charAt(0).toUpperCase()}
+                        </div>
+                        
+                        {/* Información del usuario */}
+                        <div style={{ flex: 1 }}>
+                          <div style={{
+                            fontWeight: '600',
+                            color: '#fff',
+                            marginBottom: '2px',
+                            fontSize: '0.95rem',
+                            textAlign: 'left'
+                          }}>
+                            {usuario.nombre}
+                          </div>
+                          <div style={{
+                            color: 'rgba(255,255,255,0.7)',
+                            fontSize: '0.8rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            textAlign: 'left'
+                          }}>
+                            <span style={{ fontSize: '0.7rem' }}>📧</span>
+                            {usuario.email}
+                          </div>
+                        </div>
+                        
+                        {/* Indicador de selección */}
+                        <div style={{
+                          width: '16px',
+                          height: '16px',
+                          borderRadius: '50%',
+                          border: '2px solid rgba(100, 181, 246, 0.3)',
+                          transition: 'all 0.2s ease'
+                        }} />
                       </div>
                     ))}
+                  
+                  {/* Mensaje si no hay resultados */}
+                  {usuarios.filter(usuario => 
+                    usuario.nombre.toLowerCase().includes(busquedaUsuarioAdd.toLowerCase()) ||
+                    usuario.email.toLowerCase().includes(busquedaUsuarioAdd.toLowerCase())
+                  ).length === 0 && (
+                    <div style={{
+                      padding: '16px',
+                      textAlign: 'center',
+                      color: 'rgba(255,255,255,0.6)',
+                      fontSize: '0.9rem',
+                      fontStyle: 'italic'
+                    }}>
+                      No se encontraron usuarios con ese nombre o email
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1025,6 +1166,21 @@ const Configuracion: React.FC = () => {
             </select>
             <input className={styles.input} name="periodicidadDias" type="number" placeholder="Periodicidad (días)" min="1" max="365" value={addCitaForm.periodicidadDias} onChange={handleAddCitaChange} required />
             <input className={styles.input} name="fechaInicio" type="date" placeholder="Fecha de inicio" value={addCitaForm.fechaInicio} onChange={handleAddCitaChange} required />
+            
+            {/* Mensaje informativo */}
+            {(!addCitaForm.servicioId || !addCitaForm.fechaInicio) && (
+              <div style={{ 
+                padding: '0.5rem', 
+                backgroundColor: 'rgba(25, 118, 210, 0.1)', 
+                borderRadius: '4px', 
+                fontSize: '0.9rem', 
+                color: '#1976d2',
+                marginBottom: '0.5rem'
+              }}>
+                ℹ️ Selecciona un servicio y una fecha para ver las horas disponibles
+              </div>
+            )}
+            
             <select className={styles.input} name="hora" value={addCitaForm.hora} onChange={handleAddCitaChange} required>
               <option value="">Selecciona una hora</option>
               {cargandoHoras ? (

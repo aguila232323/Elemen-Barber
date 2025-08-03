@@ -59,6 +59,7 @@
   justify-content: center;
   margin: 2rem 0;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .configBtn {
@@ -75,8 +76,11 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   position: relative;
   overflow: hidden;
-  min-width: 180px;
+  width: 220px !important;
   justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .configBtn::before {
@@ -97,6 +101,7 @@
 .addBtn {
   background: linear-gradient(135deg, #43b94a 0%, #2e7d32 100%);
   color: #fff;
+  width: 220px !important;
 }
 
 .addBtn:hover {
@@ -108,6 +113,7 @@
 .editBtn {
   background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
   color: #fff;
+  width: 220px !important;
 }
 
 .editBtn:hover {
@@ -119,6 +125,7 @@
 .deleteBtn {
   background: linear-gradient(135deg, #e74c3c 0%, #c62828 100%);
   color: #fff;
+  width: 220px !important;
 }
 
 .deleteBtn:hover {
@@ -131,6 +138,7 @@
 .tiempoMinimoBtn {
   background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
   color: #000;
+  width: 220px !important;
 }
 
 .tiempoMinimoBtn:hover {
@@ -539,22 +547,23 @@
   }
 }
 
-/* Tablets pequeñas */
+/* Tablets */
 @media (max-width: 768px) {
   .configContainer {
+    padding: 1.5rem;
+    margin: 1rem;
+    border-radius: 18px;
     max-width: 95%;
-    margin: 1rem auto;
-    padding: 1.2rem;
   }
   
   .header {
-    flex-direction: column;
     gap: 0.8rem;
     margin-bottom: 1.5rem;
+    padding-bottom: 0.8rem;
   }
   
   .header h2 {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
   }
   
   .headerIcon {

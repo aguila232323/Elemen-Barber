@@ -27,6 +27,7 @@ body, html, #root, .main-container {
   margin: 0;
   width: 100%;
   position: relative;
+  padding-top: 64px; /* Altura de la navbar fija */
 }
 
 .footer {
@@ -64,6 +65,7 @@ button, input, textarea {
 @media (max-width: 1024px) {
   .content {
     padding: 0;
+    padding-top: 64px; /* Altura de la navbar fija */
   }
 }
 
@@ -71,6 +73,7 @@ button, input, textarea {
   .content {
     padding: 0;
     margin: 0;
+    padding-top: 64px; /* Altura de la navbar fija */
   }
   
   .footer {
@@ -85,6 +88,10 @@ button, input, textarea {
 }
 
 @media (max-width: 480px) {
+  .content {
+    padding-top: 64px; /* Altura de la navbar fija */
+  }
+  
   .footer {
     padding: 0.8rem 0;
     font-size: 0.8rem;
@@ -96,7 +103,11 @@ button, input, textarea {
   }
 }
 
-
+@media (max-width: 360px) {
+  .content {
+    padding-top: 64px; /* Altura de la navbar fija */
+  }
+}
 
 /* Mejoras de performance */
 @media (prefers-reduced-motion: reduce) {

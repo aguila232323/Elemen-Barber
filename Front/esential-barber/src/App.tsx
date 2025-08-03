@@ -26,12 +26,16 @@ function AppContent() {
   let section = 'inicio';
   if (location.pathname === '/contacto') section = 'contactoResenas';
   else if (location.pathname === '/portafolio') section = 'portafolio';
+  else if (location.pathname === '/citas') section = 'citas';
+  else if (location.pathname === '/perfil') section = 'perfil';
 
   // Función para cambiar de sección usando rutas
   const setSection = (id: string) => {
     if (id === 'inicio') navigate('/');
     else if (id === 'contactoResenas') navigate('/contacto');
     else if (id === 'portafolio') navigate('/portafolio');
+    else if (id === 'citas') navigate('/citas');
+    else if (id === 'perfil') navigate('/perfil');
   };
 
   // Estado para Toast de login exitoso
@@ -49,7 +53,7 @@ function AppContent() {
   const goToConfig = () => navigate('/admin/configuracion');
 
   // Determinar si mostrar la barra superior
-  const shouldShowNavbar = !['/citas', '/perfil'].includes(location.pathname);
+  const shouldShowNavbar = true; // Mostrar navbar superior en todas las páginas
 
   // Determinar pestaña activa para la navbar inferior
   let activeTab: 'inicio' | 'citas' | 'perfil' | 'config' = 'inicio';
