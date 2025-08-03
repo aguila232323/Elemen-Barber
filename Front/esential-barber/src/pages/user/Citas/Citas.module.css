@@ -265,14 +265,14 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: stretch;
-  background: #333;
+  background: #1a1a1a;
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
   padding: 1.2rem;
   margin-bottom: 0.5rem;
   position: relative;
   transition: all 0.3s ease;
-  border: 1px solid rgba(100, 181, 246, 0.2);
+  border: 1px solid rgba(100, 181, 246, 0.15);
   overflow: hidden;
   min-height: 140px;
 }
@@ -283,8 +283,27 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
+  height: 6px;
   background: linear-gradient(90deg, #1976d2, #64b5f6);
+  z-index: 1;
+  border-radius: 16px 16px 0 0;
+}
+
+/* Bordes superiores según el estado de la cita - SOLO EL BORDE SUPERIOR */
+.citasHistorialItem.estadoPendienteBorde::before {
+  background: linear-gradient(90deg, #ffc107, #ffb300) !important;
+}
+
+.citasHistorialItem.estadoCompletadaBorde::before {
+  background: linear-gradient(90deg, #28a745, #20c997) !important;
+}
+
+.citasHistorialItem.estadoFinalizadaBorde::before {
+  background: linear-gradient(90deg, #28a745, #20c997) !important;
+}
+
+.citasHistorialItem.estadoCanceladaBorde::before {
+  background: linear-gradient(90deg, #dc3545, #c82333) !important;
 }
 
 .citasHistorialItem:hover {

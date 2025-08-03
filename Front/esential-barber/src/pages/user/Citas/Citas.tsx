@@ -264,7 +264,11 @@ const Citas: React.FC<CitasProps> = () => {
                 else if (nombreServicio.includes('tinte')) emojiServicio = '🧴';
                 else if (nombreServicio.includes('mecha')) emojiServicio = '✨';
                 return (
-                  <li key={cita.id} className={styles.citasHistorialItem}>
+                  <li key={cita.id} className={
+                    styles.citasHistorialItem + ' ' +
+                    (cita.estado === 'finalizada' || cita.estado === 'completada' ? styles.estadoFinalizadaBorde : 
+                     cita.estado === 'cancelada' ? styles.estadoCanceladaBorde : styles.estadoPendienteBorde)
+                  }>
                     <div className={styles.citaColInfo}>
                       {cita.estado && (
                         <span className={
@@ -285,9 +289,11 @@ const Citas: React.FC<CitasProps> = () => {
                         </div>
                       </div>
                       {cita.comentario && <div className={styles.citasHistorialComentario}>{cita.comentario}</div>}
-                      <button className={styles.citaReservarBtn} onClick={handleReservarDeNuevo}>
-                        Reservar de nuevo
-                      </button>
+                      {(cita.estado === 'completada' || cita.estado === 'finalizada' || cita.estado === 'cancelada') && (
+                        <button className={styles.citaReservarBtn} onClick={handleReservarDeNuevo}>
+                          Reservar de nuevo
+                        </button>
+                      )}
                     </div>
                     <div className={styles.citaColFecha}>
                       <div className={styles.citasHistorialFechaMes}>{mesNombre}</div>

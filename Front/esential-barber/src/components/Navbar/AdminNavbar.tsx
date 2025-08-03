@@ -17,19 +17,19 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({onCitas, onPerfil, onInicio, o
   <nav className={styles.bottomNavbar}>
     <button className={styles.bottomBtn} onClick={onInicio}>
       <img src={iconInicio} alt="Inicio" className={activeTab === 'inicio' ? styles.bottomIconActive : styles.bottomIconInactive} />
-      <span className={styles.bottomBtnLabel}>Inicio</span>
+      {activeTab === 'inicio' && <span className={styles.bottomBtnLabel}>Inicio</span>}
     </button>
     <button className={styles.bottomBtn} onClick={onCitas}>
       <img src={iconCitas} alt="Citas" className={activeTab === 'citas' ? styles.bottomIconActive : styles.bottomIconInactive} />
-      <span className={styles.bottomBtnLabel}>Citas</span>
+      {activeTab === 'citas' && <span className={styles.bottomBtnLabel}>Citas</span>}
     </button>
     <button className={styles.bottomBtn} onClick={onConfig}>
       <FaCog className={activeTab === 'config' ? styles.bottomIconActive : styles.bottomIconInactive} size={28} />
-      <span className={styles.bottomBtnLabel}>Configuración</span>
+      {activeTab === 'config' && <span className={styles.bottomBtnLabel}>Configuración</span>}
     </button>
     <button className={styles.bottomBtn} onClick={onPerfil}>
       <img src={iconPerfil} alt="Perfil" className={activeTab === 'perfil' ? styles.bottomIconActive : styles.bottomIconInactive} />
-      <span className={styles.bottomBtnLabel}>Perfil</span>
+      {activeTab === 'perfil' && <span className={styles.bottomBtnLabel}>Perfil</span>}
     </button>
   </nav>
 );
