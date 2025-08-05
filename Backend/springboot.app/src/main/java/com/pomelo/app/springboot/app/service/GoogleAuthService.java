@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -30,7 +32,7 @@ public class GoogleAuthService {
         this.jwtUtils = jwtUtils;
     }
 
-    public JwtResponse authenticateWithGoogle(GoogleAuthRequest request) throws Exception {
+    public Map<String, Object> authenticateWithGoogle(GoogleAuthRequest request) throws Exception {
         // Por ahora, confiamos en la información enviada por el frontend
         // ya que el frontend obtiene esta información directamente de Google
         String email = request.getEmail();
@@ -46,8 +48,13 @@ public class GoogleAuthService {
         Optional<Usuario> existingUser = usuarioRepository.findByEmail(email);
         
         if (existingUser.isPresent()) {
-            // Usuario existe, generar JWT
+            // Usuario existe, verificar si tiene teléfono
             Usuario usuario = existingUser.get();
+            
+            // Verificar que el usuario no esté baneado
+            if (Boolean.TRUE.equals(usuario.getBaneado())) {
+                throw new RuntimeException("Tu cuenta ha sido suspendida. Contacta con el administrador para más información.");
+            }
             
             // Actualizar teléfono si no lo tiene y viene de Google
             if ((usuario.getTelefono() == null || usuario.getTelefono().isEmpty()) && telefono != null && !telefono.isEmpty()) {
@@ -56,7 +63,16 @@ public class GoogleAuthService {
             }
             
             String token = jwtUtils.generateJwtToken(usuario.getEmail(), usuario.getNombre());
-            return new JwtResponse(token);
+            
+            // Si el usuario no tiene teléfono, indicar que necesita proporcionarlo
+            if (usuario.getTelefono() == null || usuario.getTelefono().isEmpty()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("requiresPhone", true);
+                response.put("email", email);
+                return response;
+            }
+            
+            return Map.of("token", token);
         } else {
             // Crear nuevo usuario
             Usuario newUser = new Usuario();
@@ -69,7 +85,16 @@ public class GoogleAuthService {
 
             Usuario savedUser = usuarioRepository.save(newUser);
             String token = jwtUtils.generateJwtToken(savedUser.getEmail(), savedUser.getNombre());
-            return new JwtResponse(token);
+            
+            // Si el nuevo usuario no tiene teléfono, indicar que necesita proporcionarlo
+            if (savedUser.getTelefono() == null || savedUser.getTelefono().isEmpty()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("requiresPhone", true);
+                response.put("email", email);
+                return response;
+            }
+            
+            return Map.of("token", token);
         }
     }
 } 

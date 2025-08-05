@@ -66,7 +66,7 @@ Front/esential-barber/src/
 ### Datos del Barbero
 ```javascript
 barberName: "Luis",
-barberFullName: "Luis García",
+barberFullName: "Luis Garcia Mudarra",
 barberTitle: "Barbero Profesional"
 ```
 
@@ -74,7 +74,7 @@ barberTitle: "Barbero Profesional"
 ```javascript
 businessName: "Esential Barber",
 businessPhone: "+34 600 123 456",
-businessEmail: "info@esentialbarber.com",
+  businessEmail: "elemenbarber@gmail.com",
 businessAddress: "4 Paseo Dr. Revuelta, Begíjar, Andalucía"
 ```
 
@@ -298,7 +298,7 @@ setCSSValue('primary-color', '#FF0000');
 
 **Antes:**
 ```jsx
-<p>Barbero: Luis García</p>
+<p>Barbero: Luis Garcia Mudarra</p>
 <p>Teléfono: +34 600 123 456</p>
 ```
 

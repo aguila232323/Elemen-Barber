@@ -14,8 +14,8 @@ import java.security.Key;
 
 @Component
 public class JwtUtils {
-    private final String jwtSecret = "mi_clave_secreta_para_jwt_que_debe_ser_larga";
-    private final long jwtExpirationMs = 3600000; // 1 hora
+    private final String jwtSecret = "K8x#mP9$vL2@nQ7&hF4!jR5*wE3^tY6%uI1(oA0)sD8-gB9=cX4+zM7";
+    private final long jwtExpirationMs = 86400000; // 24 horas (24 * 60 * 60 * 1000)
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());

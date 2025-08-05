@@ -15,6 +15,7 @@ interface Usuario {
   nombre: string;
   email: string;
   telefono?: string;
+  baneado?: boolean;
 }
 
 interface Cita {
@@ -115,6 +116,18 @@ const Configuracion: React.FC = () => {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingMsg, setBookingMsg] = useState<string | null>(null);
 
+  // Estados para gestión de usuarios
+  const [usuariosModal, setUsuariosModal] = useState<'banear' | 'desbanear' | null>(null);
+  const [usuariosList, setUsuariosList] = useState<Usuario[]>([]);
+  const [usuariosLoading, setUsuariosLoading] = useState(false);
+  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<number | null>(null);
+  const [usuarioActionLoading, setUsuarioActionLoading] = useState(false);
+  const [usuarioActionMsg, setUsuarioActionMsg] = useState<string | null>(null);
+
+  // Estados para búsqueda de usuarios en gestión de usuarios
+  const [busquedaUsuarioBan, setBusquedaUsuarioBan] = useState<string>('');
+  const [mostrarDropdownBan, setMostrarDropdownBan] = useState(false);
+
   // Fetch servicios al abrir modales de editar/eliminar
   const fetchServicios = async () => {
     setServiciosLoading(true);
@@ -141,16 +154,19 @@ const Configuracion: React.FC = () => {
       if (!target.closest('.user-dropdown-add')) {
         setMostrarDropdownAdd(false);
       }
+      if (!target.closest('.user-dropdown-ban')) {
+        setMostrarDropdownBan(false);
+      }
     };
 
-    if (mostrarDropdownAdd) {
+    if (mostrarDropdownAdd || mostrarDropdownBan) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [mostrarDropdownAdd]);
+  }, [mostrarDropdownAdd, mostrarDropdownBan]);
 
   // Cargar tiempo mínimo actual al montar el componente
   useEffect(() => {
@@ -284,6 +300,79 @@ const Configuracion: React.FC = () => {
       // Mantener valores por defecto si hay error
       setTiempoMinimo(24);
       setTiempoMinimoForm({ horas: '24' });
+    }
+  };
+
+  // Función para abrir modal de gestión de usuarios
+  const openUsuariosModal = (type: 'banear' | 'desbanear') => {
+    // Cerrar otros modales antes de abrir uno nuevo
+    setModal(null);
+    setCitasModal(null);
+    setTiempoMinimoModal(false);
+    setVacacionesModal(false);
+    setCancelarVacacionesModal(false);
+    
+    setUsuariosModal(type);
+    fetchUsuariosList();
+    setUsuarioSeleccionado(null);
+    setUsuarioActionMsg(null);
+    setBusquedaUsuarioBan(''); // Limpiar campo de búsqueda
+    setMostrarDropdownBan(false); // Cerrar dropdown
+  };
+
+  // Función para obtener lista de usuarios
+  const fetchUsuariosList = async () => {
+    setUsuariosLoading(true);
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch('http://localhost:8080/api/usuarios', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      const data = await res.json();
+      setUsuariosList(data);
+    } catch (error) {
+      console.error('Error al obtener usuarios:', error);
+      setUsuariosList([]);
+    } finally {
+      setUsuariosLoading(false);
+    }
+  };
+
+  // Función para manejar la acción de banear/desbanear
+  const handleUsuarioAction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!usuarioSeleccionado) return;
+    
+    setUsuarioActionLoading(true);
+    setUsuarioActionMsg(null);
+    try {
+      const token = localStorage.getItem('authToken');
+      const action = usuariosModal === 'banear' ? 'banear' : 'desbanear';
+      
+      const res = await fetch(`http://localhost:8080/api/usuarios/${usuarioSeleccionado}/${action}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!res.ok) throw new Error('Error al procesar la acción');
+      
+      const data = await res.json();
+      setUsuarioActionMsg(data.message || `Usuario ${action === 'banear' ? 'baneado' : 'desbaneado'} correctamente`);
+      
+      // Recargar lista de usuarios
+      fetchUsuariosList();
+      
+      setTimeout(() => {
+        setUsuariosModal(null);
+        setUsuarioActionMsg(null);
+        setUsuarioSeleccionado(null);
+      }, 1200);
+    } catch (err: any) {
+      setUsuarioActionMsg(err.message || 'Error al procesar la acción');
+    } finally {
+      setUsuarioActionLoading(false);
     }
   };
 
@@ -1456,6 +1545,297 @@ const Configuracion: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Sección de Gestión de Usuarios */}
+        <div className={styles.serviciosSection} style={{ marginTop: '2rem' }}>
+          <div className={styles.header}>
+            <FaUserPlus className={styles.calendarIcon} />
+            <h2>Gestión de Usuarios</h2>
+          </div>
+          
+          <div className={styles.buttonGroup}>
+            <button className={`${styles.configBtn} ${styles.deleteBtn}`} onClick={() => openUsuariosModal('banear')}>
+              <FaTrash className={styles.btnIcon} />
+              <span>Banear Usuario</span>
+            </button>
+            <button className={`${styles.configBtn} ${styles.editBtn}`} onClick={() => openUsuariosModal('desbanear')}>
+              <FaEdit className={styles.btnIcon} />
+              <span>Desbanear Usuario</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Modal de Gestión de Usuarios */}
+        {usuariosModal && (
+          <div className={styles.modal}>
+            <div className={styles.modalHeader}>
+              {usuariosModal === 'banear' ? (
+                <FaTrash className={styles.modalIcon} />
+              ) : (
+                <FaEdit className={styles.modalIcon} />
+              )}
+              <h3>{usuariosModal === 'banear' ? 'Banear Usuario' : 'Desbanear Usuario'}</h3>
+            </div>
+            <form className={styles.formModal} onSubmit={handleUsuarioAction}>
+              {/* Campo de usuario con búsqueda */}
+              <div style={{ position: 'relative' }} className="user-dropdown-ban">
+                <div style={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    left: '12px',
+                    zIndex: 1,
+                    color: 'rgba(255,255,255,0.6)',
+                    fontSize: '1rem'
+                  }}>
+                    👤
+                  </div>
+                  <input
+                    type="text"
+                    value={busquedaUsuarioBan}
+                    onChange={(e) => {
+                      setBusquedaUsuarioBan(e.target.value);
+                      setMostrarDropdownBan(true);
+                    }}
+                    onFocus={(e) => {
+                      setMostrarDropdownBan(true);
+                      (e.target as HTMLInputElement).style.border = '1px solid rgba(100, 181, 246, 0.5)';
+                      (e.target as HTMLInputElement).style.boxShadow = '0 0 0 2px rgba(100, 181, 246, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      (e.target as HTMLInputElement).style.border = '1px solid rgba(100, 181, 246, 0.2)';
+                      (e.target as HTMLInputElement).style.boxShadow = 'none';
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.target as HTMLInputElement).style.border = '1px solid rgba(100, 181, 246, 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (document.activeElement !== e.target) {
+                        (e.target as HTMLInputElement).style.border = '1px solid rgba(100, 181, 246, 0.2)';
+                      }
+                    }}
+                    placeholder={`Buscar usuario para ${usuariosModal === 'banear' ? 'banear' : 'desbanear'}...`}
+                    className={styles.input}
+                    style={{
+                      paddingLeft: '40px',
+                      background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+                      border: '1px solid rgba(100, 181, 246, 0.2)',
+                      borderRadius: '8px',
+                      transition: 'all 0.3s ease'
+                    }}
+                    required
+                  />
+                </div>
+                {mostrarDropdownBan && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+                    border: '1px solid rgba(100, 181, 246, 0.3)',
+                    borderRadius: '12px',
+                    maxHeight: '250px',
+                    overflowY: 'auto',
+                    zIndex: 1000,
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 4px 16px rgba(100, 181, 246, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                    marginTop: '4px',
+                    borderTop: 'none',
+                    borderTopLeftRadius: '0',
+                    borderTopRightRadius: '0'
+                  }}>
+                    {usuariosList
+                      .filter(usuario => 
+                        (usuariosModal === 'banear' ? !usuario.baneado : usuario.baneado) &&
+                        (usuario.nombre.toLowerCase().includes(busquedaUsuarioBan.toLowerCase()) ||
+                         usuario.email.toLowerCase().includes(busquedaUsuarioBan.toLowerCase()))
+                      )
+                      .map(usuario => (
+                        <div
+                          key={usuario.id}
+                          onClick={() => {
+                            setUsuarioSeleccionado(usuario.id);
+                            setBusquedaUsuarioBan(`${usuario.nombre} (${usuario.email})`);
+                            setMostrarDropdownBan(false);
+                          }}
+                          style={{
+                            padding: '12px 16px',
+                            cursor: 'pointer',
+                            borderBottom: '1px solid rgba(255,255,255,0.05)',
+                            fontSize: '0.9rem',
+                            transition: 'all 0.2s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px'
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(100, 181, 246, 0.15) 0%, rgba(100, 181, 246, 0.05) 100%)';
+                            e.currentTarget.style.transform = 'translateX(4px)';
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.transform = 'translateX(0)';
+                          }}
+                        >
+                          {/* Avatar/Icono del usuario */}
+                          <div style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '50%',
+                            background: usuario.baneado 
+                              ? 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)' 
+                              : 'linear-gradient(135deg, #64b5f6 0%, #1976d2 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#fff',
+                            fontSize: '0.8rem',
+                            fontWeight: 'bold',
+                            flexShrink: 0
+                          }}>
+                            {usuario.nombre.charAt(0).toUpperCase()}
+                          </div>
+                          
+                          {/* Información del usuario */}
+                          <div style={{ flex: 1 }}>
+                            <div style={{
+                              fontWeight: '600',
+                              color: '#fff',
+                              marginBottom: '2px',
+                              fontSize: '0.95rem',
+                              textAlign: 'left'
+                            }}>
+                              {usuario.nombre}
+                              {usuario.baneado && (
+                                <span style={{
+                                  marginLeft: '8px',
+                                  padding: '2px 6px',
+                                  backgroundColor: '#e74c3c',
+                                  color: '#fff',
+                                  borderRadius: '4px',
+                                  fontSize: '0.7rem',
+                                  fontWeight: 'normal'
+                                }}>
+                                  BANEADO
+                                </span>
+                              )}
+                            </div>
+                            <div style={{
+                              color: 'rgba(255,255,255,0.7)',
+                              fontSize: '0.8rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              textAlign: 'left'
+                            }}>
+                              <span style={{ fontSize: '0.7rem' }}>📧</span>
+                              {usuario.email}
+                            </div>
+                          </div>
+                          
+                          {/* Indicador de selección */}
+                          <div style={{
+                            width: '16px',
+                            height: '16px',
+                            borderRadius: '50%',
+                            border: '2px solid rgba(100, 181, 246, 0.3)',
+                            transition: 'all 0.2s ease'
+                          }} />
+                        </div>
+                      ))}
+                    
+                    {/* Mensaje si no hay resultados */}
+                    {usuariosList.filter(usuario => 
+                      (usuariosModal === 'banear' ? !usuario.baneado : usuario.baneado) &&
+                      (usuario.nombre.toLowerCase().includes(busquedaUsuarioBan.toLowerCase()) ||
+                       usuario.email.toLowerCase().includes(busquedaUsuarioBan.toLowerCase()))
+                    ).length === 0 && (
+                      <div style={{
+                        padding: '16px',
+                        textAlign: 'center',
+                        color: 'rgba(255,255,255,0.6)',
+                        fontSize: '0.9rem',
+                        fontStyle: 'italic'
+                      }}>
+                        {busquedaUsuarioBan 
+                          ? 'No se encontraron usuarios con ese nombre o email' 
+                          : usuariosModal === 'banear' 
+                            ? 'No hay usuarios disponibles para banear' 
+                            : 'No hay usuarios baneados para desbanear'
+                        }
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              {usuariosLoading && (
+                <div style={{ textAlign: 'center', color: '#666', fontStyle: 'italic' }}>
+                  Cargando usuarios...
+                </div>
+              )}
+              
+              {!usuariosLoading && usuariosList.filter(u => 
+                usuariosModal === 'banear' ? !u.baneado : u.baneado
+              ).length === 0 && (
+                <div style={{ 
+                  padding: '1rem', 
+                  backgroundColor: 'rgba(255,193,7,0.1)', 
+                  borderRadius: '8px', 
+                  border: '1px solid rgba(255,193,7,0.3)',
+                  color: '#ffc107',
+                  textAlign: 'center'
+                }}>
+                  {usuariosModal === 'banear' 
+                    ? 'No hay usuarios disponibles para banear' 
+                    : 'No hay usuarios baneados para desbanear'
+                  }
+                </div>
+              )}
+              
+              <div className={styles.modalBtnGroup}>
+                <button 
+                  className={usuariosModal === 'banear' ? styles.deleteBtn : styles.saveBtn} 
+                  type="submit" 
+                  disabled={usuarioActionLoading || !usuarioSeleccionado}
+                >
+                  {usuariosModal === 'banear' ? (
+                    <FaTrash className={styles.btnIcon} />
+                  ) : (
+                    <FaSave className={styles.btnIcon} />
+                  )}
+                  {usuarioActionLoading 
+                    ? 'Procesando...' 
+                    : usuariosModal === 'banear' 
+                      ? 'Banear Usuario' 
+                      : 'Desbanear Usuario'
+                  }
+                </button>
+                <button 
+                  className={styles.cancelBtn} 
+                  type="button" 
+                  onClick={() => {
+                    setUsuariosModal(null);
+                    setBusquedaUsuarioBan(''); // Limpiar campo de búsqueda
+                  }} 
+                  disabled={usuarioActionLoading}
+                >
+                  <FaTimes className={styles.btnIcon} />
+                  Cancelar
+                </button>
+              </div>
+              {usuarioActionMsg && (
+                <div className={`${styles.message} ${usuarioActionMsg.includes('correctamente') ? styles.success : styles.error}`}>
+                  {usuarioActionMsg}
+                </div>
+              )}
+            </form>
           </div>
         )}
     </div>

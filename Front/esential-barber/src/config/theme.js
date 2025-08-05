@@ -19,13 +19,13 @@ const setCSSVariable = (variableName, value) => {
 export const BUSINESS_INFO = {
   // Datos del Barbero
   barberName: "Luis",
-  barberFullName: "Luis García",
+  barberFullName: "Luis Garcia Mudarra",
   barberTitle: "Barbero Profesional",
   
   // Información de Contacto
   businessName: "Esential Barber",
-  businessPhone: "+34 600 123 456",
-  businessEmail: "info@esentialbarber.com",
+  businessPhone: "+34 683 23 55 47",
+  businessEmail: "elemenbarber@gmail.com",
   businessAddress: "4 Paseo Dr. Revuelta, Begíjar, Andalucía",
   businessCity: "Begíjar",
   businessRegion: "Andalucía",
@@ -37,7 +37,7 @@ export const BUSINESS_INFO = {
     wednesday: "9:00 - 21:15",
     thursday: "9:00 - 21:15",
     friday: "9:00 - 21:15",
-    saturday: "9:00 - 21:15",
+    saturday: "9:00 - 14:15",
     sunday: "Cerrado"
   },
   

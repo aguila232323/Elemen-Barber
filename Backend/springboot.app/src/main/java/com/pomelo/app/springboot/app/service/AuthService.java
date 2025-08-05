@@ -43,6 +43,11 @@ public class AuthService {
         Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         
+        // Verificar que el usuario no esté baneado
+        if (Boolean.TRUE.equals(usuario.getBaneado())) {
+            throw new RuntimeException("Tu cuenta ha sido suspendida. Contacta con el administrador para más información.");
+        }
+        
         // Verificar que el email esté verificado
         if (!Boolean.TRUE.equals(usuario.getIsEmailVerified())) {
             throw new RuntimeException("Tu cuenta no está verificada. Por favor, verifica tu correo electrónico antes de iniciar sesión.");

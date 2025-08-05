@@ -27,8 +27,8 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
             helper.setTo(cita.getCliente().getEmail());
-            helper.setSubject("✅ Confirmación de Cita - Esential Barber");
-            helper.setFrom("aguila23232323@gmail.com");
+            helper.setSubject("✅ Confirmación de Cita - Elemen");
+            helper.setFrom("elemenbarber@gmail.com");
             
             // Formatear fecha y hora de forma segura
             String fechaFormateada;
@@ -62,8 +62,8 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
             helper.setTo(cita.getCliente().getEmail());
-            helper.setSubject("⏰ Recordatorio de Cita - Esential Barber");
-            helper.setFrom("aguila23232323@gmail.com");
+            helper.setSubject("⏰ Recordatorio de Cita - Elemen");
+            helper.setFrom("elemenbarber@gmail.com");
             
             // Formatear fecha y hora de forma segura
             String fechaFormateada;
@@ -97,8 +97,8 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
             helper.setTo(emailDestino);
-            helper.setSubject("🧪 Prueba de Email - Esential Barber");
-            helper.setFrom("aguila23232323@gmail.com");
+            helper.setSubject("🧪 Prueba de Email - Elemen");
+            helper.setFrom("elemenbarber@gmail.com");
             
             String htmlContent = crearEmailPruebaHTML();
             helper.setText(htmlContent, true);
@@ -119,8 +119,8 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
             helper.setTo(emailDestino);
-            helper.setSubject("🔐 Código de Verificación - Esential Barber");
-            helper.setFrom("aguila23232323@gmail.com");
+            helper.setSubject("🔐 Código de Verificación - Elemen");
+            helper.setFrom("elemenbarber@gmail.com");
             
             String htmlContent = crearEmailVerificacionHTML(nombreUsuario, codigoVerificacion);
             helper.setText(htmlContent, true);
@@ -141,7 +141,7 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
             helper.setTo(emailDestino);
-            helper.setSubject("🔑 Recuperar Contraseña - Esential Barber");
+            helper.setSubject("🔑 Recuperar Contraseña - Elemen");
             helper.setFrom("aguila23232323@gmail.com");
             
             String htmlContent = crearEmailRecuperacionContrasenaHTML(nombreUsuario, resetToken);
@@ -165,7 +165,7 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
             helper.setTo(emailDestino);
-            helper.setSubject("🔄 Cita Periódica Creada - Esential Barber");
+            helper.setSubject("🔄 Cita Periódica Creada - Elemen");
             helper.setFrom("aguila23232323@gmail.com");
             
             String htmlContent = crearEmailCitaPeriodicaHTML(nombreCliente, nombreServicio, fechaInicio, 
@@ -302,8 +302,8 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <img src="https://esentialbarber.com/logoElemental.png" alt="Esential Barber" class="logo">
-                        <h1>Esential Barber</h1>
+                        <img src="https://esentialbarber.com/logoElemental.png" alt="Elemen" class="logo">
+                        <h1>Elemen</h1>
                         <p>Tu cita ha sido confirmada</p>
                     </div>
                     
@@ -340,11 +340,11 @@ public class EmailService {
                     </div>
                     
                     <div class="footer">
-                        <div class="footer-logo">Esential Barber</div>
+                        <div class="footer-logo">Elemen</div>
                         <p>¡Gracias por elegir nuestros servicios!</p>
                         <div class="contact-info">
-                            📞 Contacto: +34 XXX XXX XXX<br>
-                            📧 Email: info@esentialbarber.com
+                            📞 Contacto: +34 683 23 55 47<br>
+                            📧 Email: elemenbarber@gmail.com
                         </div>
                     </div>
                 </div>
@@ -474,8 +474,8 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <img src="https://esentialbarber.com/logoElemental.png" alt="Esential Barber" class="logo">
-                        <h1>Esential Barber</h1>
+                        <img src="https://esentialbarber.com/logoElemental.png" alt="Elemen" class="logo">
+                        <h1>Elemen</h1>
                         <p>Recordatorio de tu cita</p>
                     </div>
                     
@@ -512,11 +512,11 @@ public class EmailService {
                     </div>
                     
                     <div class="footer">
-                        <div class="footer-logo">Esential Barber</div>
+                        <div class="footer-logo">Elemen</div>
                         <p>¡Te esperamos!</p>
                         <div class="contact-info">
-                            📞 Contacto: +34 XXX XXX XXX<br>
-                            📧 Email: info@esentialbarber.com
+                            📞 Contacto: +34 683 23 55 47<br>
+                            📧 Email: elemenbarber@gmail.com
                         </div>
                     </div>
                 </div>
@@ -600,8 +600,8 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <img src="https://esentialbarber.com/logoElemental.png" alt="Esential Barber" class="logo">
-                        <h1>Esential Barber</h1>
+                        <img src="https://esentialbarber.com/logoElemental.png" alt="Elemen" class="logo">
+                        <h1>Elemen</h1>
                         <p>Prueba de Email</p>
                     </div>
                     
@@ -622,7 +622,7 @@ public class EmailService {
                     </div>
                     
                     <div class="footer">
-                        <div class="footer-logo">Esential Barber</div>
+                        <div class="footer-logo">Elemen</div>
                         <p>¡Gracias por probar nuestro sistema!</p>
                     </div>
                 </div>
@@ -732,8 +732,8 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <img src="https://esentialbarber.com/logoElemental.png" alt="Esential Barber" class="logo">
-                        <h1>Esential Barber</h1>
+                        <img src="https://esentialbarber.com/logoElemental.png" alt="Elemen" class="logo">
+                        <h1>Elemen</h1>
                         <p>Verificación de tu cuenta</p>
                     </div>
                     
@@ -744,7 +744,7 @@ public class EmailService {
                             <strong>🔐 Verifica tu dirección de email</strong>
                         </div>
                         
-                        <p>Para completar tu registro en Esential Barber, necesitamos verificar tu dirección de email.</p>
+                        <p>Para completar tu registro en Elemen, necesitamos verificar tu dirección de email.</p>
                         
                         <p>Tu código de verificación es:</p>
                         
@@ -765,11 +765,11 @@ public class EmailService {
                     </div>
                     
                     <div class="footer">
-                        <div class="footer-logo">Esential Barber</div>
+                        <div class="footer-logo">Elemen</div>
                         <p>¡Gracias por registrarte!</p>
                         <div class="contact-info">
-                            📞 Contacto: +34 XXX XXX XXX<br>
-                            📧 Email: info@esentialbarber.com
+                            📞 Contacto: +34 683 23 55 47<br>
+                            📧 Email: elemenbarber@gmail.com
                         </div>
                     </div>
                 </div>
@@ -879,8 +879,8 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <img src="https://esentialbarber.com/logoElemental.png" alt="Esential Barber" class="logo">
-                        <h1>Esential Barber</h1>
+                        <img src="https://esentialbarber.com/logoElemental.png" alt="Elemen" class="logo">
+                        <h1>Elemen</h1>
                         <p>Recuperación de Contraseña</p>
                     </div>
                     
@@ -891,7 +891,7 @@ public class EmailService {
                             <strong>🔑 Recupera tu contraseña</strong>
                         </div>
                         
-                        <p>Hemos recibido una solicitud para recuperar tu contraseña para tu cuenta de Esential Barber.</p>
+                        <p>Hemos recibido una solicitud para recuperar tu contraseña para tu cuenta de Elemen.</p>
                         
                         <p>Para cambiar tu contraseña, haz clic en el siguiente enlace:</p>
                         
@@ -928,11 +928,11 @@ public class EmailService {
                     </div>
                     
                     <div class="footer">
-                        <div class="footer-logo">Esential Barber</div>
-                        <p>¡Gracias por ser parte de Esential Barber!</p>
+                        <div class="footer-logo">Elemen</div>
+                        <p>¡Gracias por ser parte de Elemen!</p>
                         <div class="contact-info">
-                            📞 Contacto: +34 XXX XXX XXX<br>
-                            📧 Email: info@esentialbarber.com
+                            📞 Contacto: +34 683 23 55 47<br>
+                            📧 Email: elemenbarber@gmail.com
                         </div>
                     </div>
                 </div>
@@ -1093,8 +1093,8 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <img src="https://esentialbarber.com/logoElemental.png" alt="Esential Barber" class="logo">
-                        <h1>Esential Barber</h1>
+                        <img src="https://esentialbarber.com/logoElemental.png" alt="Elemen" class="logo">
+                        <h1>Elemen</h1>
                         <p>🔄 Cita Periódica Creada</p>
                     </div>
                     
@@ -1155,11 +1155,11 @@ public class EmailService {
                     </div>
                     
                     <div class="footer">
-                        <div class="footer-logo">Esential Barber</div>
-                        <p>¡Gracias por confiar en Esential Barber!</p>
+                        <div class="footer-logo">Elemen</div>
+                        <p>¡Gracias por confiar en Elemen!</p>
                         <div class="contact-info">
-                            📞 Contacto: +34 XXX XXX XXX<br>
-                            📧 Email: info@esentialbarber.com
+                            📞 Contacto: +34 683 23 55 47<br>
+                            📧 Email: elemenbarber@gmail.com
                         </div>
                     </div>
                 </div>

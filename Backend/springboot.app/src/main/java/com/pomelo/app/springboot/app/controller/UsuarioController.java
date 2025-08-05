@@ -93,6 +93,29 @@ public class UsuarioController {
         }
     }
 
+    @GetMapping("/estado")
+    @Operation(summary = "Verificar estado del usuario", description = "Verifica el estado del usuario autenticado")
+    public ResponseEntity<?> verificarEstado(@AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            Usuario usuario = usuarioService.findByEmail(userDetails.getUsername());
+            if (usuario == null) {
+                throw new RuntimeException("Usuario no encontrado");
+            }
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("baneado", Boolean.TRUE.equals(usuario.getBaneado()));
+            response.put("emailVerificado", Boolean.TRUE.equals(usuario.getIsEmailVerified()));
+            response.put("rol", usuario.getRol());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Error al verificar estado del usuario");
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
     // (Opcional) solo para admin
     @GetMapping
     @Operation(summary = "Listar usuarios", description = "Lista todos los usuarios (solo para administradores)")
@@ -102,6 +125,36 @@ public class UsuarioController {
         } catch (Exception e) {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("message", "Error al listar usuarios: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    @PostMapping("/{id}/banear")
+    @Operation(summary = "Banear usuario", description = "Banea un usuario específico (solo para administradores)")
+    public ResponseEntity<Map<String, String>> banearUsuario(@PathVariable Long id) {
+        try {
+            usuarioService.banearUsuario(id);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Usuario baneado correctamente");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Error al banear usuario: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    @PostMapping("/{id}/desbanear")
+    @Operation(summary = "Desbanear usuario", description = "Desbanea un usuario específico (solo para administradores)")
+    public ResponseEntity<Map<String, String>> desbanearUsuario(@PathVariable Long id) {
+        try {
+            usuarioService.desbanearUsuario(id);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Usuario desbaneado correctamente");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Error al desbanear usuario: " + e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }

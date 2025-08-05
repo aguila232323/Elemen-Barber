@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'moment/locale/es';
@@ -40,17 +40,38 @@ interface Cita {
 const MobileDayView = ({ events, selectedDate, onEventClick, onAddEvent }: any) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(moment());
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
-    return () => clearInterval(timer);
+    
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const getTimeSlots = () => {
     const slots = [];
-    for (let hour = 10; hour <= 19; hour++) {
+    // Crear slots de 15 minutos desde 9:00 hasta 19:00 (10 horas)
+    for (let hour = 9; hour <= 19; hour++) {
       for (let minute = 0; minute < 60; minute += 15) {
-        slots.push(moment().hour(hour).minute(minute).second(0));
+        const timeSlot = moment().hour(hour).minute(minute).second(0);
+        const isHourSlot = minute === 0; // Horas completas
+        const isQuarterSlot = minute === 15 || minute === 30 || minute === 45; // Cuartos de hora
+        
+        slots.push({
+          time: timeSlot,
+          isHourSlot,
+          isQuarterSlot,
+          displayTime: isHourSlot ? timeSlot.format('HH:mm') : timeSlot.format('mm')
+        });
       }
     }
     return slots;
@@ -79,14 +100,80 @@ const MobileDayView = ({ events, selectedDate, onEventClick, onAddEvent }: any) 
 
   const getDayOccupancy = (date: moment.Moment) => {
     const dayEvents = getDayEvents(date);
-    const totalSlots = 10;
+    const totalSlots = 40; // 10 horas * 4 slots por hora (9:00-19:00)
     let occupiedSlots = 0;
     dayEvents.forEach((event: any) => {
       const duracionMinutos = event.servicio?.duracionMinutos || 45;
-      const slotsOcupados = Math.ceil(duracionMinutos / 45);
+      const slotsOcupados = Math.ceil(duracionMinutos / 15);
       occupiedSlots += slotsOcupados;
     });
     return Math.round((occupiedSlots / totalSlots) * 100);
+  };
+
+  // Calcular posición y altura de eventos corregida
+  const calculateEventPosition = (event: any) => {
+    const start = moment(event.start);
+    const end = moment(event.end);
+    
+    // Determinar altura del slot según el tamaño de pantalla (debe coincidir con CSS)
+    const getSlotHeight = () => {
+      if (windowWidth <= 360) return 45;
+      if (windowWidth <= 480) return 50;
+      if (windowWidth <= 768) return 55;
+      if (windowWidth <= 1024) return 60;
+      return 65;
+    };
+    
+    const slotHeight = getSlotHeight();
+    
+    // Calcular posición top basada en la hora exacta
+    const startHour = start.hour();
+    const startMinute = start.minute();
+    
+    // Calcular el índice del slot desde las 9:00
+    // Cada hora tiene 4 slots de 15 minutos
+    const slotIndex = (startHour - 9) * 4 + Math.floor(startMinute / 15);
+    const topPosition = slotIndex * slotHeight;
+    
+    // Debug: Mostrar información del cálculo
+    console.log(`Evento: ${event.usuario?.nombre} - ${start.format('HH:mm')}`, {
+      startHour,
+      startMinute,
+      slotIndex,
+      topPosition,
+      slotHeight,
+      windowWidth
+    });
+    
+    // Calcular altura basada en la duración exacta (más compacta)
+    const durationMinutes = end.diff(start, 'minutes');
+    const height = Math.max((durationMinutes / 15) * slotHeight * 0.9, slotHeight * 0.4); // Reducir altura
+    
+    return { top: topPosition, height };
+  };
+
+  // Calcular posición de la línea de tiempo actual corregida
+  const calculateCurrentTimePosition = () => {
+    const now = moment();
+    const currentHour = now.hour();
+    const currentMinute = now.minute();
+    
+    if (currentHour < 9 || currentHour > 19) return -100; // Fuera del horario
+    
+    // Determinar altura del slot según el tamaño de pantalla
+    const getSlotHeight = () => {
+      if (windowWidth <= 360) return 45;
+      if (windowWidth <= 480) return 50;
+      if (windowWidth <= 768) return 55;
+      if (windowWidth <= 1024) return 60;
+      return 65;
+    };
+    
+    const slotHeight = getSlotHeight();
+    
+    // Calcular el índice del slot actual desde las 9:00
+    const slotIndex = (currentHour - 9) * 4 + Math.floor(currentMinute / 15);
+    return slotIndex * slotHeight;
   };
 
   return (
@@ -98,7 +185,7 @@ const MobileDayView = ({ events, selectedDate, onEventClick, onAddEvent }: any) 
         </div>
         <div className="mobile-header-center">
           <div className="mobile-header-title">Hoy</div>
-          <div className="mobile-header-hours">10:00 - 19:00</div>
+          <div className="mobile-header-hours">9:00 - 19:00</div>
         </div>
         <div className="mobile-header-right">
           <FaFilter className="mobile-header-icon" />
@@ -151,74 +238,73 @@ const MobileDayView = ({ events, selectedDate, onEventClick, onAddEvent }: any) 
         </div>
       </div>
 
-      {/* Timeline */}
+      {/* Timeline unificado */}
       <div className="mobile-timeline">
-        <div className="mobile-timeline-axis">
-          {getTimeSlots().map((timeSlot, index) => (
-            <div key={index} className="mobile-timeline-slot">
-              <div className="mobile-timeline-time">
-                {timeSlot.minute() === 0 ? timeSlot.format('HH:mm') : timeSlot.format('mm')}
-              </div>
-              <div className="mobile-timeline-tick"></div>
-            </div>
-          ))}
-        </div>
-
-        {/* Línea de tiempo actual */}
-        <div 
-          className="mobile-current-time-line"
-          style={{
-            top: `${((currentTime.getHours() - 10) * 4 + currentTime.getMinutes() / 15) * 20}px`
-          }}
-        >
-          <div className="mobile-current-time-dot"></div>
-        </div>
-
-        {/* Eventos */}
-        <div className="mobile-events-container">
-          {events.filter((event: any) => moment(event.start).isSame(selectedDay, 'day')).map((event: any, index) => {
-            const start = moment(event.start);
-            const end = moment(event.end);
-            const duration = end.diff(start, 'minutes');
-            const top = ((start.hour() - 10) * 4 + start.minute() / 15) * 20;
-            const height = (duration / 15) * 20;
-            
-            return (
-              <div
-                key={event.id}
-                className="mobile-event-card"
-                style={{
-                  top: `${top}px`,
-                  height: `${height}px`,
-                  backgroundColor: getEventColor(event.servicio?.nombre)
-                }}
-                onClick={() => onEventClick(event)}
+        <div className="mobile-timeline-unified">
+          <div className="mobile-timeline-axis">
+            {getTimeSlots().map((slot, index) => (
+              <div 
+                key={index} 
+                className={`mobile-timeline-slot ${slot.isHourSlot ? 'hour-slot' : ''} ${slot.isQuarterSlot ? 'quarter-slot' : ''}`}
               >
-                <div className="mobile-event-content">
-                  <div className="mobile-event-title">
-                    {event.usuario?.nombre} • {event.servicio?.nombre}
-                  </div>
-                  <div className="mobile-event-time">
-                    {start.format('HH:mm')} - {end.format('HH:mm')}
-                  </div>
-                  <div className="mobile-event-status">
-                    {event.statusLabel}
-                  </div>
+                <div className="mobile-timeline-time">
+                  {slot.displayTime}
                 </div>
-                {event.comentario && (
-                  <div className="mobile-event-icon">💬</div>
-                )}
-                {event.fija && (event.periodicidadDias || 0) > 0 && (
-                  <div className="mobile-event-periodic">🔄</div>
-                )}
-                
-                {/* Separador de eventos */}
-                {index < events.filter((e: any) => moment(e.start).isSame(selectedDay, 'day')).length - 1 && (
-                  <div className="mobile-event-separator"></div>
-                )}
+                <div className="mobile-timeline-tick"></div>
               </div>
-            );
-          })}
+            ))}
+          </div>
+
+          {/* Contenedor de eventos unificado */}
+          <div className="mobile-events-container">
+            {/* Línea de tiempo actual */}
+            <div 
+              className="mobile-current-time-line"
+              style={{
+                top: `${calculateCurrentTimePosition()}px`
+              }}
+            >
+              <div className="mobile-current-time-dot"></div>
+            </div>
+
+            {/* Eventos */}
+            {events.filter((event: any) => moment(event.start).isSame(selectedDay, 'day')).map((event: any, index: number) => {
+              const { top, height } = calculateEventPosition(event);
+              const start = moment(event.start);
+              const end = moment(event.end);
+              
+              return (
+                <div
+                  key={event.id}
+                  className="mobile-event-card"
+                  style={{
+                    top: `${top}px`,
+                    height: `${height}px`,
+                    backgroundColor: getEventColor(event.servicio?.nombre)
+                  }}
+                  onClick={() => onEventClick(event)}
+                >
+                  <div className="mobile-event-content">
+                    <div className="mobile-event-title">
+                      {event.usuario?.nombre} • {event.servicio?.nombre}
+                    </div>
+                    <div className="mobile-event-time">
+                      {start.format('HH:mm')} - {end.format('HH:mm')}
+                    </div>
+                    <div className="mobile-event-status">
+                      {event.statusLabel}
+                    </div>
+                  </div>
+                  {event.comentario && (
+                    <div className="mobile-event-icon">💬</div>
+                  )}
+                  {event.fija && (event.periodicidadDias || 0) > 0 && (
+                    <div className="mobile-event-periodic">🔄</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -242,22 +328,64 @@ const getEventColor = (serviceName: string) => {
   if (service.includes('tinte')) return '#2196F3';
   if (service.includes('mecha')) return '#9C27B0';
   if (service.includes('barba')) return '#FF9800';
+  if (service.includes('peinado')) return '#E91E63';
+  if (service.includes('tratamiento')) return '#795548';
   return '#607D8B';
+};
+
+// Datos de ejemplo para demostración
+const getExampleEvents = () => {
+  const today = moment();
+  return [
+    {
+      id: 1,
+      start: today.clone().hour(9).minute(0).toDate(),
+      end: today.clone().hour(9).minute(45).toDate(),
+      title: 'Corte de cabello',
+      usuario: { nombre: 'alvaro' },
+      servicio: { nombre: 'Corte', duracionMinutos: 45 },
+      statusLabel: 'Pendiente'
+    },
+    {
+      id: 2,
+      start: today.clone().hour(9).minute(45).toDate(),
+      end: today.clone().hour(10).minute(30).toDate(),
+      title: 'Corte de cabello',
+      usuario: { nombre: 'hola' },
+      servicio: { nombre: 'Corte', duracionMinutos: 45 },
+      statusLabel: 'Pendiente'
+    }
+  ];
 };
 
 // Toolbar profesional personalizado con responsive
 const CustomToolbar = (toolbar: any) => {
   const goToBack = () => {
     console.log('Going back from:', toolbar.date);
-    toolbar.onNavigate('PREV');
+    console.log('Toolbar object:', toolbar);
+    if (toolbar.onNavigate) {
+      toolbar.onNavigate('PREV');
+    } else {
+      console.error('onNavigate not available');
+    }
   };
   const goToNext = () => {
     console.log('Going next from:', toolbar.date);
-    toolbar.onNavigate('NEXT');
+    console.log('Toolbar object:', toolbar);
+    if (toolbar.onNavigate) {
+      toolbar.onNavigate('NEXT');
+    } else {
+      console.error('onNavigate not available');
+    }
   };
   const goToToday = () => {
     console.log('Going to today from:', toolbar.date);
-    toolbar.onNavigate('TODAY');
+    console.log('Toolbar object:', toolbar);
+    if (toolbar.onNavigate) {
+      toolbar.onNavigate('TODAY');
+    } else {
+      console.error('onNavigate not available');
+    }
   };
   
   // Función para obtener el nombre del mes en español
@@ -292,12 +420,12 @@ const CustomToolbar = (toolbar: any) => {
           <FaChevronLeft />
         </button>
         
-        <button onClick={goToNext} className="citas-admin-nav-btn">
-          <FaChevronRight />
+        <button onClick={() => handleViewChange('month')} className="citas-admin-nav-btn">
+          Mes
         </button>
         
-        <button onClick={goToToday} className="citas-admin-nav-btn">
-          Hoy
+        <button onClick={goToNext} className="citas-admin-nav-btn">
+          <FaChevronRight />
         </button>
       </div>
       
@@ -306,14 +434,8 @@ const CustomToolbar = (toolbar: any) => {
       </div>
       
       <div className="toolbar-right">
-        <button onClick={() => handleViewChange('month')} className="citas-admin-nav-btn">
-          Mes
-        </button>
-        <button onClick={() => handleViewChange('week')} className="citas-admin-nav-btn">
-          Semana
-        </button>
-        <button onClick={() => handleViewChange('day')} className="citas-admin-nav-btn">
-          Día
+        <button onClick={goToToday} className="citas-admin-nav-btn">
+          Hoy
         </button>
       </div>
     </div>
@@ -332,6 +454,14 @@ const CitasAdmin: React.FC = () => {
   const [showDayEvents, setShowDayEvents] = useState(false);
   const [showPeriodicModal, setShowPeriodicModal] = useState(false);
   const [selectedCitaForPeriodic, setSelectedCitaForPeriodic] = useState<any>(null);
+  
+  // Estados para modal de periodicidad
+  const [periodicForm, setPeriodicForm] = useState({
+    periodicidadDias: 7,
+    fechaInicio: ''
+  });
+  const [periodicLoading, setPeriodicLoading] = useState(false);
+  const [periodicMsg, setPeriodicMsg] = useState<string | null>(null);
 
   // Verificar si es móvil
   useEffect(() => {
@@ -554,6 +684,103 @@ const CitasAdmin: React.FC = () => {
     setSelectedCitaForPeriodic(null);
   };
 
+  // Funciones para manejar el formulario de periodicidad
+  const handlePeriodicFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setPeriodicForm({
+      ...periodicForm,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handlePeriodicSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedCitaForPeriodic) {
+      setPeriodicMsg('Error: No hay cita seleccionada');
+      return;
+    }
+    
+    if (!selectedCitaForPeriodic.usuario || !selectedCitaForPeriodic.servicio) {
+      setPeriodicMsg('Error: Datos de cita incompletos');
+      return;
+    }
+    
+    console.log('selectedCitaForPeriodic:', selectedCitaForPeriodic);
+    console.log('Usuario:', selectedCitaForPeriodic.usuario);
+    console.log('Servicio:', selectedCitaForPeriodic.servicio);
+    
+    if (!selectedCitaForPeriodic.usuario.id || !selectedCitaForPeriodic.servicio.id) {
+      console.error('IDs no válidos - Usuario ID:', selectedCitaForPeriodic.usuario?.id);
+      console.error('IDs no válidos - Servicio ID:', selectedCitaForPeriodic.servicio?.id);
+      console.error('Usuario completo:', selectedCitaForPeriodic.usuario);
+      console.error('Servicio completo:', selectedCitaForPeriodic.servicio);
+      setPeriodicMsg(`Error: IDs no válidos - Usuario ID: ${selectedCitaForPeriodic.usuario?.id}, Servicio ID: ${selectedCitaForPeriodic.servicio?.id}`);
+      return;
+    }
+    
+    setPeriodicLoading(true);
+    setPeriodicMsg(null);
+    
+    try {
+      const token = localStorage.getItem('authToken');
+      
+      // Obtener la hora original de la cita
+      const horaOriginal = moment(selectedCitaForPeriodic.start);
+      const fechaInicio = moment(periodicForm.fechaInicio);
+      
+      // Combinar fecha de inicio con hora original
+      const fechaHoraCompleta = fechaInicio
+        .hour(horaOriginal.hour())
+        .minute(horaOriginal.minute())
+        .second(0);
+      
+      const requestBody = {
+        clienteId: selectedCitaForPeriodic.usuario.id,
+        servicioId: selectedCitaForPeriodic.servicio.id,
+        fechaHora: fechaHoraCompleta.format('YYYY-MM-DDTHH:mm:ss'),
+        comentario: selectedCitaForPeriodic.comentario || '',
+        confirmada: selectedCitaForPeriodic.confirmada
+      };
+      
+      console.log('Enviando datos al backend:', requestBody);
+      console.log('URL:', `http://localhost:8080/api/citas/fija?periodicidadDias=${periodicForm.periodicidadDias}`);
+      
+      const res = await fetch(`http://localhost:8080/api/citas/fija?periodicidadDias=${periodicForm.periodicidadDias}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(requestBody)
+      });
+      
+      if (!res.ok) {
+        let errorMessage = 'Error al crear cita periódica';
+        try {
+          const errorData = await res.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch {
+          // Si no se puede parsear el JSON, usar el mensaje por defecto
+        }
+        throw new Error(errorMessage);
+      }
+      
+      setPeriodicMsg('¡Cita periódica creada correctamente!');
+      setTimeout(() => {
+        setShowPeriodicModal(false);
+        setPeriodicMsg(null);
+        setSelectedCitaForPeriodic(null);
+        // Recargar las citas
+        window.location.reload();
+      }, 1500);
+    } catch (err: any) {
+      console.error('Error en handlePeriodicSubmit:', err);
+      setPeriodicMsg(err.message || 'Error al crear cita periódica');
+    } finally {
+      setPeriodicLoading(false);
+    }
+  };
+
   if (loading) {
     return <div className="loading-message">Cargando citas...</div>;
   }
@@ -564,10 +791,13 @@ const CitasAdmin: React.FC = () => {
 
   // Vista móvil
   if (showMobileView) {
+    // Usar datos de ejemplo si no hay eventos reales
+    const eventsToShow = events.length > 0 ? events : getExampleEvents();
+    
     return (
       <div className="mobile-admin-container">
         <MobileDayView 
-          events={events}
+          events={eventsToShow}
           selectedDate={selectedDate}
           onEventClick={handleSelectEvent}
           onAddEvent={handleAddEvent}
@@ -768,6 +998,7 @@ const CitasAdmin: React.FC = () => {
             timeslots={4}
             min={moment().hour(10).minute(0).toDate()}
             max={moment().hour(19).minute(0).toDate()}
+            date={selectedDate}
           />
         </div>
       </div>
@@ -893,144 +1124,114 @@ const CitasAdmin: React.FC = () => {
         </div>
       )}
 
-      {/* Modal de cita periódica */}
-                              {showPeriodicModal && selectedCitaForPeriodic && (
-                <div className="modal-overlay" onClick={handleClosePeriodicModal}>
-                    <div className="modal-content periodic-modal" onClick={e => e.stopPropagation()}>
-                        <button onClick={handleClosePeriodicModal} className="modal-close-btn">×</button>
+      {/* Modal de periodicidad */}
+      {showPeriodicModal && (
+        <div className="modal-overlay periodic-modal-overlay" onClick={() => setShowPeriodicModal(false)}>
+          <div className="modal-content periodic-modal" onClick={e => e.stopPropagation()}>
+            
+            {/* Header del modal con diseño mejorado */}
+            <div className="periodic-modal-header">
+              <div className="periodic-modal-icon">
+                <FaCalendarAlt />
+              </div>
+              <div className="periodic-modal-title">
+                <h3>Crear Cita Periódica</h3>
+                <p>Configura la periodicidad de la cita</p>
+              </div>
+            </div>
 
-                        <div className="periodic-modal-header">
-                            <div className="periodic-header-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="#64B5F6"/>
-                                    <line x1="16" y1="2" x2="16" y2="6" stroke="#64B5F6" strokeWidth="2"/>
-                                    <line x1="8" y1="2" x2="8" y2="6" stroke="#64B5F6" strokeWidth="2"/>
-                                    <line x1="3" y1="10" x2="21" y2="10" stroke="#64B5F6" strokeWidth="2"/>
-                                    <circle cx="8.5" cy="13.5" r="1.5" fill="white"/>
-                                    <circle cx="15.5" cy="13.5" r="1.5" fill="white"/>
-                                    <circle cx="8.5" cy="17.5" r="1.5" fill="white"/>
-                                    <circle cx="15.5" cy="17.5" r="1.5" fill="white"/>
-                                </svg>
-                            </div>
-                            <div className="periodic-header-text">
-                                <h3 className="modal-title">Crear Cita Periódica</h3>
-                                <p className="modal-subtitle">Configura la periodicidad de la cita</p>
-                            </div>
-                        </div>
-
-                        <div className="periodic-modal-content">
-                            <div className="periodic-cita-info">
-                                <div className="periodic-section-header">
-                                    <div className="periodic-section-icon">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="#F44336"/>
-                                            <line x1="16" y1="2" x2="16" y2="6" stroke="#F44336" strokeWidth="2"/>
-                                            <line x1="8" y1="2" x2="8" y2="6" stroke="#F44336" strokeWidth="2"/>
-                                            <line x1="3" y1="10" x2="21" y2="10" stroke="#F44336" strokeWidth="2"/>
-                                        </svg>
-                                    </div>
-                                    <h4>CITA ORIGINAL</h4>
-                                </div>
-                                <div className="periodic-cita-details">
-                                    <div className="periodic-detail">
-                                        <span className="detail-label">Cliente:</span>
-                                        <span className="detail-value">{selectedCitaForPeriodic.usuario?.nombre}</span>
-                                    </div>
-                                    <div className="periodic-detail">
-                                        <span className="detail-label">Servicio:</span>
-                                        <span className="detail-value">{selectedCitaForPeriodic.servicio?.nombre}</span>
-                                    </div>
-                                    <div className="periodic-detail">
-                                        <span className="detail-label">Hora:</span>
-                                        <span className="detail-value">{moment(selectedCitaForPeriodic.start).format('HH:mm')}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="periodic-settings">
-                                <div className="periodic-section-header">
-                                    <div className="periodic-section-icon">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                            <circle cx="12" cy="12" r="10" fill="#64B5F6"/>
-                                            <path d="M12 6v6l4 2" stroke="white" strokeWidth="2" fill="none"/>
-                                        </svg>
-                                    </div>
-                                    <h4>Periodicidad (días)</h4>
-                                </div>
-                                <div className="periodic-form">
-                                    <div className="form-group">
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            max="365"
-                                            defaultValue="7"
-                                            className="periodic-input"
-                                        />
-                                        <div className="periodic-help-text">
-                                            Ejemplo: 7 días = cada semana, 30 días = cada mes
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="periodic-settings">
-                                <div className="periodic-section-header">
-                                    <div className="periodic-section-icon">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="#F44336"/>
-                                            <line x1="16" y1="2" x2="16" y2="6" stroke="#F44336" strokeWidth="2"/>
-                                            <line x1="8" y1="2" x2="8" y2="6" stroke="#F44336" strokeWidth="2"/>
-                                            <line x1="3" y1="10" x2="21" y2="10" stroke="#F44336" strokeWidth="2"/>
-                                        </svg>
-                                    </div>
-                                    <h4>Fecha de inicio</h4>
-                                </div>
-                                <div className="periodic-form">
-                                    <div className="form-group">
-                                        <div className="date-input-container">
-                                            <input
-                                                type="date"
-                                                defaultValue={moment(selectedCitaForPeriodic.start).format('YYYY-MM-DD')}
-                                                className="periodic-input date-input"
-                                            />
-                                            <div className="date-picker-icon">
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="white"/>
-                                                    <line x1="16" y1="2" x2="16" y2="6" stroke="white" strokeWidth="2"/>
-                                                    <line x1="8" y1="2" x2="8" y2="6" stroke="white" strokeWidth="2"/>
-                                                    <line x1="3" y1="10" x2="21" y2="10" stroke="white" strokeWidth="2"/>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                        <div className="periodic-help-text">
-                                            La primera cita se creará a partir de esta fecha
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="periodic-actions">
-                                <button className="periodic-cancel-btn" onClick={handleClosePeriodicModal}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <line x1="18" y1="6" x2="6" y2="18" stroke="white" strokeWidth="2"/>
-                                        <line x1="6" y1="6" x2="18" y2="18" stroke="white" strokeWidth="2"/>
-                                    </svg>
-                                    Cancelar
-                                </button>
-                                <button className="periodic-create-btn">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="white"/>
-                                        <line x1="16" y1="2" x2="16" y2="6" stroke="white" strokeWidth="2"/>
-                                        <line x1="8" y1="2" x2="8" y2="6" stroke="white" strokeWidth="2"/>
-                                        <line x1="3" y1="10" x2="21" y2="10" stroke="white" strokeWidth="2"/>
-                                    </svg>
-                                    Crear Periódica
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+            <form onSubmit={handlePeriodicSubmit} className="periodic-form">
+              
+              {/* Información de la cita original con diseño mejorado */}
+              <div className="original-cita-info">
+                <div className="info-header">
+                  📅 Cita Original
                 </div>
-            )}
+                <div className="info-details">
+                  <div className="info-row">
+                    <span className="info-label">Cliente:</span>
+                    <span className="info-value">{selectedCitaForPeriodic?.usuario?.nombre}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="info-label">Servicio:</span>
+                    <span className="info-value">{selectedCitaForPeriodic?.servicio?.nombre}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="info-label">Hora:</span>
+                    <span className="info-value">{moment(selectedCitaForPeriodic?.start).format('HH:mm')}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Periodicidad con diseño mejorado */}
+              <div className="form-group">
+                <label className="form-label">
+                  🔄 Periodicidad (días)
+                </label>
+                <input
+                  type="number"
+                  name="periodicidadDias"
+                  value={periodicForm.periodicidadDias}
+                  onChange={handlePeriodicFormChange}
+                  min="1"
+                  max="365"
+                  className="form-input"
+                  required
+                />
+                <div className="form-help">
+                  Ejemplo: 7 días = cada semana, 30 días = cada mes
+                </div>
+              </div>
+
+              {/* Fecha de inicio con diseño mejorado */}
+              <div className="form-group">
+                <label className="form-label">
+                  📅 Fecha de inicio
+                </label>
+                <input
+                  type="date"
+                  name="fechaInicio"
+                  value={periodicForm.fechaInicio}
+                  onChange={handlePeriodicFormChange}
+                  className="form-input"
+                  required
+                />
+                <div className="form-help">
+                  La primera cita se creará a partir de esta fecha
+                </div>
+              </div>
+
+              {/* Botones con diseño mejorado */}
+              <div className="form-buttons">
+                <button
+                  type="button"
+                  onClick={() => setShowPeriodicModal(false)}
+                  disabled={periodicLoading}
+                  className="btn btn-cancel"
+                >
+                  <FaTimes />
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={periodicLoading}
+                  className="btn btn-submit"
+                >
+                  <FaSave />
+                  {periodicLoading ? 'Creando...' : 'Crear Periódica'}
+                </button>
+              </div>
+
+              {/* Mensaje de estado con diseño mejorado */}
+              {periodicMsg && (
+                <div className={`status-message ${periodicMsg.startsWith('¡') ? 'success' : 'error'}`}>
+                  {periodicMsg}
+                </div>
+              )}
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

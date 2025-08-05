@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import styles from './Citas.module.css';
 import logoBarberia from '../../../assets/images/logoElemental.png';
 import SeleccionarServicioModal from '../../../components/SeleccionarServicioModal';
+import CalendarBooking from '../../../components/CalendarBooking';
 import { FaPlus, FaSave, FaTimes, FaUserPlus } from 'react-icons/fa';
 
 interface Cita {
   id: number;
   servicio: { nombre: string };
   fechaHora: string;
-  estado?: 'pendiente' | 'completada' | 'cancelada' | 'finalizada';
+  estado?: 'pendiente' | 'confirmada' | 'completada' | 'cancelada' | 'finalizada';
   comentario?: string;
 }
 
@@ -49,6 +50,15 @@ const Citas: React.FC<CitasProps> = () => {
     fechaHora: '',
     comentario: ''
   });
+
+  // Estados para cancelación de citas
+  const [cancelandoCita, setCancelandoCita] = useState<number | null>(null);
+  const [errorCancelacion, setErrorCancelacion] = useState('');
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [citaACancelar, setCitaACancelar] = useState<Cita | null>(null);
+  
+  // Estados para el calendario de reserva
+  const [showCalendario, setShowCalendario] = useState(false);
 
   useEffect(() => {
     const fetchCitas = async () => {
@@ -178,6 +188,7 @@ const Citas: React.FC<CitasProps> = () => {
   };
 
   const handleReservarDeNuevo = () => {
+    // Abrir el modal de selección de servicios
     setShowServicioModal(true);
   };
 
@@ -188,8 +199,77 @@ const Citas: React.FC<CitasProps> = () => {
 
   const handleServicioModalContinuar = () => {
     setShowServicioModal(false);
-    // Aquí podrías redirigir al calendario o manejar la continuidad
-    console.log('Servicios seleccionados:', serviciosSeleccionados);
+    // Abrir el calendario de reserva con los servicios seleccionados
+    setShowCalendario(true);
+  };
+
+  const puedeCancelarCita = (fechaHora: string) => {
+    const fechaCita = new Date(fechaHora);
+    const ahora = new Date();
+    const horasAntes = (fechaCita.getTime() - ahora.getTime()) / (1000 * 60 * 60);
+    return horasAntes >= 2;
+  };
+
+  const handleCancelarCita = async (citaId: number) => {
+    // Encontrar la cita
+    const cita = citas.find(c => c.id === citaId);
+    if (!cita) return;
+
+    // Verificar si la cita es futura
+    const fechaCita = new Date(cita.fechaHora);
+    const ahora = new Date();
+    const horasAntes = (fechaCita.getTime() - ahora.getTime()) / (1000 * 60 * 60);
+
+    if (horasAntes < 2) {
+      setErrorCancelacion('No se pueden cancelar citas con menos de 2 horas de antelación');
+      return;
+    }
+
+    // Mostrar modal de confirmación
+    setCitaACancelar(cita);
+    setShowCancelModal(true);
+  };
+
+  const confirmarCancelacion = async () => {
+    if (!citaACancelar) return;
+
+    setCancelandoCita(citaACancelar.id);
+    setErrorCancelacion('');
+    setShowCancelModal(false);
+
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch(`http://localhost:8080/api/citas/${citaACancelar.id}`, {
+        method: 'DELETE',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Error al cancelar la cita');
+      }
+
+      // Actualizar la lista de citas
+      setCitas(citas.filter(cita => cita.id !== citaACancelar.id));
+      alert('Cita cancelada correctamente');
+    } catch (err: any) {
+      setErrorCancelacion(err.message || 'Error al cancelar la cita');
+      console.error('Error al cancelar cita:', err);
+    } finally {
+      setCancelandoCita(null);
+      setCitaACancelar(null);
+    }
+  };
+
+  const cancelarConfirmacion = () => {
+    setShowCancelModal(false);
+    setCitaACancelar(null);
+  };
+
+  const handleReservaCompletada = () => {
+    setShowCalendario(false);
+    // Recargar las citas después de una reserva exitosa
+    window.location.reload();
   };
 
   return (
@@ -244,6 +324,12 @@ const Citas: React.FC<CitasProps> = () => {
           ) : citas.length === 0 ? (
             <div className={styles.citasHistorialVacio}>No tienes citas registradas.</div>
           ) : (
+            <>
+              {errorCancelacion && (
+                <div className={styles.citasHistorialVacio} style={{color:'#e74c3c', marginBottom: '1rem'}}>
+                  {errorCancelacion}
+                </div>
+              )}
             <ul className={styles.citasHistorialLista}>
               {citas.map(cita => {
                 const fecha = cita.fechaHora ? cita.fechaHora.split('T')[0] : '';
@@ -256,7 +342,7 @@ const Citas: React.FC<CitasProps> = () => {
                 const horaStr = dateObj ? dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
                 // Datos fijos de barbería y peluquero
                 const nombreBarberia = 'Elemen Barber';
-                const nombrePeluquero = 'Luis';
+                const nombrePeluquero = 'Luis Garcia Mudarra';
                 // Emoji según el tipo de servicio
                 let emojiServicio = '💈';
                 const nombreServicio = cita.servicio?.nombre?.toLowerCase() || '';
@@ -264,20 +350,23 @@ const Citas: React.FC<CitasProps> = () => {
                 else if (nombreServicio.includes('tinte')) emojiServicio = '🧴';
                 else if (nombreServicio.includes('mecha')) emojiServicio = '✨';
                 return (
-                  <li key={cita.id} className={
-                    styles.citasHistorialItem + ' ' +
-                    (cita.estado === 'finalizada' || cita.estado === 'completada' ? styles.estadoFinalizadaBorde : 
-                     cita.estado === 'cancelada' ? styles.estadoCanceladaBorde : styles.estadoPendienteBorde)
-                  }>
+                                     <li key={cita.id} className={
+                     styles.citasHistorialItem + ' ' +
+                     (cita.estado === 'finalizada' || cita.estado === 'completada' ? styles.estadoFinalizadaBorde : 
+                      cita.estado === 'cancelada' ? styles.estadoCanceladaBorde : 
+                      cita.estado === 'confirmada' ? styles.estadoPendienteBorde : styles.estadoPendienteBorde)
+                   }>
                     <div className={styles.citaColInfo}>
                       {cita.estado && (
-                        <span className={
-                          styles.citasHistorialEstado + ' ' +
-                          (cita.estado === 'finalizada' || cita.estado === 'completada' ? styles.estadoFinalizada : 
-                           cita.estado === 'cancelada' ? styles.estadoCancelada : styles.estadoPendiente)
-                        }>
+                                                 <span className={
+                           styles.citasHistorialEstado + ' ' +
+                           (cita.estado === 'finalizada' || cita.estado === 'completada' ? styles.estadoFinalizada : 
+                            cita.estado === 'cancelada' ? styles.estadoCancelada : 
+                            cita.estado === 'confirmada' ? styles.estadoPendiente : styles.estadoPendiente)
+                         }>
                           {cita.estado === 'finalizada' || cita.estado === 'completada' ? 'TERMINADO' : 
-                           cita.estado === 'cancelada' ? 'CANCELADO' : 'PENDIENTE'}
+                           cita.estado === 'cancelada' ? 'CANCELADO' : 
+                           cita.estado === 'confirmada' ? 'CONFIRMADA' : 'PENDIENTE'}
                         </span>
                       )}
                       <div className={styles.citasHistorialServicio}>{cita.servicio?.nombre}</div>
@@ -289,11 +378,54 @@ const Citas: React.FC<CitasProps> = () => {
                         </div>
                       </div>
                       {cita.comentario && <div className={styles.citasHistorialComentario}>{cita.comentario}</div>}
-                      {(cita.estado === 'completada' || cita.estado === 'finalizada' || cita.estado === 'cancelada') && (
-                        <button className={styles.citaReservarBtn} onClick={handleReservarDeNuevo}>
-                          Reservar de nuevo
-                        </button>
-                      )}
+                      
+                      {/* Botones de acción */}
+                      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                        
+                        {/* Botón de cancelar para citas pendientes o confirmadas */}
+                        {(cita.estado === 'pendiente' || cita.estado === 'confirmada') && (
+                          <button 
+                            className={styles.citaReservarBtn}
+                                                         style={{
+                               background: puedeCancelarCita(cita.fechaHora) ? 'linear-gradient(135deg, #dc3545, #c82333)' : '#95a5a6',
+                               color: '#fff',
+                               border: 'none',
+                               borderRadius: '6px',
+                               padding: '0.5rem 1rem',
+                               fontSize: '0.8rem',
+                               cursor: cancelandoCita === cita.id ? 'not-allowed' : 'pointer',
+                               opacity: cancelandoCita === cita.id ? 0.7 : 1,
+                               boxShadow: puedeCancelarCita(cita.fechaHora) ? '0 2px 8px rgba(220, 53, 69, 0.3)' : 'none',
+                               transition: 'all 0.3s ease'
+                             }}
+                            onClick={() => handleCancelarCita(cita.id)}
+                            disabled={cancelandoCita === cita.id}
+                          >
+                            {cancelandoCita === cita.id ? 'Cancelando...' : 'Cancelar Cita'}
+                          </button>
+                        )}
+                        
+                                                 {/* Mensaje informativo para citas que no se pueden cancelar */}
+                         {(cita.estado === 'pendiente' || cita.estado === 'confirmada') && !puedeCancelarCita(cita.fechaHora) && (
+                          <div style={{
+                            fontSize: '0.8rem',
+                            color: '#e74c3c',
+                            fontStyle: 'italic',
+                            marginTop: '0.5rem'
+                          }}>
+                            No se puede cancelar (menos de 2 horas de antelación)
+                          </div>
+                        )}
+                        
+                        
+                        
+                        {/* Botón de reservar de nuevo para citas finalizadas/canceladas */}
+                        {(cita.estado === 'completada' || cita.estado === 'finalizada' || cita.estado === 'cancelada') && (
+                          <button className={styles.citaReservarBtn} onClick={handleReservarDeNuevo}>
+                            Reservar de nuevo
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <div className={styles.citaColFecha}>
                       <div className={styles.citasHistorialFechaMes}>{mesNombre}</div>
@@ -304,18 +436,28 @@ const Citas: React.FC<CitasProps> = () => {
                 );
               })}
             </ul>
+            </>
           )}
         </div>
       </div>
       
-      {showServicioModal && (
-        <SeleccionarServicioModal
-          serviciosSeleccionados={serviciosSeleccionados}
-          setServiciosSeleccionados={setServiciosSeleccionados}
-          onClose={handleServicioModalClose}
-          onContinuar={handleServicioModalContinuar}
-        />
-      )}
+             {showServicioModal && (
+         <SeleccionarServicioModal
+           serviciosSeleccionados={serviciosSeleccionados}
+           setServiciosSeleccionados={setServiciosSeleccionados}
+           onClose={handleServicioModalClose}
+           onContinuar={handleServicioModalContinuar}
+         />
+       )}
+
+       {showCalendario && (
+         <CalendarBooking
+           servicio={serviciosSeleccionados}
+           onReservaCompletada={handleReservaCompletada}
+           onClose={() => setShowCalendario(false)}
+           nombresServicios={serviciosSeleccionados.map(s => s.nombre).join(', ')}
+         />
+       )}
 
       {/* Modal de reserva de citas por admin */}
       {showAdminBookingModal && (
@@ -556,10 +698,233 @@ const Citas: React.FC<CitasProps> = () => {
               </div>
             </form>
           </div>
-        </div>
-      )}
-    </>
-  );
-};
+                 </div>
+       )}
+
+               {/* Modal de confirmación de cancelación */}
+        {showCancelModal && citaACancelar && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0,0,0,0.85)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backdropFilter: 'blur(5px)'
+          }} onClick={cancelarConfirmacion}>
+                         <div style={{
+               background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%)',
+               color: '#fff',
+               borderRadius: '16px',
+               padding: '2.5rem',
+               width: '90%',
+               maxWidth: '450px',
+               boxShadow: '0 25px 80px rgba(0,0,0,0.8), 0 10px 30px rgba(220, 53, 69, 0.4)',
+               position: 'relative',
+               border: '1px solid rgba(220, 53, 69, 0.3)'
+             }} onClick={e => e.stopPropagation()}>
+              
+              {/* Header */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1.2rem',
+                marginBottom: '2rem',
+                borderBottom: '2px solid rgba(220, 53, 69, 0.2)',
+                paddingBottom: '1.2rem'
+              }}>
+                <div style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #dc3545, #c82333)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.8rem',
+                  color: '#fff',
+                  boxShadow: '0 4px 15px rgba(220, 53, 69, 0.4)'
+                }}>
+                  ⚠️
+                </div>
+                <div>
+                  <h3 style={{
+                    margin: 0,
+                    fontSize: '1.4rem',
+                    fontWeight: 700,
+                    color: '#dc3545',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                  }}>Confirmar Cancelación</h3>
+                                     <p style={{
+                     margin: '0.3rem 0 0 0',
+                     fontSize: '0.95rem',
+                     color: '#bdc3c7',
+                     lineHeight: '1.4'
+                   }}>¿Estás seguro de que quieres cancelar esta cita?</p>
+                </div>
+              </div>
+
+                                          {/* Información de la cita */}
+               <div style={{
+                 background: 'linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%)',
+                 borderRadius: '12px',
+                 padding: '1.5rem',
+                 marginBottom: '2rem',
+                 border: '1px solid rgba(220, 53, 69, 0.4)',
+                 boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4)'
+               }}>
+                                   <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.8rem',
+                    marginBottom: '0.8rem',
+                    padding: '0.5rem',
+                    borderRadius: '8px',
+                    background: 'rgba(255,255,255,0.05)'
+                  }}>
+                    <span style={{ fontWeight: 600, color: '#e74c3c', fontSize: '0.9rem' }}>💇 Servicio:</span>
+                    <span style={{ color: '#ecf0f1', fontSize: '0.95rem' }}>{citaACancelar.servicio?.nombre}</span>
+                  </div>
+                                   <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.8rem',
+                    marginBottom: '0.8rem',
+                    padding: '0.5rem',
+                    borderRadius: '8px',
+                    background: 'rgba(255,255,255,0.05)'
+                  }}>
+                    <span style={{ fontWeight: 600, color: '#e74c3c', fontSize: '0.9rem' }}>📅 Fecha:</span>
+                    <span style={{ color: '#ecf0f1', fontSize: '0.95rem' }}>{new Date(citaACancelar.fechaHora).toLocaleDateString('es-ES', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}</span>
+                  </div>
+                                   <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.8rem',
+                    padding: '0.5rem',
+                    borderRadius: '8px',
+                    background: 'rgba(255,255,255,0.05)'
+                  }}>
+                    <span style={{ fontWeight: 600, color: '#e74c3c', fontSize: '0.9rem' }}>🕐 Hora:</span>
+                    <span style={{ color: '#ecf0f1', fontSize: '0.95rem' }}>{new Date(citaACancelar.fechaHora).toLocaleTimeString('es-ES', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}</span>
+                  </div>
+               </div>
+
+                                          {/* Mensaje de advertencia */}
+               <div style={{
+                 background: 'linear-gradient(135deg, #f39c12 0%, #e67e22 100%)',
+                 border: '1px solid rgba(220, 53, 69, 0.3)',
+                 borderRadius: '12px',
+                 padding: '1.2rem',
+                 marginBottom: '2rem',
+                 boxShadow: '0 2px 8px rgba(243, 156, 18, 0.3)'
+               }}>
+                 <div style={{
+                   display: 'flex',
+                   alignItems: 'center',
+                   gap: '0.8rem',
+                   color: '#fff',
+                   fontSize: '0.95rem',
+                   lineHeight: '1.4'
+                 }}>
+                   <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+                   <span>Esta acción no se puede deshacer. La cita será cancelada permanentemente.</span>
+                 </div>
+               </div>
+
+                           {/* Botones */}
+              <div style={{
+                display: 'flex',
+                gap: '1rem',
+                justifyContent: 'flex-end'
+              }}>
+                <button
+                  type="button"
+                  onClick={cancelarConfirmacion}
+                  style={{
+                    background: 'linear-gradient(135deg, #6c757d, #5a6268)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '0.9rem 1.8rem',
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 3px 10px rgba(108, 117, 125, 0.3)'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 5px 15px rgba(108, 117, 125, 0.4)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 3px 10px rgba(108, 117, 125, 0.3)';
+                  }}
+                >
+                  <FaTimes style={{marginRight: '0.5rem'}} />
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmarCancelacion}
+                  disabled={cancelandoCita === citaACancelar.id}
+                  style={{
+                    background: 'linear-gradient(135deg, #dc3545, #c82333)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '0.9rem 1.8rem',
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    cursor: cancelandoCita === citaACancelar.id ? 'not-allowed' : 'pointer',
+                    opacity: cancelandoCita === citaACancelar.id ? 0.7 : 1,
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 3px 10px rgba(220, 53, 69, 0.3)'
+                  }}
+                  onMouseOver={(e) => {
+                    if (cancelandoCita !== citaACancelar.id) {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 5px 15px rgba(220, 53, 69, 0.4)';
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (cancelandoCita !== citaACancelar.id) {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 3px 10px rgba(220, 53, 69, 0.3)';
+                    }
+                  }}
+                >
+                  {cancelandoCita === citaACancelar.id ? (
+                    <>
+                      <span style={{marginRight: '0.5rem'}}>⏳</span>
+                      Cancelando...
+                    </>
+                  ) : (
+                    <>
+                      <FaTimes style={{marginRight: '0.5rem'}} />
+                      Sí, Cancelar Cita
+                    </>
+                  )}
+                </button>
+              </div>
+           </div>
+         </div>
+       )}
+     </>
+   );
+ };
 
 export default Citas;

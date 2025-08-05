@@ -110,7 +110,7 @@ public class AuthController {
     @Operation(summary = "Iniciar sesión con Google", description = "Autentica un usuario con Google OAuth")
     public ResponseEntity<?> googleAuth(@RequestBody GoogleAuthRequest request) {
         try {
-            JwtResponse response = googleAuthService.authenticateWithGoogle(request);
+            Map<String, Object> response = googleAuthService.authenticateWithGoogle(request);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", "Error en autenticación con Google: " + e.getMessage()));

@@ -347,4 +347,40 @@ public class UsuarioService {
             System.err.println("Error al limpiar usuarios no verificados: " + e.getMessage());
         }
     }
+
+    /**
+     * Banea un usuario específico
+     */
+    public void banearUsuario(Long id) {
+        try {
+            Optional<Usuario> usuario = usuarioRepository.findById(id);
+            if (usuario.isPresent()) {
+                Usuario user = usuario.get();
+                user.setBaneado(true);
+                usuarioRepository.save(user);
+            } else {
+                throw new RuntimeException("Usuario no encontrado con ID: " + id);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error al banear usuario: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Desbanea un usuario específico
+     */
+    public void desbanearUsuario(Long id) {
+        try {
+            Optional<Usuario> usuario = usuarioRepository.findById(id);
+            if (usuario.isPresent()) {
+                Usuario user = usuario.get();
+                user.setBaneado(false);
+                usuarioRepository.save(user);
+            } else {
+                throw new RuntimeException("Usuario no encontrado con ID: " + id);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error al desbanear usuario: " + e.getMessage(), e);
+        }
+    }
 }

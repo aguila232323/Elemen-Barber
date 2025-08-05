@@ -46,6 +46,9 @@ public class Usuario {
     @Column
     private java.time.LocalDateTime resetPasswordExpiry;
 
+    @Column(nullable = false)
+    private Boolean baneado = false;
+
     public String getEmail(){
         return email;
     }
@@ -148,5 +151,13 @@ public class Usuario {
 
     public void setResetPasswordExpiry(java.time.LocalDateTime resetPasswordExpiry) {
         this.resetPasswordExpiry = resetPasswordExpiry;
+    }
+
+    public Boolean getBaneado() {
+        return baneado;
+    }
+
+    public void setBaneado(Boolean baneado) {
+        this.baneado = baneado;
     }
 }

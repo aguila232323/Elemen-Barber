@@ -140,19 +140,24 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
         const data = await backendResponse.json();
         console.log('Backend response data:', data);
         
-        if (backendResponse.ok && data.token) {
-          // Si no hay teléfono, mostrar modal para solicitarlo
-          if (!telefono) {
+        if (backendResponse.ok) {
+          // Verificar si el backend indica que necesita teléfono
+          if (data.requiresPhone) {
             setGoogleUserEmail(userInfo.email);
             setShowPhoneModal(true);
             setLoading(false);
             return;
           }
           
-          localStorage.setItem('authToken', data.token);
-          setUser('reload');
-          if (onLoginSuccess) onLoginSuccess();
-          if (onClose) onClose();
+          // Si hay token, proceder con el login
+          if (data.token) {
+            localStorage.setItem('authToken', data.token);
+            setUser('reload');
+            if (onLoginSuccess) onLoginSuccess();
+            if (onClose) onClose();
+          } else {
+            setError('Error en la autenticación con Google: No se recibió token');
+          }
         } else {
           setError(data.error || 'Error en la autenticación con Google');
         }

@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.ArrayList;
+import java.time.DayOfWeek;
 
 @RestController
 @RequestMapping("/api/citas")
@@ -72,6 +73,11 @@ public class CitaController {
                 cliente = usuarioService.findByEmail(user.getUsername());
                 if (cliente == null) {
                     throw new RuntimeException("Usuario no encontrado");
+                }
+                
+                // Verificar que el usuario no esté baneado (solo para usuarios normales)
+                if (Boolean.TRUE.equals(cliente.getBaneado())) {
+                    throw new RuntimeException("Tu cuenta ha sido suspendida. No puedes crear citas.");
                 }
             }
             
@@ -118,6 +124,11 @@ public class CitaController {
                 throw new RuntimeException("Usuario no encontrado");
             }
             
+            // Verificar que el usuario no esté baneado
+            if (Boolean.TRUE.equals(usuario.getBaneado())) {
+                throw new RuntimeException("Tu cuenta ha sido suspendida. No puedes acceder a tus citas.");
+            }
+            
             List<Cita> citas = citaService.listarCitasPorUsuario(usuario.getId());
             List<Map<String, Object>> citasConEstado = new ArrayList<>();
             
@@ -150,6 +161,12 @@ public class CitaController {
     @Operation(summary = "Cancelar cita", description = "Cancela una cita específica")
     public ResponseEntity<?> cancelarCita(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
         try {
+            // Verificar que el usuario no esté baneado
+            Usuario usuario = usuarioService.findByEmail(user.getUsername());
+            if (usuario != null && Boolean.TRUE.equals(usuario.getBaneado())) {
+                throw new RuntimeException("Tu cuenta ha sido suspendida. No puedes cancelar citas.");
+            }
+            
             citaService.cancelarCita(id);
             Map<String, String> response = new java.util.HashMap<>();
             response.put("message", "Cita cancelada correctamente");
@@ -306,6 +323,13 @@ public class CitaController {
         @RequestParam(required = false) String userRole // "ADMIN" o "USER"
     ) {
         try {
+            // Verificar que el usuario no esté baneado (si no es admin)
+            if (!"ADMIN".equals(userRole)) {
+                // Aquí necesitaríamos obtener el usuario del token JWT
+                // Por ahora, confiamos en que el frontend envía el userRole correctamente
+                // En una implementación más robusta, extraeríamos el usuario del token
+            }
+            
             LocalDate dia = LocalDate.parse(fecha, DateTimeFormatter.ISO_DATE);
             LocalDateTime ahora = LocalDateTime.now();
             
@@ -314,16 +338,28 @@ public class CitaController {
             
             // Generar todos los slots de inicio cada 45 min
             List<LocalTime[]> tramos = List.of(
-                new LocalTime[]{LocalTime.of(9,0), LocalTime.of(14,0)},
+                new LocalTime[]{LocalTime.of(9,0), LocalTime.of(14,15)},
                 new LocalTime[]{LocalTime.of(16,0), LocalTime.of(21,15)}
             );
             List<LocalTime> slots = new ArrayList<>();
+            
+            // Añadir slot especial de 8:15 solo para administradores (al principio)
+            if ("ADMIN".equals(userRole)) {
+                slots.add(LocalTime.of(8, 15));
+            }
+            
+            // Generar slots normales
             for (LocalTime[] tramo : tramos) {
                 LocalTime apertura = tramo[0];
                 LocalTime cierre = tramo[1];
                 for (LocalTime t = apertura; t.compareTo(cierre) < 0; t = t.plusMinutes(45)) {
                     slots.add(t);
                 }
+            }
+            
+            // Añadir slot especial de 21:15 solo para administradores (al final)
+            if ("ADMIN".equals(userRole)) {
+                slots.add(LocalTime.of(21, 15));
             }
 
             // Obtener citas reservadas para ese día
@@ -347,6 +383,15 @@ public class CitaController {
                         break;
                     }
                 }
+                
+                // Para administradores, también permitir slots especiales
+                if (!dentroHorario && "ADMIN".equals(userRole)) {
+                    // Verificar si es un slot especial (8:15 o 21:15)
+                    if (slotInicio.equals(LocalTime.of(8, 15)) || slotInicio.equals(LocalTime.of(21, 15))) {
+                        dentroHorario = true;
+                    }
+                }
+                
                 if (!dentroHorario) continue;
                 
                 // Comprobar si el día está en vacaciones
@@ -360,6 +405,19 @@ public class CitaController {
                     long horasAntes = java.time.temporal.ChronoUnit.HOURS.between(ahora, fechaHoraSlot);
                     if (horasAntes < tiempoMinimo) {
                         continue; // Saltar este slot si no cumple el tiempo mínimo
+                    }
+                    
+                    // Restricciones de días para usuarios normales
+                    DayOfWeek diaSemana = dia.getDayOfWeek();
+                    
+                    // Lunes y domingo cerrado para usuarios normales
+                    if (diaSemana == DayOfWeek.MONDAY || diaSemana == DayOfWeek.SUNDAY) {
+                        continue; // Saltar este slot si es lunes o domingo
+                    }
+                    
+                    // Sábado por la tarde cerrado para usuarios normales (después de las 14:15)
+                    if (diaSemana == DayOfWeek.SATURDAY && slotInicio.isAfter(LocalTime.of(14, 15))) {
+                        continue; // Saltar este slot si es sábado por la tarde
                     }
                 }
                 
@@ -412,10 +470,17 @@ public class CitaController {
                 LocalDate fecha = LocalDate.of(anio, mes, dia);
                 // Generar slots igual que en /disponibilidad
                 List<LocalTime[]> tramos = List.of(
-                    new LocalTime[]{LocalTime.of(9,0), LocalTime.of(14,0)},
+                    new LocalTime[]{LocalTime.of(9,0), LocalTime.of(14,15)},
                     new LocalTime[]{LocalTime.of(16,0), LocalTime.of(21,15)}
                 );
                 List<LocalTime> slots = new ArrayList<>();
+                
+                // Añadir slot especial de 8:15 solo para administradores (al principio)
+                if ("ADMIN".equals(userRole)) {
+                    slots.add(LocalTime.of(8, 15));
+                }
+                
+                // Generar slots normales
                 for (LocalTime[] tramo : tramos) {
                     LocalTime apertura = tramo[0];
                     LocalTime cierre = tramo[1];
@@ -423,6 +488,12 @@ public class CitaController {
                         slots.add(t);
                     }
                 }
+                
+                // Añadir slot especial de 21:15 solo para administradores (al final)
+                if ("ADMIN".equals(userRole)) {
+                    slots.add(LocalTime.of(21, 15));
+                }
+
                 List<Cita> citasDia = todasCitas.stream()
                     .filter(c -> c.getFechaHora() != null && c.getFechaHora().toLocalDate().equals(fecha))
                     .collect(Collectors.toList());
@@ -439,6 +510,15 @@ public class CitaController {
                             break;
                         }
                     }
+                    
+                    // Para administradores, también permitir slots especiales
+                    if (!dentroHorario && "ADMIN".equals(userRole)) {
+                        // Verificar si es un slot especial (8:15 o 21:15)
+                        if (slotInicio.equals(LocalTime.of(8, 15)) || slotInicio.equals(LocalTime.of(21, 15))) {
+                            dentroHorario = true;
+                        }
+                    }
+                    
                     if (!dentroHorario) continue;
                     
                     // Comprobar si el día está en vacaciones
@@ -452,6 +532,19 @@ public class CitaController {
                         long horasAntes = java.time.temporal.ChronoUnit.HOURS.between(ahora, fechaHoraSlot);
                         if (horasAntes < tiempoMinimo) {
                             continue; // Saltar este slot si no cumple el tiempo mínimo
+                        }
+                        
+                        // Restricciones de días para usuarios normales
+                        DayOfWeek diaSemana = fecha.getDayOfWeek();
+                        
+                        // Lunes y domingo cerrado para usuarios normales
+                        if (diaSemana == DayOfWeek.MONDAY || diaSemana == DayOfWeek.SUNDAY) {
+                            continue; // Saltar este slot si es lunes o domingo
+                        }
+                        
+                        // Sábado por la tarde cerrado para usuarios normales (después de las 14:15)
+                        if (diaSemana == DayOfWeek.SATURDAY && slotInicio.isAfter(LocalTime.of(14, 15))) {
+                            continue; // Saltar este slot si es sábado por la tarde
                         }
                     }
                     

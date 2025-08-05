@@ -5,6 +5,7 @@ interface User {
   email?: string;
   nombre?: string;
   rol?: string;
+  baneado?: boolean;
 }
 
 interface AuthContextType {
@@ -24,11 +25,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const token = localStorage.getItem('authToken');
     if (token) {
       setLoading(true);
-      fetch('http://localhost:8080/api/usuarios/perfil', {
+      
+      // Primero verificar el estado del usuario (incluyendo baneo)
+      fetch('http://localhost:8080/api/usuarios/estado', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
         .then(async res => {
           if (!res.ok) throw new Error('No autorizado');
+          return res.json();
+        })
+        .then(estadoData => {
+          // Si el usuario está baneado, cerrar sesión automáticamente
+          if (estadoData.baneado) {
+            localStorage.removeItem('authToken');
+            setUserState(null);
+            setLoading(false);
+            alert('Tu cuenta ha sido suspendida. Contacta con el administrador para más información.');
+            return;
+          }
+          
+          // Si no está baneado, obtener el perfil completo
+          return fetch('http://localhost:8080/api/usuarios/perfil', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+        })
+        .then(async res => {
+          if (!res || !res.ok) throw new Error('No autorizado');
           return res.json();
         })
         .then(data => {
@@ -36,6 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             email: data.email,
             nombre: data.nombre,
             rol: data.rol || data.role || 'CLIENTE',
+            baneado: false, // Ya verificamos que no está baneado
           });
           setLoading(false);
         })

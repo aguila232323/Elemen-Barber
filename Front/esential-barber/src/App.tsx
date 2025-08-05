@@ -97,7 +97,7 @@ function AppContent() {
         <Toast message="¡Inicio de sesión exitoso!" type="success" onClose={() => setShowLoginToast(false)} />
       )}
       <footer className="footer">
-        © {new Date().getFullYear()} Esential Barber. Todos los derechos reservados.
+        © {new Date().getFullYear()} Esential Barber. Todos los derechos reservados. | Contacto: elemenbarber@gmail.com
       </footer>
     </div>
   );

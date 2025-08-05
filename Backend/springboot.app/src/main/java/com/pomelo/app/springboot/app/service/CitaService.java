@@ -93,6 +93,15 @@ public class CitaService {
                 throw new RuntimeException("No se pueden cancelar citas pasadas");
             }
 
+            // Validar que la cancelación sea al menos 2 horas antes de la cita
+            LocalDateTime ahora = LocalDateTime.now();
+            LocalDateTime fechaCita = cita.getFechaHora();
+            long horasAntes = java.time.temporal.ChronoUnit.HOURS.between(ahora, fechaCita);
+            
+            if (horasAntes < 2) {
+                throw new RuntimeException("No se pueden cancelar citas con menos de 2 horas de antelación");
+            }
+
             // Si es una cita periódica, borrar todas las citas periódicas del usuario
             if (cita.isFija() && cita.getPeriodicidadDias() != null && cita.getPeriodicidadDias() > 0) {
                 List<Cita> citasPeriodicas = citaRepository.findByClienteAndFijaTrueAndPeriodicidadDiasIsNotNull(cita.getCliente());
