@@ -186,4 +186,33 @@ public class UsuarioController {
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }
+
+    @PutMapping("/avatar")
+    @Operation(summary = "Actualizar avatar", description = "Actualiza el avatar del usuario autenticado")
+    public ResponseEntity<Map<String, Object>> actualizarAvatar(@AuthenticationPrincipal UserDetails userDetails, @RequestBody Map<String, String> request) {
+        try {
+            String avatar = request.get("avatar");
+            if (avatar == null || avatar.trim().isEmpty()) {
+                throw new RuntimeException("El avatar es requerido");
+            }
+            
+            // Buscar usuario por email para obtener el ID
+            Usuario usuario = usuarioService.findByEmail(userDetails.getUsername());
+            if (usuario == null) {
+                throw new RuntimeException("Usuario no encontrado");
+            }
+            
+            Usuario usuarioActualizado = usuarioService.actualizarAvatar(usuario.getId(), avatar);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Avatar actualizado correctamente");
+            response.put("usuario", usuarioActualizado);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Error al actualizar el avatar: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
 }

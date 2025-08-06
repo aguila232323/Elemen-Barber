@@ -361,24 +361,29 @@
   bottom: 8px;
   right: 8px;
   background: #1976d2;
-  color: #fff;
+  color: #ffffff;
   border-radius: 50%;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border: 2px solid #fff;
-  box-shadow: 0 2px 8px rgba(25,118,210,0.13);
-  font-size: 1.3rem;
-  transition: background 0.2s, transform 0.2s;
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
   z-index: 2;
+  min-width: 40px;
+  min-height: 40px;
+  max-width: 40px;
+  max-height: 40px;
 }
 
 .profileImageEdit:hover {
-  background: #1251a3;
-  transform: scale(1.08);
+  background: #1565c0;
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(25, 118, 210, 0.6);
 }
 
 /* ===== RESPONSIVE DESIGN MEJORADO ===== */
@@ -489,8 +494,12 @@
   }
   
   .profileImageEdit {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    max-width: 36px;
+    max-height: 36px;
     font-size: 1.1rem;
     bottom: 6px;
     right: 6px;
@@ -589,8 +598,12 @@
   }
   
   .profileImageEdit {
-    width: 30px;
-    height: 30px;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+    max-width: 34px;
+    max-height: 34px;
     font-size: 1rem;
     bottom: 5px;
     right: 5px;
@@ -697,8 +710,12 @@
   }
   
   .profileImageEdit {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    max-width: 32px;
+    max-height: 32px;
     font-size: 0.9rem;
     bottom: 4px;
     right: 4px;
@@ -791,8 +808,12 @@
   }
   
   .profileImageEdit {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    min-height: 28px;
+    max-width: 28px;
+    max-height: 28px;
     font-size: 0.8rem;
     bottom: 3px;
     right: 3px;
@@ -1248,5 +1269,74 @@
   .modalBtnConfirm {
     padding: 0.7rem 1.2rem;
     font-size: 0.9rem;
+  }
+}
+
+/* Estilos para el selector de avatares */
+.avatarGrid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 0.8rem;
+  margin-top: 1rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 1rem;
+  background: #2a2a2a;
+  border-radius: 8px;
+  border: 1px solid #444;
+  scrollbar-width: thin;
+  scrollbar-color: #667eea #2a2a2a;
+}
+
+.avatarGrid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.avatarGrid::-webkit-scrollbar-track {
+  background: #2a2a2a;
+  border-radius: 4px;
+}
+
+.avatarGrid::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 4px;
+}
+
+.avatarGrid::-webkit-scrollbar-thumb:hover {
+  background: #5a6fd8;
+}
+
+.avatarOption {
+  transition: all 0.3s ease;
+  border: 2px solid #444;
+  background: #2a2a2a;
+  color: #fff;
+}
+
+.avatarOption:hover {
+  transform: scale(1.1);
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.avatarSelected {
+  border-color: #667eea !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+}
+
+@media (max-width: 768px) {
+  .avatarGrid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.7rem;
+    max-height: 350px;
+  }
+}
+
+@media (max-width: 480px) {
+  .avatarGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.6rem;
+    max-height: 300px;
   }
 } 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styles from './Perfil.module.css';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSave, FaTimes, FaSignOutAlt, FaLock, FaEye, FaEyeSlash, FaCheckCircle, FaTrash } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSave, FaTimes, FaSignOutAlt, FaLock, FaEye, FaEyeSlash, FaCheckCircle, FaTrash, FaUserEdit } from 'react-icons/fa';
 import defaultProfile from '../../../assets/images/usuario.png';
 
 // Función para generar avatar genérico basado en el nombre
@@ -24,6 +24,26 @@ const generarAvatar = (nombre: string): string => {
   
   return avatares[hash % avatares.length];
 };
+
+// Array de avatares mejorados para el selector
+const avataresMejorados = [
+  // Personas profesionales
+  '👨‍💼', '👩‍💼', '👨‍⚕️', '👩‍⚕️', '👨‍🎓', '👩‍🎓', '👨‍🏫', '👩‍🏫',
+  // Personas con diferentes estilos de pelo
+  '👨‍🦱', '👩‍🦰', '👨‍🦳', '👩‍🦳', '👨‍🦲', '👩‍🦲', '👨‍🦰', '👩‍🦱',
+  // Personas con diferentes profesiones
+  '👨‍💻', '👩‍💻', '👨‍🔧', '👩‍🔧', '👨‍🚀', '👩‍🚀', '👨‍🎨', '👩‍🎨',
+  // Personas con diferentes edades y estilos
+  '🧑‍🦱', '🧑‍🦰', '🧑‍🦳', '🧑‍🦲', '🧑‍🦰', '🧑‍🦱', '🧑‍🦳', '🧑‍🦲',
+  // Personas con diferentes expresiones
+  '😊', '😄', '😎', '🤓', '😌', '😇', '🤠', '🦸‍♂️', '🦸‍♀️', '🧙‍♂️', '🧙‍♀️',
+  // Personas con diferentes actividades
+  '🏃‍♂️', '🏃‍♀️', '🚴‍♂️', '🚴‍♀️', '🏊‍♂️', '🏊‍♀️', '⛷️', '🏂',
+  // Personas con diferentes hobbies
+  '🎸', '🎹', '🎨', '📚', '🎮', '🎯', '🎪', '🎭',
+  // Personas con diferentes estilos
+  '👨‍🦱', '👩‍🦰', '👨‍🦳', '👩‍🦳', '👨‍🦲', '👩‍🦲', '👨‍🦰', '👩‍🦱'
+];
 
 // Función para verificar si una URL de imagen es válida
 const isValidImageUrl = (url: string): boolean => {
@@ -53,6 +73,7 @@ interface Usuario {
   email: string;
   telefono: string;
   googlePictureUrl?: string;
+  avatar?: string;
 }
 
 interface CampoEditando {
@@ -96,6 +117,8 @@ const Perfil: React.FC = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [showPasswordError, setShowPasswordError] = useState(false);
+  const [showAvatarSelector, setShowAvatarSelector] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState<string>('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -119,8 +142,13 @@ const Perfil: React.FC = () => {
           nombre: data.nombre, 
           email: data.email, 
           telefono: data.telefono || '',
-          googlePictureUrl: data.googlePictureUrl || null
+          googlePictureUrl: data.googlePictureUrl || null,
+          avatar: data.avatar || null
         });
+        // Establecer el avatar seleccionado si existe
+        if (data.avatar) {
+          setSelectedAvatar(data.avatar);
+        }
         // No necesitamos setProfileImage porque usamos googlePictureUrl directamente
         setProfileImage(null); // Set profile image from backend
         setLoading(false);
@@ -156,6 +184,51 @@ const Perfil: React.FC = () => {
       };
       reader.readAsDataURL(e.target.files[0]);
     }
+  };
+
+  const handleAvatarSelection = async (avatar: string) => {
+    setSelectedAvatar(avatar);
+    setShowAvatarSelector(false);
+    
+    // Guardar el avatar en el backend
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.error('No hay token de autenticación');
+        return;
+      }
+
+      const res = await fetch('http://localhost:8080/api/usuarios/avatar', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ avatar })
+      });
+
+      if (!res.ok) {
+        let errorMessage = 'Error al guardar el avatar';
+        try {
+          const errorData = await res.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (jsonError) {
+          errorMessage = `Error ${res.status}: ${res.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      setMensaje('Avatar actualizado correctamente');
+      console.log('Avatar guardado exitosamente:', avatar);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al guardar el avatar');
+      console.error('Error al guardar avatar:', err);
+    }
+  };
+
+  const openAvatarSelector = () => {
+    setSelectedAvatar(generarAvatar(usuario.nombre));
+    setShowAvatarSelector(true);
   };
 
   const iniciarEdicion = (campo: keyof CampoEditando) => {
@@ -451,18 +524,18 @@ const Perfil: React.FC = () => {
               boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
             }}
           >
-            {generarAvatar(usuario.nombre)}
+            {selectedAvatar || generarAvatar(usuario.nombre)}
           </div>
-          <label htmlFor="profileImageInput" className={styles.profileImageEdit}>
-            <FaEdit />
-          </label>
-          <input
-            id="profileImageInput"
-            type="file"
-            accept="image/*"
-            style={{ display: 'none' }}
-            onChange={handleProfileImageChange}
-          />
+          {/* Solo mostrar botón de editar si no tiene foto de Google */}
+          {!usuario.googlePictureUrl && (
+            <button 
+              className={styles.profileImageEdit}
+              onClick={openAvatarSelector}
+              title="Cambiar avatar"
+            >
+              <FaUserEdit />
+            </button>
+          )}
         </div>
       </div>
       <div className={styles.perfilHeader}>
@@ -848,6 +921,68 @@ const Perfil: React.FC = () => {
                 ) : (
                   'Eliminar Cuenta'
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal selector de avatares */}
+      {showAvatarSelector && (
+        <div className={styles.modalOverlay} onClick={() => setShowAvatarSelector(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <FaUser className={styles.modalIcon} />
+              <h3 className={styles.modalTitle}>Seleccionar Avatar</h3>
+            </div>
+            <div className={styles.modalBody}>
+              <p className={styles.modalText}>
+                Elige un avatar para tu perfil:
+              </p>
+              <div className={styles.avatarGrid}>
+                {avataresMejorados.map((avatar, index) => (
+                  <button
+                    key={index}
+                    className={`${styles.avatarOption} ${selectedAvatar === avatar ? styles.avatarSelected : ''}`}
+                    onClick={() => handleAvatarSelection(avatar)}
+                    style={{
+                      fontSize: '1.8rem',
+                      padding: '8px',
+                      border: selectedAvatar === avatar ? '3px solid #667eea' : '2px solid #444',
+                      borderRadius: '50%',
+                      background: selectedAvatar === avatar ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#2a2a2a',
+                      color: selectedAvatar === avatar ? 'white' : '#fff',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      width: '50px',
+                      height: '50px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minWidth: '50px',
+                      minHeight: '50px'
+                    }}
+                  >
+                    {avatar}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className={styles.modalActions}>
+              <button 
+                className={styles.modalBtnCancel}
+                onClick={() => setShowAvatarSelector(false)}
+              >
+                Cancelar
+              </button>
+              <button 
+                className={styles.modalBtnConfirm}
+                onClick={() => {
+                  setShowAvatarSelector(false);
+                  // Aquí podrías guardar el avatar en el backend
+                }}
+              >
+                Confirmar
               </button>
             </div>
           </div>

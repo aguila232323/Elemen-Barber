@@ -52,6 +52,9 @@ public class Usuario {
     @Column(name = "google_picture_url", length = 500)
     private String googlePictureUrl;
 
+    @Column(name = "avatar", length = 10, columnDefinition = "VARCHAR(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+    private String avatar;
+
     public String getEmail(){
         return email;
     }
@@ -170,5 +173,13 @@ public class Usuario {
 
     public void setGooglePictureUrl(String googlePictureUrl) {
         this.googlePictureUrl = googlePictureUrl;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 }

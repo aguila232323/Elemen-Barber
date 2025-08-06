@@ -416,4 +416,22 @@ public class UsuarioService {
             throw new RuntimeException("Error al desbanear usuario: " + e.getMessage(), e);
         }
     }
+
+    /**
+     * Actualiza el avatar de un usuario específico
+     */
+    public Usuario actualizarAvatar(Long id, String avatar) {
+        try {
+            Optional<Usuario> usuario = usuarioRepository.findById(id);
+            if (usuario.isPresent()) {
+                Usuario user = usuario.get();
+                user.setAvatar(avatar);
+                return usuarioRepository.save(user);
+            } else {
+                throw new RuntimeException("Usuario no encontrado con ID: " + id);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error al actualizar avatar: " + e.getMessage(), e);
+        }
+    }
 }
