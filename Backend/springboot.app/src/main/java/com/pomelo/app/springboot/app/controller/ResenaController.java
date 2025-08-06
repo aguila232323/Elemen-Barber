@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,7 @@ import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/resenas")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"}, allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 @Tag(name = "Reseñas", description = "Endpoints para gestión de reseñas")
 public class ResenaController {
 
@@ -99,9 +100,16 @@ public class ResenaController {
                 if (resena.getCliente() != null) {
                     Map<String, Object> clienteMap = new HashMap<>();
                     clienteMap.put("nombre", resena.getCliente().getNombre());
-                    // Avatar genérico basado en el nombre
-                    String avatar = generarAvatar(resena.getCliente().getNombre());
+                    
+                    // Priorizar foto de Google, si no hay, usar avatar genérico
+                    String avatar;
+                    if (resena.getCliente().getGooglePictureUrl() != null && !resena.getCliente().getGooglePictureUrl().isEmpty()) {
+                        avatar = resena.getCliente().getGooglePictureUrl();
+                    } else {
+                        avatar = generarAvatar(resena.getCliente().getNombre());
+                    }
                     clienteMap.put("avatar", avatar);
+                    clienteMap.put("isGooglePicture", resena.getCliente().getGooglePictureUrl() != null && !resena.getCliente().getGooglePictureUrl().isEmpty());
                     resenaMap.put("cliente", clienteMap);
                 }
                 

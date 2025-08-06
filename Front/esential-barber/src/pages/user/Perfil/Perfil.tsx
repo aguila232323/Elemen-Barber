@@ -24,6 +24,21 @@ const generarAvatar = (nombre: string): string => {
   
   return avatares[hash % avatares.length];
 };
+
+// Función para verificar si una URL de imagen es válida
+const isValidImageUrl = (url: string): boolean => {
+  if (!url || url.trim() === '') return false;
+  
+  // Verificar que sea una URL válida
+  try {
+    new URL(url);
+  } catch {
+    return false;
+  }
+  
+  // Verificar que sea una URL de Google
+  return url.includes('googleusercontent.com') || url.includes('lh3.googleusercontent.com');
+};
 import { 
   validateSpanishPhone, 
   normalizePhoneForStorage, 
@@ -37,6 +52,7 @@ interface Usuario {
   nombre: string;
   email: string;
   telefono: string;
+  googlePictureUrl?: string;
 }
 
 interface CampoEditando {
@@ -95,8 +111,18 @@ const Perfil: React.FC = () => {
         return res.json();
       })
       .then(data => {
-        setUsuario({ nombre: data.nombre, email: data.email, telefono: data.telefono || '' });
-        setProfileImage(data.imagenUrl || null); // Set profile image from backend
+        console.log('Datos del perfil recibidos:', data);
+        console.log('googlePictureUrl:', data.googlePictureUrl);
+        console.log('Tipo de googlePictureUrl:', typeof data.googlePictureUrl);
+        console.log('¿Es URL válida?:', data.googlePictureUrl ? isValidImageUrl(data.googlePictureUrl) : false);
+        setUsuario({ 
+          nombre: data.nombre, 
+          email: data.email, 
+          telefono: data.telefono || '',
+          googlePictureUrl: data.googlePictureUrl || null
+        });
+        // No necesitamos setProfileImage porque usamos googlePictureUrl directamente
+        setProfileImage(null); // Set profile image from backend
         setLoading(false);
       })
       .catch((err) => {
@@ -384,31 +410,49 @@ const Perfil: React.FC = () => {
     <div className={styles.perfilCont}>
       <div className={styles.profileImageSection}>
         <div className={styles.profileImageContainer}>
-          {profileImage ? (
+          {(() => { 
+            console.log('Renderizando perfil - googlePictureUrl:', usuario.googlePictureUrl);
+            console.log('usuario completo:', usuario);
+            return null; 
+          })()}
+          {usuario.googlePictureUrl && isValidImageUrl(usuario.googlePictureUrl) ? (
             <img
-              src={profileImage}
-              alt="Imagen de perfil"
-              className={styles.profileImage}
-            />
-          ) : (
-            <div 
+              src={usuario.googlePictureUrl}
+              alt="Imagen de perfil de Google"
               className={styles.profileImage}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '3rem',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
                 borderRadius: '50%',
-                width: '100%',
-                height: '100%',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+                objectFit: 'cover'
               }}
-            >
-              {generarAvatar(usuario.nombre)}
-            </div>
-          )}
+              onError={(e) => {
+                console.log('Error cargando imagen de Google:', e);
+                console.log('URL que falló:', usuario.googlePictureUrl);
+                // Ocultar la imagen de Google y mostrar el avatar genérico
+                e.currentTarget.style.display = 'none';
+                const fallbackAvatar = e.currentTarget.parentElement?.querySelector('.fallback-avatar');
+                if (fallbackAvatar) {
+                  (fallbackAvatar as HTMLElement).style.display = 'flex';
+                }
+              }}
+            />
+          ) : null}
+          <div 
+            className={`${styles.profileImage} fallback-avatar`}
+            style={{
+              display: usuario.googlePictureUrl && isValidImageUrl(usuario.googlePictureUrl) ? 'none' : 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '3rem',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              borderRadius: '50%',
+              width: '100%',
+              height: '100%',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+            }}
+          >
+            {generarAvatar(usuario.nombre)}
+          </div>
           <label htmlFor="profileImageInput" className={styles.profileImageEdit}>
             <FaEdit />
           </label>

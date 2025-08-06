@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Optional;
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 @Service
 public class ResenaService {
@@ -81,7 +82,10 @@ public class ResenaService {
 
     // Obtener reseñas públicas limitadas
     public List<Resena> obtenerResenasPublicasLimitadas(int limit) {
-        return resenaRepository.findResenasPublicasLimitadas(limit);
+        List<Resena> todasLasResenas = resenaRepository.findResenasPublicas();
+        return todasLasResenas.stream()
+            .limit(limit)
+            .collect(Collectors.toList());
     }
 
     // Obtener estadísticas de reseñas

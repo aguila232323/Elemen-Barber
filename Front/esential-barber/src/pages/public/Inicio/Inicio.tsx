@@ -84,11 +84,20 @@ const Inicio: React.FC = () => {
   useEffect(() => {
     const cargarResenas = async () => {
       try {
-        const res = await fetch('http://localhost:8080/api/resenas/publicas');
+        const res = await fetch('http://localhost:8080/api/resenas/publicas', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          mode: 'cors'
+        });
         if (res.ok) {
           const data = await res.json();
           setResenas(data.resenas || []);
           setEstadisticasResenas(data.estadisticas || {});
+        } else {
+          console.error('Error en la respuesta:', res.status, res.statusText);
         }
       } catch (error) {
         console.error('Error cargando reseñas:', error);
@@ -323,9 +332,27 @@ const Inicio: React.FC = () => {
                         justifyContent: 'center',
                         fontSize: '2rem',
                         boxShadow: `0 6px 20px ${color.accent}40`,
-                        border: `3px solid ${color.accent}30`
+                        border: `3px solid ${color.accent}30`,
+                        overflow: 'hidden'
                       }}>
-                        {resenas.length > 0 && !loadingResenas ? (review.cliente?.avatar || '👤') : review.avatar}
+                        {resenas.length > 0 && !loadingResenas ? (
+                          review.cliente?.isGooglePicture ? (
+                            <img 
+                              src={review.cliente.avatar} 
+                              alt="Foto de perfil"
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                borderRadius: '50%'
+                              }}
+                            />
+                          ) : (
+                            <span>{review.cliente?.avatar || '👤'}</span>
+                          )
+                        ) : (
+                          <span>{review.avatar}</span>
+                        )}
                       </div>
                       <div>
                         <div style={{

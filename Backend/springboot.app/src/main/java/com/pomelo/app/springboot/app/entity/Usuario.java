@@ -49,6 +49,9 @@ public class Usuario {
     @Column(nullable = false)
     private Boolean baneado = false;
 
+    @Column(name = "google_picture_url", length = 500)
+    private String googlePictureUrl;
+
     public String getEmail(){
         return email;
     }
@@ -159,5 +162,13 @@ public class Usuario {
 
     public void setBaneado(Boolean baneado) {
         this.baneado = baneado;
+    }
+
+    public String getGooglePictureUrl() {
+        return googlePictureUrl;
+    }
+
+    public void setGooglePictureUrl(String googlePictureUrl) {
+        this.googlePictureUrl = googlePictureUrl;
     }
 }

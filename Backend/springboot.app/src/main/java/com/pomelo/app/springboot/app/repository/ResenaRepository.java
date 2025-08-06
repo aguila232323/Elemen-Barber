@@ -37,6 +37,6 @@ public interface ResenaRepository extends JpaRepository<Resena, Long> {
     Long getTotalResenas();
     
     // Obtener reseñas con límite para la página principal
-    @Query("SELECT r FROM Resena r WHERE r.comentario IS NOT NULL AND r.comentario != '' ORDER BY r.fechaCreacion DESC LIMIT :limit")
+    @Query("SELECT r FROM Resena r WHERE r.comentario IS NOT NULL AND r.comentario != '' ORDER BY r.fechaCreacion DESC")
     List<Resena> findResenasPublicasLimitadas(@Param("limit") int limit);
 } 
