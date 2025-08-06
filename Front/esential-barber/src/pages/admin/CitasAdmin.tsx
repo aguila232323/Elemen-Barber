@@ -15,6 +15,8 @@ interface Servicio {
   descripcion: string;
   precio: number;
   duracionMinutos: number;
+  emoji?: string;
+  textoDescriptivo?: string;
 }
 
 interface Usuario {
@@ -81,13 +83,16 @@ const MobileDayView = ({ events, selectedDate, onEventClick, onAddEvent }: any) 
     return events.filter((event: any) => {
       const eventStart = moment(event.start);
       const eventEnd = moment(event.end);
-      return eventStart.isSame(timeSlot, 'hour') && eventStart.minute() === timeSlot.minute();
+      // Un evento está en un slot si comienza en ese slot o si el slot está dentro del evento
+      return (eventStart.isSame(timeSlot, 'hour') && eventStart.minute() === timeSlot.minute()) ||
+             (eventStart.isBefore(timeSlot) && eventEnd.isAfter(timeSlot));
     });
   };
 
   const isCurrentTime = (timeSlot: moment.Moment) => {
-    return timeSlot.isSame(currentTime, 'hour') && 
-           Math.abs(timeSlot.minute() - currentTime.getMinutes()) <= 15;
+    const now = moment();
+    return timeSlot.isSame(now, 'hour') && 
+           Math.abs(timeSlot.minute() - now.minute()) <= 15;
   };
 
   const getDayEvents = (date: moment.Moment) => {
@@ -110,21 +115,13 @@ const MobileDayView = ({ events, selectedDate, onEventClick, onAddEvent }: any) 
     return Math.round((occupiedSlots / totalSlots) * 100);
   };
 
-  // Calcular posición y altura de eventos corregida
+  // Calcular posición y altura de eventos simplificado
   const calculateEventPosition = (event: any) => {
     const start = moment(event.start);
     const end = moment(event.end);
     
-    // Determinar altura del slot según el tamaño de pantalla (debe coincidir con CSS)
-    const getSlotHeight = () => {
-      if (windowWidth <= 360) return 45;
-      if (windowWidth <= 480) return 50;
-      if (windowWidth <= 768) return 55;
-      if (windowWidth <= 1024) return 60;
-      return 65;
-    };
-    
-    const slotHeight = getSlotHeight();
+    // Altura fija del slot (debe coincidir exactamente con CSS)
+    const slotHeight = 30; // 30px por slot de 15 minutos
     
     // Calcular posición top basada en la hora exacta
     const startHour = start.hour();
@@ -135,24 +132,34 @@ const MobileDayView = ({ events, selectedDate, onEventClick, onAddEvent }: any) 
     const slotIndex = (startHour - 9) * 4 + Math.floor(startMinute / 15);
     const topPosition = slotIndex * slotHeight;
     
+    // Calcular altura basada en la duración en minutos
+    const durationMinutes = end.diff(start, 'minutes');
+    const height = Math.ceil(durationMinutes / 15) * slotHeight;
+    
     // Debug: Mostrar información del cálculo
     console.log(`Evento: ${event.usuario?.nombre} - ${start.format('HH:mm')}`, {
       startHour,
       startMinute,
       slotIndex,
       topPosition,
+      durationMinutes,
+      height,
       slotHeight,
-      windowWidth
+      startTime: start.format('HH:mm'),
+      endTime: end.format('HH:mm'),
+      // Debug adicional
+      expectedSlots: Math.floor(startMinute / 15),
+      actualTop: topPosition,
+      expectedTop: slotIndex * slotHeight,
+      // Debug de altura
+      slotsNeeded: Math.ceil(durationMinutes / 15),
+      expectedHeight: Math.ceil(durationMinutes / 15) * slotHeight
     });
-    
-    // Calcular altura basada en la duración exacta (más compacta)
-    const durationMinutes = end.diff(start, 'minutes');
-    const height = Math.max((durationMinutes / 15) * slotHeight * 0.9, slotHeight * 0.4); // Reducir altura
     
     return { top: topPosition, height };
   };
 
-  // Calcular posición de la línea de tiempo actual corregida
+  // Calcular posición de la línea de tiempo actual simplificado
   const calculateCurrentTimePosition = () => {
     const now = moment();
     const currentHour = now.hour();
@@ -160,18 +167,11 @@ const MobileDayView = ({ events, selectedDate, onEventClick, onAddEvent }: any) 
     
     if (currentHour < 9 || currentHour > 19) return -100; // Fuera del horario
     
-    // Determinar altura del slot según el tamaño de pantalla
-    const getSlotHeight = () => {
-      if (windowWidth <= 360) return 45;
-      if (windowWidth <= 480) return 50;
-      if (windowWidth <= 768) return 55;
-      if (windowWidth <= 1024) return 60;
-      return 65;
-    };
+    // Altura fija del slot (debe coincidir exactamente con CSS)
+    const slotHeight = 30; // 30px por slot de 15 minutos
     
-    const slotHeight = getSlotHeight();
-    
-    // Calcular el índice del slot actual desde las 9:00
+    // Calcular el índice del slot desde las 9:00
+    // Cada hora tiene 4 slots de 15 minutos
     const slotIndex = (currentHour - 9) * 4 + Math.floor(currentMinute / 15);
     return slotIndex * slotHeight;
   };
@@ -280,7 +280,8 @@ const MobileDayView = ({ events, selectedDate, onEventClick, onAddEvent }: any) 
                   style={{
                     top: `${top}px`,
                     height: `${height}px`,
-                    backgroundColor: getEventColor(event.servicio?.nombre)
+                    backgroundColor: getEventColor(event.servicio?.nombre),
+                    border: '2px solid red' // Debug visual temporal
                   }}
                   onClick={() => onEventClick(event)}
                 >
@@ -298,7 +299,7 @@ const MobileDayView = ({ events, selectedDate, onEventClick, onAddEvent }: any) 
                   {event.comentario && (
                     <div className="mobile-event-icon">💬</div>
                   )}
-                  {event.fija && (event.periodicidadDias || 0) > 0 && (
+                  {event.periodicidadDias && (
                     <div className="mobile-event-periodic">🔄</div>
                   )}
                 </div>
@@ -323,39 +324,24 @@ const MobileDayView = ({ events, selectedDate, onEventClick, onAddEvent }: any) 
 
 // Función para obtener color según el servicio
 const getEventColor = (serviceName: string) => {
-  const service = serviceName?.toLowerCase() || '';
-  if (service.includes('corte')) return '#4CAF50';
-  if (service.includes('tinte')) return '#2196F3';
-  if (service.includes('mecha')) return '#9C27B0';
-  if (service.includes('barba')) return '#FF9800';
-  if (service.includes('peinado')) return '#E91E63';
-  if (service.includes('tratamiento')) return '#795548';
-  return '#607D8B';
+  const colors: { [key: string]: string } = {
+    'Corte': '#4CAF50',
+    'Barba': '#2196F3',
+    'Corte + Barba': '#FF9800',
+    'Tinte': '#9C27B0',
+    'Peinado': '#E91E63',
+    'Tratamiento': '#607D8B',
+    'Otros': '#795548'
+  };
+  
+  return colors[serviceName] || '#4CAF50';
 };
 
 // Datos de ejemplo para demostración
 const getExampleEvents = () => {
-  const today = moment();
-  return [
-    {
-      id: 1,
-      start: today.clone().hour(9).minute(0).toDate(),
-      end: today.clone().hour(9).minute(45).toDate(),
-      title: 'Corte de cabello',
-      usuario: { nombre: 'alvaro' },
-      servicio: { nombre: 'Corte', duracionMinutos: 45 },
-      statusLabel: 'Pendiente'
-    },
-    {
-      id: 2,
-      start: today.clone().hour(9).minute(45).toDate(),
-      end: today.clone().hour(10).minute(30).toDate(),
-      title: 'Corte de cabello',
-      usuario: { nombre: 'hola' },
-      servicio: { nombre: 'Corte', duracionMinutos: 45 },
-      statusLabel: 'Pendiente'
-    }
-  ];
+  // Retornar array vacío para usar solo datos reales del backend
+  // Las citas canceladas ya están filtradas en el array 'events'
+  return [];
 };
 
 // Toolbar profesional personalizado con responsive
@@ -544,11 +530,14 @@ const CitasAdmin: React.FC = () => {
   }, []);
 
   // Convertir citas al formato del calendario
-  const events = citas.map(cita => {
+  // Las citas canceladas ya están filtradas en el backend, pero mantenemos el filtro aquí como seguridad adicional
+  const events = citas
+    .filter(cita => cita.estado !== 'cancelada') // Filtrar citas canceladas
+    .map(cita => {
     const status = getCitaStatus(new Date(cita.fechaHora), cita.servicio?.duracionMinutos || 45, cita.estado);
     return {
       id: cita.id,
-      title: `${cita.usuario?.nombre} - ${cita.servicio?.nombre}`,
+                      title: `${cita.usuario?.nombre} - ${cita.servicio?.emoji || ''} ${cita.servicio?.nombre}`,
       start: new Date(cita.fechaHora),
       end: moment(cita.fechaHora).add(cita.servicio?.duracionMinutos || 45, 'minutes').toDate(),
       resource: cita,

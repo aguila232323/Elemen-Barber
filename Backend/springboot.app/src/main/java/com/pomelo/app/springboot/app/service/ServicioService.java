@@ -75,6 +75,14 @@ public class ServicioService {
                 if (servicioActualizado.getDuracionMinutos() > 0) {
                     servicio.setDuracionMinutos(servicioActualizado.getDuracionMinutos());
                 }
+                // Actualizar emoji
+                if (servicioActualizado.getEmoji() != null) {
+                    servicio.setEmoji(servicioActualizado.getEmoji());
+                }
+                // Actualizar texto descriptivo
+                if (servicioActualizado.getTextoDescriptivo() != null) {
+                    servicio.setTextoDescriptivo(servicioActualizado.getTextoDescriptivo());
+                }
                 return servicioRepository.save(servicio);
             }).orElseThrow(() -> new RuntimeException("Servicio no encontrado"));
         } catch (Exception e) {

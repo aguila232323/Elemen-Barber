@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styles from './Perfil.module.css';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSave, FaTimes, FaSignOutAlt, FaLock, FaEye, FaEyeSlash, FaCheckCircle } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSave, FaTimes, FaSignOutAlt, FaLock, FaEye, FaEyeSlash, FaCheckCircle, FaTrash } from 'react-icons/fa';
 import defaultProfile from '../../../assets/images/usuario.png';
 import { 
   validateSpanishPhone, 
@@ -54,6 +54,11 @@ const Perfil: React.FC = () => {
     confirmar: false
   });
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [showPasswordError, setShowPasswordError] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -278,6 +283,74 @@ const Perfil: React.FC = () => {
     localStorage.removeItem('authToken');
     navigate('/');
     window.location.reload();
+  };
+
+  const handleDeleteAccount = () => {
+    setShowDeleteConfirm(true);
+    setError('');
+    setMensaje('');
+  };
+
+  const confirmDeleteAccount = () => {
+    setShowDeleteConfirm(false);
+    setShowPasswordModal(true);
+    setDeletePassword('');
+    setShowPasswordError(false);
+  };
+
+  const cancelDeleteAccount = () => {
+    setShowDeleteConfirm(false);
+    setShowPasswordModal(false);
+    setDeletePassword('');
+    setShowPasswordError(false);
+  };
+
+  const submitDeleteAccount = async () => {
+    if (!deletePassword.trim()) {
+      setShowPasswordError(true);
+      return;
+    }
+
+    setDeletingAccount(true);
+    setShowPasswordError(false);
+
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('No hay token de autenticación');
+      }
+
+      const res = await fetch('http://localhost:8080/api/usuarios/eliminar-cuenta', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ password: deletePassword })
+      });
+
+      if (!res.ok) {
+        let errorMessage = 'Error al eliminar la cuenta';
+        try {
+          const errorData = await res.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (jsonError) {
+          errorMessage = `Error ${res.status}: ${res.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Cuenta eliminada exitosamente
+      localStorage.removeItem('authToken');
+      setShowPasswordModal(false);
+      setDeletePassword('');
+      setDeletingAccount(false);
+      navigate('/');
+      window.location.reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al eliminar la cuenta');
+      setDeletingAccount(false);
+    }
   };
 
   if (loading) return (
@@ -570,6 +643,131 @@ const Perfil: React.FC = () => {
 
       {mensaje && <div className={styles.perfilMsg}>{mensaje}</div>}
       {error && <div className={styles.perfilError}>{error}</div>}
+
+      {/* Sección de eliminar cuenta */}
+      <div className={styles.deleteAccountSection}>
+        <div className={styles.deleteAccountHeader}>
+          <FaTrash className={styles.deleteAccountIcon} />
+          <span className={styles.deleteAccountTitle}>Eliminar Cuenta</span>
+        </div>
+        <div className={styles.deleteAccountContent}>
+          <button 
+            className={styles.deleteAccountBtn}
+            onClick={handleDeleteAccount}
+            disabled={deletingAccount}
+          >
+            {deletingAccount ? (
+              <>
+                <div className={styles.spinner}></div>
+                Eliminando cuenta...
+              </>
+            ) : (
+              <>
+                <FaTrash />
+                Eliminar mi cuenta
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Modal de confirmación de eliminación */}
+      {showDeleteConfirm && (
+        <div className={styles.modalOverlay} onClick={cancelDeleteAccount}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <FaTrash className={styles.modalIcon} />
+              <h3 className={styles.modalTitle}>Confirmar Eliminación</h3>
+            </div>
+            <div className={styles.modalBody}>
+              <p className={styles.modalText}>
+                ¿Estás seguro de que quieres eliminar tu cuenta? Esta acción es irreversible y no se puede deshacer.
+              </p>
+              <div className={styles.modalWarning}>
+                <strong>⚠️ Advertencia:</strong>
+                <ul>
+                  <li>Se eliminarán todos tus datos personales</li>
+                  <li>Se cancelarán todas tus citas pendientes</li>
+                  <li>No podrás recuperar tu cuenta</li>
+                  <li>Perderás acceso a todos los servicios</li>
+                </ul>
+              </div>
+            </div>
+            <div className={styles.modalActions}>
+              <button 
+                className={styles.modalBtnCancel}
+                onClick={cancelDeleteAccount}
+              >
+                Cancelar
+              </button>
+              <button 
+                className={styles.modalBtnConfirm}
+                onClick={confirmDeleteAccount}
+              >
+                Continuar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de contraseña */}
+      {showPasswordModal && (
+        <div className={styles.modalOverlay} onClick={cancelDeleteAccount}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <FaLock className={styles.modalIcon} />
+              <h3 className={styles.modalTitle}>Confirmar Contraseña</h3>
+            </div>
+            <div className={styles.modalBody}>
+              <p className={styles.modalText}>
+                Por favor, ingresa tu contraseña para confirmar la eliminación de tu cuenta:
+              </p>
+              <div className={styles.passwordInputContainer}>
+                <input
+                  type="password"
+                  className={`${styles.modalInput} ${showPasswordError ? styles.inputError : ''}`}
+                  value={deletePassword}
+                  onChange={(e) => {
+                    setDeletePassword(e.target.value);
+                    setShowPasswordError(false);
+                  }}
+                  placeholder="Ingresa tu contraseña"
+                  autoFocus
+                />
+                {showPasswordError && (
+                  <div className={styles.errorMessage}>
+                    La contraseña es requerida
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className={styles.modalActions}>
+              <button 
+                className={styles.modalBtnCancel}
+                onClick={cancelDeleteAccount}
+                disabled={deletingAccount}
+              >
+                Cancelar
+              </button>
+              <button 
+                className={styles.modalBtnConfirm}
+                onClick={submitDeleteAccount}
+                disabled={deletingAccount}
+              >
+                {deletingAccount ? (
+                  <>
+                    <div className={styles.spinner}></div>
+                    Eliminando...
+                  </>
+                ) : (
+                  'Eliminar Cuenta'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

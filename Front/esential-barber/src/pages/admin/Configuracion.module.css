@@ -156,6 +156,7 @@
   transform: scale(1.1);
 }
 
+/* Mejoras adicionales para los modales */
 .modal {
   background: linear-gradient(135deg, #181b22 0%, #0f1117 100%);
   color: #fff;
@@ -167,6 +168,10 @@
   border: 1px solid rgba(255,255,255,0.1);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: fit-content;
+  backdrop-filter: blur(10px);
 }
 
 .modal::before {
@@ -186,11 +191,19 @@
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid rgba(255,255,255,0.1);
+  position: relative;
+  z-index: 2;
 }
 
 .modalIcon {
   font-size: 1.5rem;
   color: #1976d2;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 .modalHeader h3 {
@@ -198,6 +211,7 @@
   font-size: 1.4rem;
   font-weight: 600;
   color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .formModal {
@@ -205,6 +219,9 @@
   flex-direction: column;
   gap: 1.2rem;
   margin-top: 1rem;
+  flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .input {
@@ -217,6 +234,8 @@
   outline: none;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
 }
 
 .input option {
@@ -229,6 +248,7 @@
   border: 2px solid #1976d2;
   box-shadow: 0 0 0 3px rgba(25,118,210,0.1);
   background: rgba(255,255,255,0.1);
+  transform: translateY(-1px);
 }
 
 .input::placeholder {
@@ -258,6 +278,8 @@
   min-width: 140px;
   justify-content: center;
 }
+
+
 
 .saveBtn {
   background: linear-gradient(135deg, #43b94a 0%, #2e7d32 100%);
@@ -299,6 +321,8 @@
   font-weight: 600;
   text-align: center;
   animation: slideIn 0.3s ease;
+  position: relative;
+  z-index: 2;
 }
 
 @keyframes slideIn {
@@ -316,12 +340,14 @@
   background: linear-gradient(135deg, rgba(67,185,74,0.2) 0%, rgba(46,125,50,0.2) 100%);
   color: #4caf50;
   border: 1px solid rgba(67,185,74,0.3);
+  box-shadow: 0 2px 8px rgba(67,185,74,0.2);
 }
 
 .error {
   background: linear-gradient(135deg, rgba(231,76,60,0.2) 0%, rgba(198,40,40,0.2) 100%);
   color: #f44336;
   border: 1px solid rgba(231,76,60,0.3);
+  box-shadow: 0 2px 8px rgba(231,76,60,0.2);
 }
 
 /* Separador entre secciones */
@@ -613,7 +639,7 @@
   }
   
   .modalBtnGroup {
-    justify-content: center;
+    justify-content: flex-end;
     flex-wrap: wrap;
     gap: 0.8rem;
     max-width: 100%;

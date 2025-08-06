@@ -19,6 +19,8 @@ interface Servicio {
   descripcion: string;
   precio: number;
   duracionMinutos: number;
+  emoji?: string;
+  textoDescriptivo?: string;
 }
 
 interface Usuario {

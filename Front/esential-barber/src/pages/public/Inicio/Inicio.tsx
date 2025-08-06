@@ -321,27 +321,17 @@ const Inicio: React.FC = () => {
 
       {/* Servicios Destacados */}
       <div className={styles.featuredServices}>
-        {[
-          {
-            icon: <span style={{fontSize:'2.7rem'}} role="img" aria-label="Tijeras">✂️</span>,
-            title: 'CORTES',
-            desc: 'Corte de pelo profesional adaptado a tu estilo. Asesoría personalizada, técnicas modernas y acabado impecable para que siempre luzcas tu mejor versión.'
-          },
-          {
-            icon: <span style={{fontSize:'2.7rem'}} role="img" aria-label="Tinte">🧴</span>,
-            title: 'TINTES',
-            desc: 'Coloración y matiz para un look renovado. Trabajamos con productos de alta calidad para cuidar tu cabello y lograr el tono perfecto que buscas.'
-          },
-          {
-            icon: <span style={{fontSize:'2.7rem'}} role="img" aria-label="Mechas">✨</span>,
-            title: 'MECHAS',
-            desc: 'Mechas y coloración profesional para dar vida a tu cabello. Técnicas modernas de mechado que resaltan tu personalidad y estilo único.'
-          },
-        ].map((serv, idx) => (
-          <div key={idx} className={styles.serviceCard}>
-            <div className={styles.serviceIcon}>{serv.icon}</div>
-            <div className={styles.serviceTitle}>{serv.title}</div>
-            <div className={styles.serviceDesc}>{serv.desc}</div>
+        {servicios.slice(0, 3).map((servicio, idx) => (
+          <div key={servicio.id} className={styles.serviceCard}>
+            <div className={styles.serviceIcon}>
+              <span style={{fontSize:'2.7rem'}} role="img" aria-label={servicio.nombre}>
+                {servicio.emoji || '💇'}
+              </span>
+            </div>
+            <div className={styles.serviceTitle}>{servicio.nombre.toUpperCase()}</div>
+            <div className={styles.serviceDesc}>
+              {servicio.textoDescriptivo || servicio.descripcion || `Servicio profesional de ${servicio.nombre.toLowerCase()} con técnicas modernas y acabado impecable.`}
+            </div>
           </div>
         ))}
       </div>

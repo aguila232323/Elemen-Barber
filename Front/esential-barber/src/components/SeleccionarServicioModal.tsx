@@ -8,6 +8,8 @@ interface Servicio {
   descripcion: string;
   precio: number;
   duracionMinutos: number;
+  emoji?: string;
+  textoDescriptivo?: string;
 }
 
 interface Props {
@@ -89,7 +91,13 @@ const SeleccionarServicioModal: React.FC<Props> = ({ serviciosSeleccionados, set
                     >
                       <div className={styles.serviceContent}>
                         <div className={styles.serviceIcon}>
-                          {iconForService(serv.nombre)}
+                          {serv.emoji ? (
+                            <span style={{fontSize:'1.4rem'}} role="img" aria-label={serv.nombre}>
+                              {serv.emoji}
+                            </span>
+                          ) : (
+                            iconForService(serv.nombre)
+                          )}
                         </div>
                         
                         <div className={styles.serviceInfo}>

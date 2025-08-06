@@ -1,7 +1,9 @@
 package com.pomelo.app.springboot.app.service;
 
 import com.pomelo.app.springboot.app.entity.Usuario;
+import com.pomelo.app.springboot.app.entity.Cita;
 import com.pomelo.app.springboot.app.repository.UsuarioRepository;
+import com.pomelo.app.springboot.app.repository.CitaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,9 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private CitaRepository citaRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -80,6 +85,34 @@ public class UsuarioService {
             }
         } catch (Exception e) {
             throw new RuntimeException("Error al modificar el perfil: " + e.getMessage(), e);
+        }
+    }
+
+    public void eliminarCuenta(Long id, String password) {
+        try {
+            Optional<Usuario> usuarioExistente = usuarioRepository.findById(id);
+            if (!usuarioExistente.isPresent()) {
+                throw new RuntimeException("Usuario no encontrado con ID: " + id);
+            }
+            
+            Usuario usuario = usuarioExistente.get();
+            
+            // Verificar contraseña
+            if (!passwordEncoder.matches(password, usuario.getPassword())) {
+                throw new RuntimeException("Contraseña incorrecta");
+            }
+            
+            // Eliminar todas las citas del usuario
+            List<Cita> citasUsuario = citaRepository.findByCliente(usuario);
+            if (!citasUsuario.isEmpty()) {
+                citaRepository.deleteAll(citasUsuario);
+            }
+            
+            // Eliminar el usuario
+            usuarioRepository.delete(usuario);
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al eliminar la cuenta: " + e.getMessage(), e);
         }
     }
 

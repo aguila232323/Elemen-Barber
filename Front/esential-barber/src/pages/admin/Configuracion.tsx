@@ -8,6 +8,8 @@ interface Servicio {
   descripcion: string;
   precio: number;
   duracionMinutos: number;
+  emoji?: string;
+  textoDescriptivo?: string;
 }
 
 interface Usuario {
@@ -31,7 +33,7 @@ interface Cita {
 
 const Configuracion: React.FC = () => {
   const [modal, setModal] = useState<'add' | 'edit' | 'delete' | null>(null);
-  const [addForm, setAddForm] = useState({ nombre: '', descripcion: '', precio: '', duracion: '' });
+  const [addForm, setAddForm] = useState({ nombre: '', descripcion: '', precio: '', duracion: '', emoji: '', textoDescriptivo: '' });
   const [addLoading, setAddLoading] = useState(false);
   const [addMsg, setAddMsg] = useState<string | null>(null);
 
@@ -39,7 +41,7 @@ const Configuracion: React.FC = () => {
   const [servicios, setServicios] = useState<Servicio[]>([]);
   const [serviciosLoading, setServiciosLoading] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
-  const [editForm, setEditForm] = useState({ nombre: '', descripcion: '', precio: '', duracion: '' });
+  const [editForm, setEditForm] = useState({ nombre: '', descripcion: '', precio: '', duracion: '', emoji: '', textoDescriptivo: '' });
   const [editLoading, setEditLoading] = useState(false);
   const [editMsg, setEditMsg] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -226,7 +228,7 @@ const Configuracion: React.FC = () => {
     if (type === 'edit' || type === 'delete') fetchServicios();
     if (type === 'edit') {
       setEditId(null);
-      setEditForm({ nombre: '', descripcion: '', precio: '', duracion: '' });
+      setEditForm({ nombre: '', descripcion: '', precio: '', duracion: '', emoji: '', textoDescriptivo: '' });
       setEditMsg(null);
     }
     if (type === 'delete') {
@@ -515,6 +517,8 @@ const Configuracion: React.FC = () => {
         descripcion: serv.descripcion,
         precio: serv.precio.toString(),
         duracion: serv.duracionMinutos.toString(),
+        emoji: serv.emoji || '',
+        textoDescriptivo: serv.textoDescriptivo || '',
       });
     }
   };
@@ -580,12 +584,14 @@ const Configuracion: React.FC = () => {
           nombre: addForm.nombre,
           descripcion: addForm.descripcion,
           precio: parseFloat(addForm.precio),
-          duracionMinutos: parseInt(addForm.duracion)
+          duracionMinutos: parseInt(addForm.duracion),
+          emoji: addForm.emoji,
+          textoDescriptivo: addForm.textoDescriptivo
         })
       });
       if (!res.ok) throw new Error('Error al añadir servicio');
       setAddMsg('¡Servicio añadido correctamente!');
-      setAddForm({ nombre: '', descripcion: '', precio: '', duracion: '' });
+              setAddForm({ nombre: '', descripcion: '', precio: '', duracion: '', emoji: '', textoDescriptivo: '' });
       setTimeout(() => {
         setModal(null);
         setAddMsg(null);
@@ -615,7 +621,9 @@ const Configuracion: React.FC = () => {
           nombre: editForm.nombre,
           descripcion: editForm.descripcion,
           precio: parseFloat(editForm.precio),
-          duracionMinutos: parseInt(editForm.duracion)
+          duracionMinutos: parseInt(editForm.duracion),
+          emoji: editForm.emoji,
+          textoDescriptivo: editForm.textoDescriptivo
         })
       });
       if (!res.ok) throw new Error('Error al modificar servicio');
@@ -624,7 +632,7 @@ const Configuracion: React.FC = () => {
         setModal(null);
         setEditMsg(null);
         setEditId(null);
-        setEditForm({ nombre: '', descripcion: '', precio: '', duracion: '' });
+        setEditForm({ nombre: '', descripcion: '', precio: '', duracion: '', emoji: '', textoDescriptivo: '' });
       }, 1200);
     } catch (err: any) {
       setEditMsg(err.message || 'Error al modificar servicio');
@@ -900,6 +908,8 @@ const Configuracion: React.FC = () => {
             <textarea className={styles.input} name="descripcion" placeholder="Descripción del servicio" value={addForm.descripcion} onChange={handleAddChange} required />
             <input className={styles.input} name="precio" type="number" placeholder="Precio (€)" min="0" step="0.01" value={addForm.precio} onChange={handleAddChange} required />
             <input className={styles.input} name="duracion" type="number" placeholder="Duración (minutos)" min="1" value={addForm.duracion} onChange={handleAddChange} required />
+            <input className={styles.input} name="emoji" type="text" placeholder="Emoji (ej: ✂️, 💈, 🎨)" value={addForm.emoji} onChange={handleAddChange} maxLength={10} />
+            <textarea className={styles.input} name="textoDescriptivo" placeholder="Texto descriptivo para pantalla de inicio" value={addForm.textoDescriptivo} onChange={handleAddChange} maxLength={200} />
             <div className={styles.modalBtnGroup}>
               <button className={styles.saveBtn} type="submit" disabled={addLoading}>
                 <FaSave className={styles.btnIcon} />
@@ -932,6 +942,8 @@ const Configuracion: React.FC = () => {
             <textarea className={styles.input} name="descripcion" placeholder="Nueva descripción" value={editForm.descripcion} onChange={handleEditChange} required />
             <input className={styles.input} name="precio" type="number" placeholder="Nuevo precio (€)" min="0" step="0.01" value={editForm.precio} onChange={handleEditChange} required />
             <input className={styles.input} name="duracion" type="number" placeholder="Nueva duración (minutos)" min="1" value={editForm.duracion} onChange={handleEditChange} required />
+            <input className={styles.input} name="emoji" type="text" placeholder="Emoji (ej: ✂️, 💈, 🎨)" value={editForm.emoji} onChange={handleEditChange} maxLength={10} />
+            <textarea className={styles.input} name="textoDescriptivo" placeholder="Texto descriptivo para pantalla de inicio" value={editForm.textoDescriptivo} onChange={handleEditChange} maxLength={200} />
             <div className={styles.modalBtnGroup}>
               <button className={styles.saveBtn} type="submit" disabled={editLoading}>
                 <FaSave className={styles.btnIcon} />

@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CitaService {
@@ -270,7 +271,10 @@ public class CitaService {
 
     public List<Cita> listarTodasLasCitas() {
         try {
-            return citaRepository.findAll();
+            // Filtrar citas canceladas para que no aparezcan en el calendario del admin
+            return citaRepository.findAll().stream()
+                .filter(cita -> !"cancelada".equals(cita.getEstado()))
+                .collect(java.util.stream.Collectors.toList());
         } catch (Exception e) {
             throw new RuntimeException("Error al listar todas las citas: " + e.getMessage(), e);
         }

@@ -65,6 +65,34 @@ public class UsuarioController {
         }
     }
 
+    @DeleteMapping("/eliminar-cuenta")
+    @Operation(summary = "Eliminar cuenta", description = "Elimina la cuenta del usuario autenticado")
+    public ResponseEntity<Map<String, Object>> eliminarCuenta(@AuthenticationPrincipal UserDetails userDetails, @RequestBody Map<String, String> request) {
+        try {
+            String password = request.get("password");
+            if (password == null || password.trim().isEmpty()) {
+                throw new RuntimeException("La contraseña es requerida");
+            }
+            
+            // Buscar usuario por email para obtener el ID
+            Usuario usuario = usuarioService.findByEmail(userDetails.getUsername());
+            if (usuario == null) {
+                throw new RuntimeException("Usuario no encontrado");
+            }
+            
+            usuarioService.eliminarCuenta(usuario.getId(), password);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Cuenta eliminada correctamente");
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Error al eliminar la cuenta: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
     @PutMapping("/cambiar-password")
     @Operation(summary = "Cambiar contraseña", description = "Cambia la contraseña del usuario autenticado")
     public ResponseEntity<Map<String, String>> cambiarPassword(@AuthenticationPrincipal UserDetails userDetails, @RequestBody Map<String, String> request) {

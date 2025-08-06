@@ -22,6 +22,12 @@ public class Servicio {
     @Column(nullable = false)
     private Integer duracionMinutos;
 
+    @Column(length = 10, columnDefinition = "VARCHAR(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+    private String emoji;
+
+    @Column(length = 200, columnDefinition = "VARCHAR(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+    private String textoDescriptivo;
+
     public Long getId() {
         return id;
     }
@@ -60,5 +66,21 @@ public class Servicio {
 
     public void setDuracionMinutos(Integer duracionMinutos) {
         this.duracionMinutos = duracionMinutos;
+    }
+
+    public String getEmoji() {
+        return emoji;
+    }
+
+    public void setEmoji(String emoji) {
+        this.emoji = emoji;
+    }
+
+    public String getTextoDescriptivo() {
+        return textoDescriptivo;
+    }
+
+    public void setTextoDescriptivo(String textoDescriptivo) {
+        this.textoDescriptivo = textoDescriptivo;
     }
 }
