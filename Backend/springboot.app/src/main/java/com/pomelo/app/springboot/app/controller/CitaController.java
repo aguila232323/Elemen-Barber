@@ -135,7 +135,10 @@ public class CitaController {
             for (Cita cita : citas) {
                 Map<String, Object> citaMap = new java.util.HashMap<>();
                 citaMap.put("id", cita.getId());
-                citaMap.put("servicio", Map.of("nombre", cita.getServicio().getNombre()));
+                citaMap.put("servicio", Map.of(
+                    "nombre", cita.getServicio().getNombre(),
+                    "emoji", cita.getServicio().getEmoji()
+                ));
                 citaMap.put("fechaHora", cita.getFechaHora());
                 citaMap.put("comentario", cita.getComentario());
                 

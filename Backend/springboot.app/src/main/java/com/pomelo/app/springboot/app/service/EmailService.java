@@ -28,7 +28,7 @@ public class EmailService {
             
             helper.setTo(cita.getCliente().getEmail());
             helper.setSubject("✅ Confirmación de Cita - Elemen");
-            helper.setFrom("elemenbarber@gmail.com");
+            helper.setFrom("Elemen Barber <elemenbarber@gmail.com>");
             
             // Formatear fecha y hora de forma segura
             String fechaFormateada;
@@ -63,7 +63,7 @@ public class EmailService {
             
             helper.setTo(cita.getCliente().getEmail());
             helper.setSubject("⏰ Recordatorio de Cita - Elemen");
-            helper.setFrom("elemenbarber@gmail.com");
+            helper.setFrom("Elemen Barber <elemenbarber@gmail.com>");
             
             // Formatear fecha y hora de forma segura
             String fechaFormateada;
@@ -98,7 +98,7 @@ public class EmailService {
             
             helper.setTo(emailDestino);
             helper.setSubject("🧪 Prueba de Email - Elemen");
-            helper.setFrom("elemenbarber@gmail.com");
+            helper.setFrom("Elemen Barber <elemenbarber@gmail.com>");
             
             String htmlContent = crearEmailPruebaHTML();
             helper.setText(htmlContent, true);
@@ -120,7 +120,7 @@ public class EmailService {
             
             helper.setTo(emailDestino);
             helper.setSubject("🔐 Código de Verificación - Elemen");
-            helper.setFrom("elemenbarber@gmail.com");
+            helper.setFrom("Elemen Barber <elemenbarber@gmail.com>");
             
             String htmlContent = crearEmailVerificacionHTML(nombreUsuario, codigoVerificacion);
             helper.setText(htmlContent, true);
@@ -142,7 +142,7 @@ public class EmailService {
             
             helper.setTo(emailDestino);
             helper.setSubject("🔑 Recuperar Contraseña - Elemen");
-            helper.setFrom("aguila23232323@gmail.com");
+            helper.setFrom("Elemen Barber <elemenbarber@gmail.com>");
             
             String htmlContent = crearEmailRecuperacionContrasenaHTML(nombreUsuario, resetToken);
             helper.setText(htmlContent, true);
@@ -166,7 +166,7 @@ public class EmailService {
             
             helper.setTo(emailDestino);
             helper.setSubject("🔄 Cita Periódica Creada - Elemen");
-            helper.setFrom("aguila23232323@gmail.com");
+            helper.setFrom("Elemen Barber <elemenbarber@gmail.com>");
             
             String htmlContent = crearEmailCitaPeriodicaHTML(nombreCliente, nombreServicio, fechaInicio, 
                                                            periodicidadDias, citasCreadas, citasOmitidas, diasVacaciones);

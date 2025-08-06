@@ -393,13 +393,16 @@ const Inicio: React.FC = () => {
                 gridColumn: '1 / -1',
                 display: 'flex',
                 justifyContent: 'center',
+                width: '100%'
               }}>
-                <ServiceRow 
-                  key={servicios[servicios.length - 1].id}
-                  name={servicios[servicios.length - 1].nombre} 
-                  price={`${servicios[servicios.length - 1].precio}€`} 
-                  desc={servicios[servicios.length - 1].descripcion || `Duración: ${servicios[servicios.length - 1].duracionMinutos} minutos`} 
-                />
+                <div style={{ width: '100%', maxWidth: '400px' }}>
+                  <ServiceRow 
+                    key={servicios[servicios.length - 1].id}
+                    name={servicios[servicios.length - 1].nombre} 
+                    price={`${servicios[servicios.length - 1].precio}€`} 
+                    desc={servicios[servicios.length - 1].descripcion || `Duración: ${servicios[servicios.length - 1].duracionMinutos} minutos`} 
+                  />
+                </div>
               </div>
             )}
           </div>

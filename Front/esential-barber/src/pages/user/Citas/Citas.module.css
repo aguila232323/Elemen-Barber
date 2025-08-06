@@ -379,10 +379,6 @@
   gap: 0.5rem;
 }
 
-.citasHistorialServicio::before {
-  content: '💈';
-  font-size: 1.2rem;
-}
 
 .citasHistorialFechaHora {
   color: #888;

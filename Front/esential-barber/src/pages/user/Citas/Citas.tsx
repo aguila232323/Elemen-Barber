@@ -7,7 +7,10 @@ import { FaPlus, FaSave, FaTimes, FaUserPlus } from 'react-icons/fa';
 
 interface Cita {
   id: number;
-  servicio: { nombre: string };
+  servicio: { 
+    nombre: string;
+    emoji?: string;
+  };
   fechaHora: string;
   estado?: 'pendiente' | 'confirmada' | 'completada' | 'cancelada' | 'finalizada';
   comentario?: string;
@@ -345,12 +348,8 @@ const Citas: React.FC<CitasProps> = () => {
                 // Datos fijos de barbería y peluquero
                 const nombreBarberia = 'Elemen Barber';
                 const nombrePeluquero = 'Luis Garcia Mudarra';
-                // Emoji según el tipo de servicio
-                let emojiServicio = '💈';
-                const nombreServicio = cita.servicio?.nombre?.toLowerCase() || '';
-                if (nombreServicio.includes('corte')) emojiServicio = '✂️';
-                else if (nombreServicio.includes('tinte')) emojiServicio = '🧴';
-                else if (nombreServicio.includes('mecha')) emojiServicio = '✨';
+                // Obtener el emoji del servicio desde la base de datos
+                const emojiServicio = cita.servicio?.emoji || '💈';
                 return (
                                      <li key={cita.id} className={
                      styles.citasHistorialItem + ' ' +
@@ -371,7 +370,10 @@ const Citas: React.FC<CitasProps> = () => {
                            cita.estado === 'confirmada' ? 'CONFIRMADA' : 'PENDIENTE'}
                         </span>
                       )}
-                      <div className={styles.citasHistorialServicio}>{cita.servicio?.nombre}</div>
+                      <div className={styles.citasHistorialServicio}>
+                        <span style={{ marginRight: '0.5rem', fontSize: '1.2rem' }}>{emojiServicio}</span>
+                        {cita.servicio?.nombre}
+                      </div>
                       <div className={styles.citaInfoBarberia}>
                         <img src={logoBarberia} alt="Logo Elemen Barber" className={styles.citaLogoBarberia} />
                         <div className={styles.citaInfoText}>

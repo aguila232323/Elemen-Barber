@@ -286,7 +286,7 @@
 .servicesGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3.5rem;
+  gap: 2rem;
   justify-content: center;
   max-width: 800px;
   margin: 0 auto;
@@ -295,7 +295,7 @@
 .servicesColumn {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 0.8rem;
 }
 
 /* ===== FILA DE SERVICIO ===== */
@@ -303,9 +303,9 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1rem;
   font-size: 1.15rem;
-  padding: 1.5rem;
+  padding: 1.2rem 1.5rem;
   background: var(--gradient-primary-light);
   border-radius: 15px;
   border: 1px solid var(--border-primary-light);
@@ -330,8 +330,8 @@
   font-weight: 400;
   color: #ccc;
   font-size: 1rem;
-  margin-top: 8px;
-  line-height: 1.5;
+  margin-top: 6px;
+  line-height: 1.4;
 }
 
 .serviceRowPrice {
@@ -461,7 +461,7 @@
   }
   
   .servicesColumn {
-    flex: 1 1 280px;
+    /* flex: 1 1 280px; */
     min-width: 240px;
   }
 }
@@ -548,7 +548,7 @@
   }
   
   .servicesSection {
-    padding: 2rem 1vw;
+    padding: 2rem 1.5rem;
     margin: 1.5rem 0.5rem;
     max-width: calc(100% - 1rem);
   }
@@ -562,28 +562,31 @@
   }
   
   .servicesGrid {
-    gap: 2rem;
-    grid-template-columns: 1fr;
-  }
-  
-  .servicesColumn {
-    gap: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
   }
   
   .serviceRow {
-    padding: 1.2rem 1rem;
+    padding: 1rem 1.2rem;
+    margin: 0;
+    margin-bottom: 0.6rem;
   }
   
   .serviceRowContent {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
   
   .serviceRowDesc {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
   
   .serviceRowAmount {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
+  }
+  
+  .serviceRowPrice {
+    min-width: 100px;
   }
 }
 
@@ -674,7 +677,7 @@
   }
   
   .servicesSection {
-    padding: 1.5rem 0.8vw;
+    padding: 1.5rem 1rem;
     margin: 1.2rem 0.3rem;
     max-width: calc(100% - 0.6rem);
   }
@@ -688,16 +691,19 @@
   }
   
   .servicesGrid {
-    gap: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
   
   .serviceRow {
-    padding: 1rem;
-    font-size: 0.9rem;
+    padding: 0.8rem 1rem;
+    margin: 0;
+    margin-bottom: 0.5rem;
   }
   
   .serviceRowContent {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
   
   .serviceRowDesc {
@@ -705,7 +711,15 @@
   }
   
   .serviceRowAmount {
-    font-size: 1.1rem;
+    font-size: 1rem;
+  }
+  
+  .serviceRowPrice {
+    min-width: 90px;
+  }
+  
+  .serviceRowDots {
+    min-width: 20px;
   }
 }
 
@@ -796,7 +810,7 @@
   }
   
   .servicesSection {
-    padding: 1.2rem 0.6vw;
+    padding: 1.2rem 0.8rem;
     margin: 1rem 0.2rem;
     max-width: calc(100% - 0.4rem);
   }
@@ -810,16 +824,19 @@
   }
   
   .servicesGrid {
-    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
   }
   
   .serviceRow {
-    padding: 0.8rem;
-    font-size: 0.85rem;
+    padding: 0.6rem 0.8rem;
+    margin: 0;
+    margin-bottom: 0.4rem;
   }
   
   .serviceRowContent {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
   }
   
   .serviceRowDesc {
@@ -827,7 +844,15 @@
   }
   
   .serviceRowAmount {
-    font-size: 1rem;
+    font-size: 0.95rem;
+  }
+  
+  .serviceRowPrice {
+    min-width: 80px;
+  }
+  
+  .serviceRowDots {
+    min-width: 15px;
   }
 }
 
