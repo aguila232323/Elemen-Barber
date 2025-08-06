@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import styles from './Inicio.module.css'
 import { FaClock, FaUser, FaMapMarkerAlt } from 'react-icons/fa';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -76,6 +76,29 @@ const getUserName = () => {
 const Inicio: React.FC = () => {
   const userName = getUserName();
   const { servicios, loading, error } = useServicios();
+  const [resenas, setResenas] = useState<any[]>([]);
+  const [estadisticasResenas, setEstadisticasResenas] = useState<any>({});
+  const [loadingResenas, setLoadingResenas] = useState(true);
+
+  // Cargar reseñas públicas
+  useEffect(() => {
+    const cargarResenas = async () => {
+      try {
+        const res = await fetch('http://localhost:8080/api/resenas/publicas');
+        if (res.ok) {
+          const data = await res.json();
+          setResenas(data.resenas || []);
+          setEstadisticasResenas(data.estadisticas || {});
+        }
+      } catch (error) {
+        console.error('Error cargando reseñas:', error);
+      } finally {
+        setLoadingResenas(false);
+      }
+    };
+
+    cargarResenas();
+  }, []);
   
   return (
     <>
@@ -137,8 +160,19 @@ const Inicio: React.FC = () => {
         <div className={styles.reviewsTitle}>
           <h2>Lo que opinan nuestros clientes</h2>
           <div className={styles.reviewsRating}>
-            <span className={styles.reviewsStars}>★★★★★</span>
-            <span className={styles.reviewsScore}>4.9/5</span>
+            <span className={styles.reviewsStars}>
+              {estadisticasResenas.promedioCalificacion ? 
+                '★'.repeat(Math.round(estadisticasResenas.promedioCalificacion)) + 
+                '☆'.repeat(5 - Math.round(estadisticasResenas.promedioCalificacion)) : 
+                '★★★★★'
+              }
+            </span>
+            <span className={styles.reviewsScore}>
+              {estadisticasResenas.promedioCalificacion ? 
+                `${estadisticasResenas.promedioCalificacion}/5` : 
+                '4.9/5'
+              }
+            </span>
           </div>
         </div>
 
@@ -191,7 +225,7 @@ const Inicio: React.FC = () => {
               }
             }}
           >
-            {reviews.map((review, idx) => {
+            {(loadingResenas ? reviews : resenas.length > 0 ? resenas : reviews).map((review, idx) => {
               const colors = [
                 { bg: '#2c3e50', text: '#fff', accent: '#3498db' },
                 { bg: '#e74c3c', text: '#fff', accent: '#f39c12' },
@@ -239,7 +273,7 @@ const Inicio: React.FC = () => {
                         fontStyle: 'italic',
                         textAlign: 'center'
                       }}>
-                        "{review.text}"
+                        "{resenas.length > 0 && !loadingResenas ? review.comentario : review.text}"
                       </p>
                       
                       <div style={{
@@ -253,13 +287,13 @@ const Inicio: React.FC = () => {
                             width: '28px',
                             height: '28px',
                             borderRadius: '50%',
-                            background: starIdx < review.rating ? color.accent : 'rgba(255,255,255,0.2)',
+                            background: starIdx < (resenas.length > 0 && !loadingResenas ? review.calificacion : review.rating) ? color.accent : 'rgba(255,255,255,0.2)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontSize: '1.2rem',
-                            color: starIdx < review.rating ? '#fff' : 'rgba(255,255,255,0.5)',
-                            boxShadow: starIdx < review.rating ? 
+                            color: starIdx < (resenas.length > 0 && !loadingResenas ? review.calificacion : review.rating) ? '#fff' : 'rgba(255,255,255,0.5)',
+                            boxShadow: starIdx < (resenas.length > 0 && !loadingResenas ? review.calificacion : review.rating) ? 
                               `0 4px 12px ${color.accent}40` : 'none',
                             transition: 'all 0.3s ease'
                           }}>
@@ -291,7 +325,7 @@ const Inicio: React.FC = () => {
                         boxShadow: `0 6px 20px ${color.accent}40`,
                         border: `3px solid ${color.accent}30`
                       }}>
-                        {review.avatar}
+                        {resenas.length > 0 && !loadingResenas ? (review.cliente?.avatar || '👤') : review.avatar}
                       </div>
                       <div>
                         <div style={{
@@ -300,14 +334,14 @@ const Inicio: React.FC = () => {
                           marginBottom: '0.3rem',
                           textShadow: '0 1px 2px rgba(0,0,0,0.3)'
                         }}>
-                          {review.author}
+                          {resenas.length > 0 && !loadingResenas ? (review.cliente?.nombre || 'Cliente') : review.author}
                         </div>
                         <div style={{
                           fontSize: '1rem',
                           opacity: '0.9',
                           fontStyle: 'italic'
                         }}>
-                          {review.company}
+                          {resenas.length > 0 && !loadingResenas ? 'Cliente Satisfecho' : review.company}
                         </div>
                       </div>
                     </div>

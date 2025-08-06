@@ -9,11 +9,17 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CitaRepository extends JpaRepository<Cita, Long> {
     List<Cita> findByCliente(Usuario cliente);
+    List<Cita> findByClienteOrderByFechaHoraDesc(Usuario cliente);
     List<Cita> findByClienteAndFechaHoraAfter(Usuario cliente, LocalDateTime fechaInicio);
+    
+    // Método para obtener cita con relaciones cargadas
+    @Query("SELECT c FROM Cita c JOIN FETCH c.cliente JOIN FETCH c.servicio WHERE c.id = :id")
+    Optional<Cita> findByIdWithRelations(@Param("id") Long id);
     List<Cita> findByFechaHoraBetween(LocalDateTime fechaInicio, LocalDateTime fechaFin);
     List<Cita> findByFechaHora(LocalDate fecha);
     long countByClienteAndEstado(Usuario cliente, String estado);

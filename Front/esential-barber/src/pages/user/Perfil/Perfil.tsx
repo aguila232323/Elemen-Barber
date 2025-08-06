@@ -3,6 +3,27 @@ import styles from './Perfil.module.css';
 import { useNavigate } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSave, FaTimes, FaSignOutAlt, FaLock, FaEye, FaEyeSlash, FaCheckCircle, FaTrash } from 'react-icons/fa';
 import defaultProfile from '../../../assets/images/usuario.png';
+
+// Función para generar avatar genérico basado en el nombre
+const generarAvatar = (nombre: string): string => {
+  if (!nombre || nombre.trim() === '') {
+    return '👤';
+  }
+  
+  const avatares = [
+    '👨‍💼', '👩‍💼', '👨‍🦱', '👩‍🦰', '👨‍🦳', '👩‍🦳', 
+    '👨‍🦲', '👩‍🦲', '👨‍🦰', '👩‍🦱', '👨‍🦯', '👩‍🦯',
+    '👨‍⚕️', '👩‍⚕️', '👨‍🎓', '👩‍🎓', '👨‍🏫', '👩‍🏫',
+    '👨‍💻', '👩‍💻', '👨‍🔧', '👩‍🔧', '👨‍🚀', '👩‍🚀'
+  ];
+  
+  const hash = Math.abs(nombre.split('').reduce((a, b) => {
+    a = ((a << 5) - a) + b.charCodeAt(0);
+    return a & a;
+  }, 0));
+  
+  return avatares[hash % avatares.length];
+};
 import { 
   validateSpanishPhone, 
   normalizePhoneForStorage, 
@@ -363,11 +384,31 @@ const Perfil: React.FC = () => {
     <div className={styles.perfilCont}>
       <div className={styles.profileImageSection}>
         <div className={styles.profileImageContainer}>
-          <img
-            src={profileImage || defaultProfile}
-            alt="Imagen de perfil"
-            className={styles.profileImage}
-          />
+          {profileImage ? (
+            <img
+              src={profileImage}
+              alt="Imagen de perfil"
+              className={styles.profileImage}
+            />
+          ) : (
+            <div 
+              className={styles.profileImage}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '3rem',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                borderRadius: '50%',
+                width: '100%',
+                height: '100%',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+              }}
+            >
+              {generarAvatar(usuario.nombre)}
+            </div>
+          )}
           <label htmlFor="profileImageInput" className={styles.profileImageEdit}>
             <FaEdit />
           </label>

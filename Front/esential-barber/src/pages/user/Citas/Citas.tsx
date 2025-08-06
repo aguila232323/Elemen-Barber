@@ -3,7 +3,8 @@ import styles from './Citas.module.css';
 import logoBarberia from '../../../assets/images/logoElemental.png';
 import SeleccionarServicioModal from '../../../components/SeleccionarServicioModal';
 import CalendarBooking from '../../../components/CalendarBooking';
-import { FaPlus, FaSave, FaTimes, FaUserPlus } from 'react-icons/fa';
+import ResenaModal from '../../../components/ResenaModal';
+import { FaPlus, FaSave, FaTimes, FaUserPlus, FaStar } from 'react-icons/fa';
 
 interface Cita {
   id: number;
@@ -14,6 +15,7 @@ interface Cita {
   fechaHora: string;
   estado?: 'pendiente' | 'confirmada' | 'completada' | 'cancelada' | 'finalizada';
   comentario?: string;
+  reseñada?: boolean;
 }
 
 interface Servicio {
@@ -64,6 +66,11 @@ const Citas: React.FC<CitasProps> = () => {
   
   // Estados para el calendario de reserva
   const [showCalendario, setShowCalendario] = useState(false);
+  
+  // Estados para reseñas
+  const [showResenaModal, setShowResenaModal] = useState(false);
+  const [citaParaResenar, setCitaParaResenar] = useState<Cita | null>(null);
+  const [guardandoResena, setGuardandoResena] = useState(false);
 
   useEffect(() => {
     const fetchCitas = async () => {
@@ -77,6 +84,8 @@ const Citas: React.FC<CitasProps> = () => {
         if (!res.ok) throw new Error('No se pudieron cargar tus citas');
         const data = await res.json();
         setCitas(data);
+        console.log('Citas cargadas:', data);
+        
       } catch (err: any) {
         setError(err.message || 'Error al cargar tus citas');
       } finally {
@@ -277,11 +286,59 @@ const Citas: React.FC<CitasProps> = () => {
     window.location.reload();
   };
 
+
+
+  // Abrir modal de reseña
+  const handleAbrirResenaModal = (cita: Cita) => {
+    setCitaParaResenar(cita);
+    setShowResenaModal(true);
+  };
+
+  // Guardar reseña
+  const handleGuardarResena = async (calificacion: number, comentario: string) => {
+    if (!citaParaResenar) return;
+    
+    setGuardandoResena(true);
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch('http://localhost:8080/api/resenas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          citaId: citaParaResenar.id,
+          calificacion: calificacion,
+          comentario: comentario
+        })
+      });
+
+      if (res.ok) {
+        // Cerrar modal y actualizar estados sin alert
+        setShowResenaModal(false);
+        setCitaParaResenar(null);
+        // Recargar las citas para actualizar el estado
+        window.location.reload();
+      } else {
+        const errorData = await res.json();
+        alert(`Error al guardar la reseña: ${errorData.message || 'Error desconocido'}`);
+      }
+    } catch (error) {
+      console.error('Error guardando reseña:', error);
+      alert('Error al guardar la reseña');
+    } finally {
+      setGuardandoResena(false);
+    }
+  };
+
   return (
     <>
       <div className={styles.citasHistorialBg}>
         <div className={styles.citasHistorialCont}>
           <h2 className={styles.citasHistorialTitle}>Mis citas</h2>
+          
+
           
           {/* Botón para admin crear cita */}
           {isAdmin && (
@@ -422,6 +479,90 @@ const Citas: React.FC<CitasProps> = () => {
                         )}
                         
                         
+                        
+                        {/* Botón de reseña para citas completadas/finalizadas */}
+                        {(cita.estado === 'completada' || cita.estado === 'finalizada') && 
+                         !cita.reseñada && (
+                          <button 
+                            className={styles.citaReservarBtn}
+                            onClick={() => handleAbrirResenaModal(cita)}
+                            style={{
+                              background: 'linear-gradient(135deg, #ffd700, #ffb300)',
+                              color: '#000',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '0.6rem 1.2rem',
+                              fontSize: '0.85rem',
+                              cursor: 'pointer',
+                              boxShadow: '0 3px 10px rgba(255, 215, 0, 0.3)',
+                              transition: 'all 0.3s ease',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.4rem',
+                              fontWeight: '600'
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.transform = 'translateY(-2px)';
+                              e.currentTarget.style.boxShadow = '0 5px 15px rgba(255, 215, 0, 0.4)';
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = '0 3px 10px rgba(255, 215, 0, 0.3)';
+                            }}
+                          >
+                            <FaStar style={{ fontSize: '1rem' }} />
+                            Añadir Reseña
+                          </button>
+                        )}
+                        
+                        {/* Indicador de reseña ya calificada */}
+                        {(cita.estado === 'completada' || cita.estado === 'finalizada') && 
+                         cita.reseñada && (
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.6rem 1.2rem',
+                            fontSize: '0.85rem',
+                            color: '#fff',
+                            background: 'linear-gradient(135deg, #27ae60, #2ecc71)',
+                            borderRadius: '8px',
+                            border: 'none',
+                            fontWeight: '600',
+                            boxShadow: '0 3px 10px rgba(39, 174, 96, 0.3)',
+                            transition: 'all 0.3s ease',
+                            cursor: 'default',
+                            position: 'relative',
+                            overflow: 'hidden'
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                            e.currentTarget.style.boxShadow = '0 5px 15px rgba(39, 174, 96, 0.4)';
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 3px 10px rgba(39, 174, 96, 0.3)';
+                          }}
+                          >
+                            <FaStar style={{ 
+                              color: '#f1c40f', 
+                              fontSize: '1rem',
+                              filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))'
+                            }} />
+                            <span>✓ Ya calificada</span>
+                            <div style={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)',
+                              animation: 'shimmer 2s infinite'
+                            }} />
+                          </div>
+                        )}
+                        
+
                         
                         {/* Botón de reservar de nuevo para citas finalizadas/canceladas */}
                         {(cita.estado === 'completada' || cita.estado === 'finalizada' || cita.estado === 'cancelada') && (
@@ -926,6 +1067,21 @@ const Citas: React.FC<CitasProps> = () => {
               </div>
            </div>
          </div>
+       )}
+
+       {/* Modal de reseña */}
+       {showResenaModal && citaParaResenar && (
+         <ResenaModal
+           isOpen={showResenaModal}
+           onClose={() => {
+             setShowResenaModal(false);
+             setCitaParaResenar(null);
+           }}
+           onSubmit={handleGuardarResena}
+           citaId={citaParaResenar.id}
+           servicioNombre={citaParaResenar.servicio?.nombre || ''}
+           loading={guardandoResena}
+         />
        )}
      </>
    );

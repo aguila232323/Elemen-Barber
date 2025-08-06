@@ -79,7 +79,8 @@ public class CitaService {
         try {
             Usuario usuario = usuarioRepository.findById(usuarioId)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-            return citaRepository.findByClienteAndFechaHoraAfter(usuario, LocalDateTime.now());
+            // Obtener todas las citas del usuario, incluyendo las completadas
+            return citaRepository.findByClienteOrderByFechaHoraDesc(usuario);
         } catch (Exception e) {
             throw new RuntimeException("Error al listar citas del usuario: " + e.getMessage(), e);
         }

@@ -10,6 +10,7 @@ import com.pomelo.app.springboot.app.service.ServicioService;
 import com.pomelo.app.springboot.app.service.ConfiguracionService;
 import com.pomelo.app.springboot.app.service.VacacionesService;
 import com.pomelo.app.springboot.app.service.EmailService;
+import com.pomelo.app.springboot.app.repository.ResenaRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -42,14 +43,16 @@ public class CitaController {
     private final ConfiguracionService configuracionService;
     private final VacacionesService vacacionesService;
     private final EmailService emailService;
+    private final ResenaRepository resenaRepository;
 
-    public CitaController(CitaService citaService, UsuarioService usuarioService, ServicioService servicioService, ConfiguracionService configuracionService, VacacionesService vacacionesService, EmailService emailService) {
+    public CitaController(CitaService citaService, UsuarioService usuarioService, ServicioService servicioService, ConfiguracionService configuracionService, VacacionesService vacacionesService, EmailService emailService, ResenaRepository resenaRepository) {
         this.citaService = citaService;
         this.usuarioService = usuarioService;
         this.servicioService = servicioService;
         this.configuracionService = configuracionService;
         this.vacacionesService = vacacionesService;
         this.emailService = emailService;
+        this.resenaRepository = resenaRepository;
     }
 
     @PostMapping
@@ -132,6 +135,15 @@ public class CitaController {
             List<Cita> citas = citaService.listarCitasPorUsuario(usuario.getId());
             List<Map<String, Object>> citasConEstado = new ArrayList<>();
             
+            // Debug: imprimir información de las citas
+            System.out.println("Total de citas encontradas: " + citas.size());
+            for (Cita cita : citas) {
+                System.out.println("Cita ID: " + cita.getId() + 
+                                ", Estado: " + cita.getEstado() + 
+                                ", Fecha: " + cita.getFechaHora() + 
+                                ", Es pasada: " + (cita.getFechaHora() != null && cita.getFechaHora().isBefore(java.time.LocalDateTime.now())));
+            }
+            
             for (Cita cita : citas) {
                 Map<String, Object> citaMap = new java.util.HashMap<>();
                 citaMap.put("id", cita.getId());
@@ -143,11 +155,22 @@ public class CitaController {
                 citaMap.put("comentario", cita.getComentario());
                 
                 String estado = cita.getEstado();
+                // Si la cita está pendiente y ya pasó la fecha, marcarla como completada
                 if ("pendiente".equals(estado) && cita.getFechaHora() != null && 
                     cita.getFechaHora().isBefore(java.time.LocalDateTime.now())) {
-                    estado = "finalizada";
+                    estado = "completada";
+                }
+                // Si la cita está confirmada y ya pasó la fecha, marcarla como completada
+                if ("confirmada".equals(estado) && cita.getFechaHora() != null && 
+                    cita.getFechaHora().isBefore(java.time.LocalDateTime.now())) {
+                    estado = "completada";
                 }
                 citaMap.put("estado", estado);
+                
+                // Verificar si la cita tiene reseña
+                boolean tieneResena = resenaRepository.existsByCitaId(cita.getId());
+                citaMap.put("reseñada", tieneResena);
+                
                 citasConEstado.add(citaMap);
             }
             
