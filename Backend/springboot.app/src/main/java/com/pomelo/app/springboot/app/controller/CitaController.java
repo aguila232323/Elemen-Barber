@@ -364,7 +364,7 @@ public class CitaController {
             
             // Generar todos los slots de inicio cada 45 min
             List<LocalTime[]> tramos = List.of(
-                new LocalTime[]{LocalTime.of(9,0), LocalTime.of(14,15)},
+                new LocalTime[]{LocalTime.of(9,0), LocalTime.of(15,0)},
                 new LocalTime[]{LocalTime.of(16,0), LocalTime.of(21,15)}
             );
             List<LocalTime> slots = new ArrayList<>();
@@ -441,9 +441,9 @@ public class CitaController {
                         continue; // Saltar este slot si es lunes o domingo
                     }
                     
-                    // Sábado por la tarde cerrado para usuarios normales (después de las 14:15)
-                    if (diaSemana == DayOfWeek.SATURDAY && slotInicio.isAfter(LocalTime.of(14, 15))) {
-                        continue; // Saltar este slot si es sábado por la tarde
+                    // Sábado: permitir solo hasta las 15:00 para usuarios normales
+                    if (diaSemana == DayOfWeek.SATURDAY && slotInicio.isAfter(LocalTime.of(15, 0))) {
+                        continue; // Saltar este slot si es sábado después de las 15:00
                     }
                 }
                 
@@ -496,7 +496,7 @@ public class CitaController {
                 LocalDate fecha = LocalDate.of(anio, mes, dia);
                 // Generar slots igual que en /disponibilidad
                 List<LocalTime[]> tramos = List.of(
-                    new LocalTime[]{LocalTime.of(9,0), LocalTime.of(14,15)},
+                    new LocalTime[]{LocalTime.of(9,0), LocalTime.of(15,0)},
                     new LocalTime[]{LocalTime.of(16,0), LocalTime.of(21,15)}
                 );
                 List<LocalTime> slots = new ArrayList<>();
@@ -568,9 +568,9 @@ public class CitaController {
                             continue; // Saltar este slot si es lunes o domingo
                         }
                         
-                        // Sábado por la tarde cerrado para usuarios normales (después de las 14:15)
-                        if (diaSemana == DayOfWeek.SATURDAY && slotInicio.isAfter(LocalTime.of(14, 15))) {
-                            continue; // Saltar este slot si es sábado por la tarde
+                        // Sábado: permitir solo hasta las 15:00 para usuarios normales
+                        if (diaSemana == DayOfWeek.SATURDAY && slotInicio.isAfter(LocalTime.of(15, 0))) {
+                            continue; // Saltar este slot si es sábado después de las 15:00
                         }
                     }
                     

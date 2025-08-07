@@ -37,7 +37,7 @@ export const BUSINESS_INFO = {
     wednesday: "9:00 - 21:15",
     thursday: "9:00 - 21:15",
     friday: "9:00 - 21:15",
-    saturday: "9:00 - 14:15",
+    saturday: "9:00 - 15:00",
     sunday: "Cerrado"
   },
   
