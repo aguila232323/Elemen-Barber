@@ -56,8 +56,40 @@ const isValidImageUrl = (url: string): boolean => {
     return false;
   }
   
-  // Verificar que sea una URL de Google
-  return url.includes('googleusercontent.com') || url.includes('lh3.googleusercontent.com');
+  // Verificar que sea una URL de Google (más flexible)
+  return url.includes('googleusercontent.com') || 
+         url.includes('lh3.googleusercontent.com') ||
+         url.includes('lh4.googleusercontent.com') ||
+         url.includes('lh5.googleusercontent.com') ||
+         url.includes('lh6.googleusercontent.com') ||
+         url.startsWith('https://') && url.includes('google');
+};
+
+// Función para verificar si una imagen es accesible
+const isImageAccessible = async (url: string): Promise<boolean> => {
+  try {
+    const response = await fetch(url, { 
+      method: 'HEAD',
+      mode: 'no-cors' // Esto evita errores de CORS en la verificación
+    });
+    return true; // Si no hay error, asumimos que es accesible
+  } catch (error) {
+    console.log('Error verificando accesibilidad de imagen:', error);
+    return false;
+  }
+};
+
+// Función para crear una URL proxy para evitar problemas de CORS
+const createProxyUrl = (originalUrl: string): string => {
+  // Usar un servicio de proxy de imágenes para evitar CORS
+  // Opción 1: Usar images.weserv.nl (gratuito y confiable)
+  return `https://images.weserv.nl/?url=${encodeURIComponent(originalUrl)}&w=200&h=200&fit=cover&output=webp`;
+  
+  // Opción 2: Usar un proxy local (si tienes uno configurado)
+  // return `https://tu-proxy.com/proxy?url=${encodeURIComponent(originalUrl)}`;
+  
+  // Opción 3: Usar Google Images Proxy
+  // return `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=2592000&url=${encodeURIComponent(originalUrl)}`;
 };
 import { 
   validateSpanishPhone, 
@@ -119,6 +151,9 @@ const Perfil: React.FC = () => {
   const [showPasswordError, setShowPasswordError] = useState(false);
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState<string>('');
+  const [imageLoadError, setImageLoadError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [useProxy, setUseProxy] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -159,6 +194,30 @@ const Perfil: React.FC = () => {
         setLoading(false);
       });
   }, []);
+
+  // Resetear estados de imagen cuando cambie la URL de Google
+  useEffect(() => {
+    if (usuario.googlePictureUrl) {
+      setImageLoadError(false);
+      setImageLoading(false);
+      setUseProxy(false); // Resetear el proxy al cambiar URL
+    }
+  }, [usuario.googlePictureUrl]);
+
+  // Función para activar el proxy si hay problemas de CORS
+  const activateProxy = () => {
+    if (usuario.googlePictureUrl) {
+      console.log('Activando proxy para evitar problemas de CORS');
+      setUseProxy(true);
+      setImageLoadError(false);
+      setImageLoading(true);
+    }
+  };
+
+  // Función para detectar si el usuario es de Google Auth
+  const isGoogleUser = (): boolean => {
+    return !!(usuario.googlePictureUrl && usuario.googlePictureUrl.includes('googleusercontent.com'));
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -413,9 +472,16 @@ const Perfil: React.FC = () => {
 
   const confirmDeleteAccount = () => {
     setShowDeleteConfirm(false);
-    setShowPasswordModal(true);
-    setDeletePassword('');
-    setShowPasswordError(false);
+    
+    // Si es usuario de Google, eliminar directamente sin pedir contraseña
+    if (isGoogleUser()) {
+      submitDeleteAccountWithoutPassword();
+    } else {
+      // Si no es usuario de Google, pedir contraseña
+      setShowPasswordModal(true);
+      setDeletePassword('');
+      setShowPasswordError(false);
+    }
   };
 
   const cancelDeleteAccount = () => {
@@ -423,6 +489,46 @@ const Perfil: React.FC = () => {
     setShowPasswordModal(false);
     setDeletePassword('');
     setShowPasswordError(false);
+  };
+
+  const submitDeleteAccountWithoutPassword = async () => {
+    setDeletingAccount(true);
+
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('No hay token de autenticación');
+      }
+
+      const res = await fetch('http://localhost:8080/api/usuarios/eliminar-cuenta', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ password: 'GOOGLE_AUTH_USER' }) // Contraseña especial para usuarios de Google
+      });
+
+      if (!res.ok) {
+        let errorMessage = 'Error al eliminar la cuenta';
+        try {
+          const errorData = await res.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (jsonError) {
+          errorMessage = `Error ${res.status}: ${res.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Cuenta eliminada exitosamente
+      localStorage.removeItem('authToken');
+      setDeletingAccount(false);
+      navigate('/');
+      window.location.reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al eliminar la cuenta');
+      setDeletingAccount(false);
+    }
   };
 
   const submitDeleteAccount = async () => {
@@ -488,23 +594,75 @@ const Perfil: React.FC = () => {
             console.log('usuario completo:', usuario);
             return null; 
           })()}
-          {usuario.googlePictureUrl && isValidImageUrl(usuario.googlePictureUrl) ? (
+          {usuario.googlePictureUrl && isValidImageUrl(usuario.googlePictureUrl) && !imageLoadError ? (
             <img
-              src={usuario.googlePictureUrl}
+              src={useProxy ? createProxyUrl(usuario.googlePictureUrl) : usuario.googlePictureUrl}
               alt="Imagen de perfil de Google"
               className={styles.profileImage}
               style={{
                 borderRadius: '50%',
-                objectFit: 'cover'
+                objectFit: 'cover',
+                opacity: imageLoading ? 0.7 : 1,
+                transition: 'opacity 0.3s ease'
+              }}
+              onLoadStart={() => {
+                setImageLoading(true);
+                setImageLoadError(false);
+                console.log('Iniciando carga de imagen de Google:', usuario.googlePictureUrl);
               }}
               onError={(e) => {
-                console.log('Error cargando imagen de Google:', e);
-                console.log('URL que falló:', usuario.googlePictureUrl);
+                const imgElement = e.currentTarget as HTMLImageElement;
+                console.log('Error cargando imagen de Google:', {
+                  error: e,
+                  url: usuario.googlePictureUrl,
+                  naturalWidth: imgElement.naturalWidth,
+                  naturalHeight: imgElement.naturalHeight,
+                  complete: imgElement.complete,
+                  src: imgElement.src,
+                  errorCode: imgElement.naturalWidth === 0 ? 'CORS_OR_NETWORK_ERROR' : 'UNKNOWN_ERROR',
+                  timestamp: new Date().toISOString()
+                });
+                
+                // Intentar obtener más información del error
+                if (imgElement.naturalWidth === 0 && usuario.googlePictureUrl) {
+                  console.log('Posible error de CORS o red. URL:', usuario.googlePictureUrl);
+                  
+                  // Si no estamos usando proxy, intentar activarlo
+                  if (!useProxy) {
+                    console.log('Activando proxy automáticamente...');
+                    activateProxy();
+                    return; // No continuar con el manejo de error normal
+                  } else {
+                    console.log('Ya estamos usando proxy, mostrando avatar de fallback');
+                    setImageLoadError(true);
+                    setImageLoading(false);
+                    imgElement.style.display = 'none';
+                    const fallbackAvatar = imgElement.parentElement?.querySelector('.fallback-avatar');
+                    if (fallbackAvatar) {
+                      (fallbackAvatar as HTMLElement).style.display = 'flex';
+                    }
+                    return;
+                  }
+                }
+                
+                setImageLoadError(true);
+                setImageLoading(false);
+                
                 // Ocultar la imagen de Google y mostrar el avatar genérico
-                e.currentTarget.style.display = 'none';
-                const fallbackAvatar = e.currentTarget.parentElement?.querySelector('.fallback-avatar');
+                imgElement.style.display = 'none';
+                const fallbackAvatar = imgElement.parentElement?.querySelector('.fallback-avatar');
                 if (fallbackAvatar) {
                   (fallbackAvatar as HTMLElement).style.display = 'flex';
+                }
+              }}
+              onLoad={(e) => {
+                console.log('Imagen de Google cargada exitosamente:', usuario.googlePictureUrl);
+                setImageLoading(false);
+                setImageLoadError(false);
+                // Asegurar que el avatar de fallback esté oculto
+                const fallbackAvatar = e.currentTarget.parentElement?.querySelector('.fallback-avatar');
+                if (fallbackAvatar) {
+                  (fallbackAvatar as HTMLElement).style.display = 'none';
                 }
               }}
             />
@@ -512,7 +670,7 @@ const Perfil: React.FC = () => {
           <div 
             className={`${styles.profileImage} fallback-avatar`}
             style={{
-              display: usuario.googlePictureUrl && isValidImageUrl(usuario.googlePictureUrl) ? 'none' : 'flex',
+              display: (usuario.googlePictureUrl && isValidImageUrl(usuario.googlePictureUrl) && !imageLoadError) ? 'none' : 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '3rem',
@@ -841,6 +999,11 @@ const Perfil: React.FC = () => {
               <p className={styles.modalText}>
                 ¿Estás seguro de que quieres eliminar tu cuenta? Esta acción es irreversible y no se puede deshacer.
               </p>
+              {isGoogleUser() && (
+                <div className={styles.modalInfo}>
+                  <strong>ℹ️ Nota:</strong> Como usuario de Google, no necesitarás ingresar contraseña.
+                </div>
+              )}
               <div className={styles.modalWarning}>
                 <strong>⚠️ Advertencia:</strong>
                 <ul>

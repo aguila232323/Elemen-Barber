@@ -2,6 +2,7 @@ package com.pomelo.app.springboot.app.controller;
 
 import com.pomelo.app.springboot.app.entity.Usuario;
 import com.pomelo.app.springboot.app.service.UsuarioService;
+import com.pomelo.app.springboot.app.repository.UsuarioRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +20,11 @@ import java.util.Map;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final UsuarioRepository usuarioRepository;
 
-    public UsuarioController(UsuarioService usuarioService) {
+    public UsuarioController(UsuarioService usuarioService, UsuarioRepository usuarioRepository) {
         this.usuarioService = usuarioService;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @GetMapping("/perfil")
@@ -70,9 +73,6 @@ public class UsuarioController {
     public ResponseEntity<Map<String, Object>> eliminarCuenta(@AuthenticationPrincipal UserDetails userDetails, @RequestBody Map<String, String> request) {
         try {
             String password = request.get("password");
-            if (password == null || password.trim().isEmpty()) {
-                throw new RuntimeException("La contraseña es requerida");
-            }
             
             // Buscar usuario por email para obtener el ID
             Usuario usuario = usuarioService.findByEmail(userDetails.getUsername());
@@ -80,7 +80,32 @@ public class UsuarioController {
                 throw new RuntimeException("Usuario no encontrado");
             }
             
-            usuarioService.eliminarCuenta(usuario.getId(), password);
+            // Verificar si es usuario de Google (tiene contraseña especial)
+            boolean isGoogleUser = "GOOGLE_AUTH".equals(usuario.getPassword());
+            
+            // Debug: imprimir información del usuario
+            System.out.println("Debug - Email: " + usuario.getEmail());
+            System.out.println("Debug - Password: " + usuario.getPassword());
+            System.out.println("Debug - Is Google User: " + isGoogleUser);
+            System.out.println("Debug - Provided Password: " + password);
+            
+            // Si es usuario de Google, permitir eliminación sin contraseña o con contraseña especial
+            if (isGoogleUser) {
+                if (password == null || password.trim().isEmpty() || "GOOGLE_AUTH_USER".equals(password)) {
+                    // Para usuarios de Google, usar contraseña especial
+                    System.out.println("Debug - Eliminando usuario de Google");
+                    usuarioService.eliminarCuenta(usuario.getId(), "GOOGLE_AUTH");
+                } else {
+                    throw new RuntimeException("Los usuarios de Google no necesitan ingresar contraseña");
+                }
+            } else {
+                // Para usuarios normales, requerir contraseña
+                if (password == null || password.trim().isEmpty()) {
+                    throw new RuntimeException("La contraseña es requerida");
+                }
+                System.out.println("Debug - Eliminando usuario normal");
+                usuarioService.eliminarCuenta(usuario.getId(), password);
+            }
             
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Cuenta eliminada correctamente");
@@ -212,6 +237,36 @@ public class UsuarioController {
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("message", "Error al actualizar el avatar: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    @PutMapping("/google-picture")
+    @Operation(summary = "Actualizar imagen de Google", description = "Actualiza la imagen de Google del usuario autenticado")
+    public ResponseEntity<Map<String, Object>> actualizarGooglePicture(@AuthenticationPrincipal UserDetails userDetails, @RequestBody Map<String, String> request) {
+        try {
+            // Buscar usuario por email para obtener el ID
+            Usuario usuario = usuarioService.findByEmail(userDetails.getUsername());
+            if (usuario == null) {
+                throw new RuntimeException("Usuario no encontrado");
+            }
+            
+            String googlePictureUrl = request.get("googlePictureUrl");
+            if (googlePictureUrl == null || googlePictureUrl.trim().isEmpty()) {
+                throw new RuntimeException("URL de imagen de Google requerida");
+            }
+            
+            usuario.setGooglePictureUrl(googlePictureUrl);
+            usuarioRepository.save(usuario);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Imagen de Google actualizada correctamente");
+            response.put("googlePictureUrl", googlePictureUrl);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Error al actualizar la imagen de Google: " + e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }

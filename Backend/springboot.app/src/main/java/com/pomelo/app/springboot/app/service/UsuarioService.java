@@ -97,9 +97,31 @@ public class UsuarioService {
             
             Usuario usuario = usuarioExistente.get();
             
-            // Verificar contraseña
-            if (!passwordEncoder.matches(password, usuario.getPassword())) {
-                throw new RuntimeException("Contraseña incorrecta");
+            // Verificar si es usuario de Google
+            boolean isGoogleUser = "GOOGLE_AUTH".equals(usuario.getPassword());
+            
+            // Debug: imprimir información
+            System.out.println("Debug Service - Email: " + usuario.getEmail());
+            System.out.println("Debug Service - Stored Password: " + usuario.getPassword());
+            System.out.println("Debug Service - Provided Password: " + password);
+            System.out.println("Debug Service - Is Google User: " + isGoogleUser);
+            
+            if (isGoogleUser) {
+                // Para usuarios de Google, verificar contraseña especial
+                System.out.println("Debug Service - Verificando contraseña de Google");
+                if (!"GOOGLE_AUTH".equals(password)) {
+                    System.out.println("Debug Service - Contraseña de Google incorrecta");
+                    throw new RuntimeException("Contraseña incorrecta para usuario de Google");
+                }
+                System.out.println("Debug Service - Contraseña de Google correcta");
+            } else {
+                // Para usuarios normales, verificar contraseña encriptada
+                System.out.println("Debug Service - Verificando contraseña normal");
+                if (!passwordEncoder.matches(password, usuario.getPassword())) {
+                    System.out.println("Debug Service - Contraseña normal incorrecta");
+                    throw new RuntimeException("Contraseña incorrecta");
+                }
+                System.out.println("Debug Service - Contraseña normal correcta");
             }
             
             // Eliminar todas las citas del usuario
@@ -165,8 +187,11 @@ public class UsuarioService {
                 throw new RuntimeException("Usuario no encontrado con email: " + email);
             }
 
-            // Verificar si el usuario está bloqueado
-            if (usuario.getLockoutUntil() != null && LocalDateTime.now().isBefore(usuario.getLockoutUntil())) {
+            // Permitir reenvío incluso si está bloqueado temporalmente
+            // Solo verificar si el bloqueo es muy largo (más de 1 hora)
+            if (usuario.getLockoutUntil() != null && 
+                LocalDateTime.now().isBefore(usuario.getLockoutUntil()) &&
+                java.time.Duration.between(LocalDateTime.now(), usuario.getLockoutUntil()).toHours() > 1) {
                 long minutosRestantes = java.time.Duration.between(LocalDateTime.now(), usuario.getLockoutUntil()).toMinutes();
                 throw new RuntimeException("Cuenta bloqueada temporalmente. Intenta de nuevo en " + minutosRestantes + " minutos.");
             }
@@ -187,6 +212,39 @@ public class UsuarioService {
             
         } catch (Exception e) {
             throw new RuntimeException("Error al enviar código de verificación: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Método específico para reenvío que es más permisivo
+     * Permite reenvío incluso cuando el usuario esté bloqueado temporalmente
+     */
+    public void reenviarCodigoVerificacion(String email) {
+        try {
+            Usuario usuario = findByEmail(email);
+            if (usuario == null) {
+                throw new RuntimeException("Usuario no encontrado con email: " + email);
+            }
+
+            // No verificar bloqueo temporal para reenvío
+            // Esto permite al usuario obtener un nuevo código incluso si está bloqueado
+
+            String codigoVerificacion = generarCodigoVerificacion();
+            LocalDateTime expiracion = LocalDateTime.now().plusMinutes(10);
+
+            usuario.setVerificationCode(codigoVerificacion);
+            usuario.setVerificationCodeExpiry(expiracion);
+            usuario.setIsEmailVerified(false);
+            usuario.setVerificationAttempts(0); // Resetear intentos al enviar nuevo código
+            usuario.setLockoutUntil(null); // Resetear bloqueo
+
+            usuarioRepository.save(usuario);
+
+            // Enviar email con el código
+            emailService.enviarCodigoVerificacion(email, usuario.getNombre(), codigoVerificacion);
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al reenviar código de verificación: " + e.getMessage(), e);
         }
     }
 

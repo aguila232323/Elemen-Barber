@@ -59,6 +59,16 @@ public class GoogleAuthService {
             // Actualizar teléfono si no lo tiene y viene de Google
             if ((usuario.getTelefono() == null || usuario.getTelefono().isEmpty()) && telefono != null && !telefono.isEmpty()) {
                 usuario.setTelefono(telefono);
+            }
+            
+            // Actualizar imagen de Google si viene de Google y no la tiene o es diferente
+            if (picture != null && !picture.isEmpty() && (usuario.getGooglePictureUrl() == null || !usuario.getGooglePictureUrl().equals(picture))) {
+                usuario.setGooglePictureUrl(picture);
+            }
+            
+            // Guardar cambios si se actualizó teléfono o imagen
+            if ((telefono != null && !telefono.isEmpty() && (usuario.getTelefono() == null || usuario.getTelefono().isEmpty())) ||
+                (picture != null && !picture.isEmpty() && (usuario.getGooglePictureUrl() == null || !usuario.getGooglePictureUrl().equals(picture)))) {
                 usuarioRepository.save(usuario);
             }
             
@@ -82,6 +92,7 @@ public class GoogleAuthService {
             newUser.setRol("CLIENTE");
             newUser.setIsEmailVerified(true); // Usuarios de Google ya están verificados
             newUser.setTelefono(telefono); // Guardar el teléfono si está disponible
+            newUser.setGooglePictureUrl(picture); // Guardar la imagen de Google si está disponible
 
             Usuario savedUser = usuarioRepository.save(newUser);
             String token = jwtUtils.generateJwtToken(savedUser.getEmail(), savedUser.getNombre());

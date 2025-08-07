@@ -39,17 +39,19 @@ public class VerificacionController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Email requerido"));
             }
 
-            // Verificar si el usuario existe y no está verificado
+            // Verificar si el usuario existe
             var usuario = usuarioService.findByEmail(email);
             if (usuario == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Usuario no encontrado"));
             }
 
-            if (Boolean.TRUE.equals(usuario.getIsEmailVerified())) {
-                return ResponseEntity.badRequest().body(Map.of("error", "El usuario ya está verificado"));
-            }
+            // Permitir reenvío incluso si ya está verificado (por si acaso)
+            // if (Boolean.TRUE.equals(usuario.getIsEmailVerified())) {
+            //     return ResponseEntity.badRequest().body(Map.of("error", "El usuario ya está verificado"));
+            // }
 
-            usuarioService.enviarCodigoVerificacion(email);
+            // Usar el método específico para reenvío que es más permisivo
+            usuarioService.reenviarCodigoVerificacion(email);
             return ResponseEntity.ok(Map.of("message", "Código de verificación reenviado correctamente"));
             
         } catch (Exception e) {
@@ -65,8 +67,15 @@ public class VerificacionController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Email requerido"));
             }
 
-            // Enviar código sin validaciones estrictas
-            usuarioService.enviarCodigoVerificacion(email);
+            // Verificar si el usuario existe
+            var usuario = usuarioService.findByEmail(email);
+            if (usuario == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Usuario no encontrado"));
+            }
+
+            // Usar el método específico para reenvío que es más permisivo
+            usuarioService.reenviarCodigoVerificacion(email);
+            
             return ResponseEntity.ok(Map.of("message", "Código de verificación enviado correctamente"));
             
         } catch (Exception e) {
