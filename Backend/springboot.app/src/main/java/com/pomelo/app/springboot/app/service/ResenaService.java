@@ -88,6 +88,11 @@ public class ResenaService {
             .collect(Collectors.toList());
     }
 
+    // Obtener todas las reseñas (para administradores)
+    public List<Resena> obtenerTodasLasResenas() {
+        return resenaRepository.findAllByOrderByFechaCreacionDesc();
+    }
+
     // Obtener estadísticas de reseñas
     public Map<String, Object> obtenerEstadisticasResenas() {
         Map<String, Object> estadisticas = new HashMap<>();

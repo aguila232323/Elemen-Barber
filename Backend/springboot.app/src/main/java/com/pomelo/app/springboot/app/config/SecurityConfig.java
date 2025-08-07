@@ -62,6 +62,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/vacaciones/**").hasRole("ADMIN")
                 .requestMatchers("/api/vacaciones/verificar/**").permitAll()
                 .requestMatchers("/api/resenas/publicas").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/resenas/todas").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/resenas/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers.frameOptions().disable())

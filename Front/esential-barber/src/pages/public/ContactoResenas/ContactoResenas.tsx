@@ -1,12 +1,23 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import styles from './ContactoResenas.module.css'
 import { FaMapMarkerAlt, FaWhatsapp, FaEnvelope, FaFacebookF, FaInstagram, FaTiktok, FaTwitter } from 'react-icons/fa';
 
 const ContactoResenas: React.FC = () => {
+  const [mapaLoaded, setMapaLoaded] = useState(false);
+  const [mapaError, setMapaError] = useState(false);
+
   // Obtener los horarios desde las variables CSS
   const getScheduleValue = (variableName: string) => {
     return getComputedStyle(document.documentElement).getPropertyValue(variableName).replace(/"/g, '');
   };
+
+  // Preload de la imagen del mapa
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => setMapaLoaded(true);
+    img.onerror = () => setMapaError(true);
+    img.src = '/mapa.png';
+  }, []);
 
   return (
     <div className={styles.contactoContainer}>
@@ -110,14 +121,30 @@ const ContactoResenas: React.FC = () => {
               href="https://www.google.com/maps?q=4+Paseo+Dr.+Revuelta,+Begíjar,+Andalucía" 
               target="_blank" 
               rel="noopener noreferrer" 
-              className={styles.mapaLink}
+              className={`${styles.mapaLink} ${mapaLoaded ? styles.mapaLoaded : ''} ${mapaError ? styles.mapaError : ''}`}
               style={{
-                backgroundImage: `url('/mapa.png?v=${Date.now()}')`,
+                backgroundImage: mapaLoaded ? `url('/mapa.png')` : 'none',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat'
               }}
             >
+              {/* Loading state */}
+              {!mapaLoaded && !mapaError && (
+                <div className={styles.mapaLoading}>
+                  <div className={styles.loadingSpinner}></div>
+                  <span>Cargando mapa...</span>
+                </div>
+              )}
+              
+              {/* Error state */}
+              {mapaError && (
+                <div className={styles.mapaErrorState}>
+                  <FaMapMarkerAlt />
+                  <span>Ver ubicación</span>
+                </div>
+              )}
+              
               {/* Pin posicionado en la ubicación real del mapa */}
               <FaMapMarkerAlt className={styles.mapaIcon} />
             </a>

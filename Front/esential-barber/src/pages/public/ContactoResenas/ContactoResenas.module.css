@@ -234,6 +234,56 @@
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
+/* Estados de carga del mapa */
+.mapaLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  z-index: 3;
+}
+
+.loadingSpinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(33, 150, 243, 0.3);
+  border-top: 2px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.mapaErrorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  z-index: 3;
+}
+
+.mapaErrorState svg {
+  font-size: 2rem;
+  color: var(--primary-color);
+}
+
+.mapaLoaded {
+  transition: opacity 0.3s ease;
+}
+
+.mapaError {
+  background: radial-gradient(circle at 60% 40%, rgba(33,150,243,0.1) 0%, #121212 80%) !important;
+}
+
 /* ===== RESPONSIVE DESIGN ===== */
 
 /* Tablets y pantallas medianas */

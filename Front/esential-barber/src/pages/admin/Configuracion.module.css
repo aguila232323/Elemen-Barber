@@ -38,6 +38,12 @@
   color: #1976d2;
 }
 
+/* Icono de reseñas sin animación */
+.resenaIcon {
+  font-size: 2rem;
+  color: #1976d2;
+}
+
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -167,7 +173,7 @@
   max-width: 450px;
   border: 1px solid rgba(255,255,255,0.1);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   min-height: fit-content;
@@ -405,10 +411,10 @@
   max-width: 600px;
   width: 90%;
   max-height: 80vh;
-  overflow-y: auto;
+  overflow: visible;
   border: 1px solid rgba(255,255,255,0.1);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .modal::before {
@@ -563,7 +569,7 @@
     max-width: 85vw;
     padding: 1.8rem;
     max-height: 80vh;
-    overflow-y: auto;
+    overflow: visible;
   }
   
   .serviciosSection,
@@ -624,7 +630,7 @@
     padding: 1.5rem;
     margin: 1rem;
     max-height: 85vh;
-    overflow-y: auto;
+    overflow: visible;
   }
   
   .formModal {
@@ -721,7 +727,7 @@
     max-width: 95vw;
     margin: 0.8rem;
     max-height: 90vh;
-    overflow-y: auto;
+    overflow: visible;
     box-sizing: border-box;
   }
   
@@ -825,7 +831,7 @@
     margin: 0.5rem;
     border-radius: 12px;
     max-height: 95vh;
-    overflow-y: auto;
+    overflow: visible;
     box-sizing: border-box;
   }
   
@@ -936,7 +942,7 @@
     margin: 0.3rem;
     border-radius: 10px;
     max-height: 98vh;
-    overflow-y: auto;
+    overflow: visible;
     box-sizing: border-box;
   }
   
@@ -1042,7 +1048,7 @@
   .modal {
     max-height: 80vh;
     padding: 1.2rem;
-    overflow-y: auto;
+    overflow: visible;
   }
   
   .serviciosSection,
@@ -1071,7 +1077,7 @@
   
   .modal {
     max-height: 85vh;
-    overflow-y: auto;
+    overflow: visible;
   }
 }
 

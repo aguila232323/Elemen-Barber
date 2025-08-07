@@ -80,6 +80,42 @@ public class ResenaController {
         }
     }
 
+    @GetMapping("/todas")
+    @Operation(summary = "Todas las reseñas", description = "Obtiene todas las reseñas (solo para administradores)")
+    public ResponseEntity<?> obtenerTodasLasResenas() {
+        try {
+            List<Resena> resenas = resenaService.obtenerTodasLasResenas();
+            
+            // Formatear las reseñas para el frontend
+            List<Map<String, Object>> resenasFormateadas = new ArrayList<>();
+            for (Resena resena : resenas) {
+                Map<String, Object> resenaMap = new HashMap<>();
+                resenaMap.put("id", resena.getId());
+                resenaMap.put("calificacion", resena.getCalificacion());
+                resenaMap.put("comentario", resena.getComentario());
+                resenaMap.put("fechaCreacion", resena.getFechaCreacion());
+                
+                // Información del cliente
+                if (resena.getCliente() != null) {
+                    Map<String, Object> clienteMap = new HashMap<>();
+                    clienteMap.put("id", resena.getCliente().getId());
+                    clienteMap.put("nombre", resena.getCliente().getNombre());
+                    clienteMap.put("email", resena.getCliente().getEmail());
+                    resenaMap.put("usuario", clienteMap);
+                }
+                
+                resenasFormateadas.add(resenaMap);
+            }
+            
+            return ResponseEntity.ok(resenasFormateadas);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Error al obtener las reseñas");
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
     @GetMapping("/publicas")
     @Operation(summary = "Reseñas públicas", description = "Obtiene las reseñas públicas para mostrar en la página principal")
     public ResponseEntity<?> obtenerResenasPublicas() {

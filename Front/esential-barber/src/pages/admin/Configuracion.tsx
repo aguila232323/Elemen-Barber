@@ -130,6 +130,16 @@ const Configuracion: React.FC = () => {
   const [busquedaUsuarioBan, setBusquedaUsuarioBan] = useState<string>('');
   const [mostrarDropdownBan, setMostrarDropdownBan] = useState(false);
 
+  // Estados para gestión de reseñas
+  const [resenasModal, setResenasModal] = useState(false);
+  const [resenasList, setResenasList] = useState<any[]>([]);
+  const [resenasLoading, setResenasLoading] = useState(false);
+  const [resenaSeleccionada, setResenaSeleccionada] = useState<number | null>(null);
+  const [eliminarResenaLoading, setEliminarResenaLoading] = useState(false);
+  const [resenasMsg, setResenasMsg] = useState<string | null>(null);
+  const [busquedaResena, setBusquedaResena] = useState<string>('');
+  const [mostrarDropdownResena, setMostrarDropdownResena] = useState(false);
+
   // Fetch servicios al abrir modales de editar/eliminar
   const fetchServicios = async () => {
     setServiciosLoading(true);
@@ -159,16 +169,19 @@ const Configuracion: React.FC = () => {
       if (!target.closest('.user-dropdown-ban')) {
         setMostrarDropdownBan(false);
       }
+      if (!target.closest('.user-dropdown-resena')) {
+        setMostrarDropdownResena(false);
+      }
     };
 
-    if (mostrarDropdownAdd || mostrarDropdownBan) {
+    if (mostrarDropdownAdd || mostrarDropdownBan || mostrarDropdownResena) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [mostrarDropdownAdd, mostrarDropdownBan]);
+  }, [mostrarDropdownAdd, mostrarDropdownBan, mostrarDropdownResena]);
 
   // Cargar tiempo mínimo actual al montar el componente
   useEffect(() => {
@@ -396,6 +409,20 @@ const Configuracion: React.FC = () => {
     fetchVacaciones();
   };
 
+  const openResenasModal = () => {
+    setModal(null);
+    setCitasModal(null);
+    setTiempoMinimoModal(false);
+    setVacacionesModal(false);
+    setCancelarVacacionesModal(false);
+    setResenasModal(true);
+    setBusquedaResena('');
+    setMostrarDropdownResena(false);
+    setResenaSeleccionada(null);
+    setResenasMsg(null);
+    fetchResenas();
+  };
+
   const fetchVacaciones = async () => {
     try {
       const token = localStorage.getItem('authToken');
@@ -406,6 +433,27 @@ const Configuracion: React.FC = () => {
       setVacacionesList(data);
     } catch {
       setVacacionesList([]);
+    }
+  };
+
+  const fetchResenas = async () => {
+    setResenasLoading(true);
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch('http://localhost:8080/api/resenas/todas', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setResenasList(data);
+      } else {
+        setResenasList([]);
+      }
+    } catch (error) {
+      console.error('Error fetching reseñas:', error);
+      setResenasList([]);
+    } finally {
+      setResenasLoading(false);
     }
   };
 
@@ -504,6 +552,47 @@ const Configuracion: React.FC = () => {
       setWarningModal(false);
     });
     setWarningModal(true);
+  };
+
+  const handleEliminarResena = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resenaSeleccionada) {
+      setResenasMsg('Por favor selecciona una reseña');
+      return;
+    }
+
+    setEliminarResenaLoading(true);
+    setResenasMsg(null);
+
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch(`http://localhost:8080/api/resenas/${resenaSeleccionada}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (res.ok) {
+        setResenasMsg('Reseña eliminada correctamente');
+        setResenaSeleccionada(null);
+        setBusquedaResena('');
+        setMostrarDropdownResena(false);
+        fetchResenas();
+        setTimeout(() => {
+          setResenasModal(false);
+          setResenasMsg(null);
+        }, 1500);
+      } else {
+        const errorData = await res.json();
+        setResenasMsg(errorData.message || 'Error al eliminar la reseña');
+      }
+    } catch (error) {
+      setResenasMsg('Error al eliminar la reseña');
+    } finally {
+      setEliminarResenaLoading(false);
+    }
   };
 
   // Al seleccionar servicio en modificar, rellenar campos
@@ -1146,9 +1235,9 @@ const Configuracion: React.FC = () => {
                   background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
                   border: '1px solid rgba(100, 181, 246, 0.3)',
                   borderRadius: '12px',
-                  maxHeight: '250px',
+                  maxHeight: '300px',
                   overflowY: 'auto',
-                  zIndex: 1000,
+                  zIndex: 9999,
                   boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 4px 16px rgba(100, 181, 246, 0.1)',
                   backdropFilter: 'blur(10px)',
                   marginTop: '4px',
@@ -1180,27 +1269,31 @@ const Configuracion: React.FC = () => {
                           gap: '12px'
                         }}
                         onMouseOver={(e) => {
-                          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(100, 181, 246, 0.15) 0%, rgba(100, 181, 246, 0.05) 100%)';
+                          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(100, 181, 246, 0.2) 0%, rgba(100, 181, 246, 0.1) 100%)';
                           e.currentTarget.style.transform = 'translateX(4px)';
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(100, 181, 246, 0.2)';
                         }}
                         onMouseOut={(e) => {
                           e.currentTarget.style.background = 'transparent';
                           e.currentTarget.style.transform = 'translateX(0)';
+                          e.currentTarget.style.boxShadow = 'none';
                         }}
                       >
                         {/* Avatar/Icono del usuario */}
                         <div style={{
-                          width: '32px',
-                          height: '32px',
+                          width: '36px',
+                          height: '36px',
                           borderRadius: '50%',
                           background: 'linear-gradient(135deg, #64b5f6 0%, #1976d2 100%)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           color: '#fff',
-                          fontSize: '0.8rem',
+                          fontSize: '0.9rem',
                           fontWeight: 'bold',
-                          flexShrink: 0
+                          flexShrink: 0,
+                          boxShadow: '0 2px 8px rgba(100, 181, 246, 0.3)',
+                          border: '2px solid rgba(255,255,255,0.1)'
                         }}>
                           {usuario.nombre.charAt(0).toUpperCase()}
                         </div>
@@ -1210,32 +1303,34 @@ const Configuracion: React.FC = () => {
                           <div style={{
                             fontWeight: '600',
                             color: '#fff',
-                            marginBottom: '2px',
-                            fontSize: '0.95rem',
-                            textAlign: 'left'
+                            marginBottom: '4px',
+                            fontSize: '1rem',
+                            textAlign: 'left',
+                            letterSpacing: '0.5px'
                           }}>
                             {usuario.nombre}
                           </div>
                           <div style={{
-                            color: 'rgba(255,255,255,0.7)',
-                            fontSize: '0.8rem',
+                            color: 'rgba(255,255,255,0.8)',
+                            fontSize: '0.85rem',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '4px',
+                            gap: '6px',
                             textAlign: 'left'
                           }}>
-                            <span style={{ fontSize: '0.7rem' }}>📧</span>
+                            <span style={{ fontSize: '0.75rem', opacity: '0.8' }}>📧</span>
                             {usuario.email}
                           </div>
                         </div>
                         
                         {/* Indicador de selección */}
                         <div style={{
-                          width: '16px',
-                          height: '16px',
+                          width: '18px',
+                          height: '18px',
                           borderRadius: '50%',
-                          border: '2px solid rgba(100, 181, 246, 0.3)',
-                          transition: 'all 0.2s ease'
+                          border: '2px solid rgba(100, 181, 246, 0.4)',
+                          transition: 'all 0.2s ease',
+                          background: 'rgba(100, 181, 246, 0.1)'
                         }} />
                       </div>
                     ))}
@@ -1246,12 +1341,17 @@ const Configuracion: React.FC = () => {
                     usuario.email.toLowerCase().includes(busquedaUsuarioAdd.toLowerCase())
                   ).length === 0 && (
                     <div style={{
-                      padding: '16px',
+                      padding: '20px 16px',
                       textAlign: 'center',
                       color: 'rgba(255,255,255,0.6)',
                       fontSize: '0.9rem',
-                      fontStyle: 'italic'
+                      fontStyle: 'italic',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '8px'
                     }}>
+                      <span style={{ fontSize: '1.5rem', opacity: '0.5' }}>👤</span>
                       No se encontraron usuarios con ese nombre o email
                     </div>
                   )}
@@ -1382,6 +1482,10 @@ const Configuracion: React.FC = () => {
            </button>
          </div>
        </div>
+
+
+
+
 
         {/* Modal de Vacaciones */}
         {vacacionesModal && (
@@ -1579,6 +1683,21 @@ const Configuracion: React.FC = () => {
           </div>
         </div>
 
+        {/* Sección de Gestión de Reseñas */}
+        <div className={styles.serviciosSection} style={{ marginTop: '2rem' }}>
+          <div className={styles.header}>
+            <FaTrash className={styles.resenaIcon} />
+            <h2>Gestionar Reseñas</h2>
+          </div>
+          
+          <div className={styles.buttonGroup}>
+            <button className={`${styles.configBtn} ${styles.deleteBtn}`} onClick={openResenasModal}>
+              <FaTrash className={styles.btnIcon} />
+              <span>Eliminar Reseña</span>
+            </button>
+          </div>
+        </div>
+
         {/* Modal de Gestión de Usuarios */}
         {usuariosModal && (
           <div className={styles.modal}>
@@ -1652,9 +1771,9 @@ const Configuracion: React.FC = () => {
                     background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
                     border: '1px solid rgba(100, 181, 246, 0.3)',
                     borderRadius: '12px',
-                    maxHeight: '250px',
+                    maxHeight: '300px',
                     overflowY: 'auto',
-                    zIndex: 1000,
+                    zIndex: 9999,
                     boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 4px 16px rgba(100, 181, 246, 0.1)',
                     backdropFilter: 'blur(10px)',
                     marginTop: '4px',
@@ -1687,18 +1806,20 @@ const Configuracion: React.FC = () => {
                             gap: '12px'
                           }}
                           onMouseOver={(e) => {
-                            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(100, 181, 246, 0.15) 0%, rgba(100, 181, 246, 0.05) 100%)';
+                            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(100, 181, 246, 0.2) 0%, rgba(100, 181, 246, 0.1) 100%)';
                             e.currentTarget.style.transform = 'translateX(4px)';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(100, 181, 246, 0.2)';
                           }}
                           onMouseOut={(e) => {
                             e.currentTarget.style.background = 'transparent';
                             e.currentTarget.style.transform = 'translateX(0)';
+                            e.currentTarget.style.boxShadow = 'none';
                           }}
                         >
                           {/* Avatar/Icono del usuario */}
                           <div style={{
-                            width: '32px',
-                            height: '32px',
+                            width: '36px',
+                            height: '36px',
                             borderRadius: '50%',
                             background: usuario.baneado 
                               ? 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)' 
@@ -1707,9 +1828,13 @@ const Configuracion: React.FC = () => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             color: '#fff',
-                            fontSize: '0.8rem',
+                            fontSize: '0.9rem',
                             fontWeight: 'bold',
-                            flexShrink: 0
+                            flexShrink: 0,
+                            boxShadow: usuario.baneado 
+                              ? '0 2px 8px rgba(231, 76, 60, 0.3)' 
+                              : '0 2px 8px rgba(100, 181, 246, 0.3)',
+                            border: '2px solid rgba(255,255,255,0.1)'
                           }}>
                             {usuario.nombre.charAt(0).toUpperCase()}
                           </div>
@@ -1719,45 +1844,52 @@ const Configuracion: React.FC = () => {
                             <div style={{
                               fontWeight: '600',
                               color: '#fff',
-                              marginBottom: '2px',
-                              fontSize: '0.95rem',
-                              textAlign: 'left'
+                              marginBottom: '4px',
+                              fontSize: '1rem',
+                              textAlign: 'left',
+                              letterSpacing: '0.5px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px'
                             }}>
                               {usuario.nombre}
                               {usuario.baneado && (
                                 <span style={{
-                                  marginLeft: '8px',
-                                  padding: '2px 6px',
+                                  padding: '3px 8px',
                                   backgroundColor: '#e74c3c',
                                   color: '#fff',
-                                  borderRadius: '4px',
+                                  borderRadius: '6px',
                                   fontSize: '0.7rem',
-                                  fontWeight: 'normal'
+                                  fontWeight: 'bold',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.5px',
+                                  boxShadow: '0 2px 4px rgba(231, 76, 60, 0.3)'
                                 }}>
-                                  BANEADO
+                                  Baneado
                                 </span>
                               )}
                             </div>
                             <div style={{
-                              color: 'rgba(255,255,255,0.7)',
-                              fontSize: '0.8rem',
+                              color: 'rgba(255,255,255,0.8)',
+                              fontSize: '0.85rem',
                               display: 'flex',
                               alignItems: 'center',
-                              gap: '4px',
+                              gap: '6px',
                               textAlign: 'left'
                             }}>
-                              <span style={{ fontSize: '0.7rem' }}>📧</span>
+                              <span style={{ fontSize: '0.75rem', opacity: '0.8' }}>📧</span>
                               {usuario.email}
                             </div>
                           </div>
                           
                           {/* Indicador de selección */}
                           <div style={{
-                            width: '16px',
-                            height: '16px',
+                            width: '18px',
+                            height: '18px',
                             borderRadius: '50%',
-                            border: '2px solid rgba(100, 181, 246, 0.3)',
-                            transition: 'all 0.2s ease'
+                            border: '2px solid rgba(100, 181, 246, 0.4)',
+                            transition: 'all 0.2s ease',
+                            background: 'rgba(100, 181, 246, 0.1)'
                           }} />
                         </div>
                       ))}
@@ -1769,12 +1901,19 @@ const Configuracion: React.FC = () => {
                        usuario.email.toLowerCase().includes(busquedaUsuarioBan.toLowerCase()))
                     ).length === 0 && (
                       <div style={{
-                        padding: '16px',
+                        padding: '20px 16px',
                         textAlign: 'center',
                         color: 'rgba(255,255,255,0.6)',
                         fontSize: '0.9rem',
-                        fontStyle: 'italic'
+                        fontStyle: 'italic',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '8px'
                       }}>
+                        <span style={{ fontSize: '1.5rem', opacity: '0.5' }}>
+                          {usuariosModal === 'banear' ? '🚫' : '✅'}
+                        </span>
                         {busquedaUsuarioBan 
                           ? 'No se encontraron usuarios con ese nombre o email' 
                           : usuariosModal === 'banear' 
@@ -1850,6 +1989,245 @@ const Configuracion: React.FC = () => {
             </form>
           </div>
         )}
+
+        {/* Modal de Eliminar Reseñas */}
+        {resenasModal && (
+          <div className={styles.modal}>
+            <div className={styles.modalHeader}>
+              <FaTrash className={styles.modalIcon} />
+              <h3>Eliminar Reseña</h3>
+            </div>
+            <form className={styles.formModal} onSubmit={handleEliminarResena}>
+              <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: 'rgba(220,53,69,0.1)', borderRadius: '8px', border: '1px solid rgba(220,53,69,0.3)' }}>
+                <h4 style={{ margin: '0 0 0.5rem 0', color: '#dc3545', fontSize: '1rem' }}>⚠️ Advertencia</h4>
+                <p style={{ margin: '0', fontSize: '0.9rem', color: '#ccc', lineHeight: '1.4' }}>
+                  Esta acción eliminará permanentemente la reseña seleccionada. Esta acción no se puede deshacer.
+                </p>
+              </div>
+              
+              {/* Campo de búsqueda con dropdown elegante */}
+              <div style={{ position: 'relative' }} className="user-dropdown-resena">
+                <div style={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    left: '12px',
+                    zIndex: 1,
+                    color: 'rgba(255,255,255,0.6)',
+                    fontSize: '1rem'
+                  }}>
+                    🔍
+                  </div>
+                  <input
+                    type="text"
+                    value={busquedaResena}
+                    onChange={(e) => {
+                      setBusquedaResena(e.target.value);
+                      setMostrarDropdownResena(true);
+                    }}
+                    onFocus={(e) => {
+                      setMostrarDropdownResena(true);
+                      (e.target as HTMLInputElement).style.border = '1px solid rgba(100, 181, 246, 0.5)';
+                      (e.target as HTMLInputElement).style.boxShadow = '0 0 0 2px rgba(100, 181, 246, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      (e.target as HTMLInputElement).style.border = '1px solid rgba(100, 181, 246, 0.2)';
+                      (e.target as HTMLInputElement).style.boxShadow = 'none';
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.target as HTMLInputElement).style.border = '1px solid rgba(100, 181, 246, 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (document.activeElement !== e.target) {
+                        (e.target as HTMLInputElement).style.border = '1px solid rgba(100, 181, 246, 0.2)';
+                      }
+                    }}
+                    placeholder="Buscar reseña por nombre de usuario..."
+                    className={styles.input}
+                    style={{
+                      paddingLeft: '40px',
+                      background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+                      border: '1px solid rgba(100, 181, 246, 0.2)',
+                      borderRadius: '8px',
+                      transition: 'all 0.3s ease'
+                    }}
+                  />
+                </div>
+                {mostrarDropdownResena && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+                    border: '1px solid rgba(100, 181, 246, 0.3)',
+                    borderRadius: '12px',
+                    maxHeight: '300px',
+                    overflowY: 'auto',
+                    zIndex: 9999,
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 4px 16px rgba(100, 181, 246, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                    marginTop: '4px',
+                    borderTop: 'none',
+                    borderTopLeftRadius: '0',
+                    borderTopRightRadius: '0'
+                  }}>
+                    {resenasList
+                      .filter(resena => 
+                        !busquedaResena || 
+                        resena.usuario?.nombre?.toLowerCase().includes(busquedaResena.toLowerCase())
+                      )
+                      .map(resena => (
+                        <div
+                          key={resena.id}
+                          onClick={() => {
+                            setResenaSeleccionada(resena.id);
+                            setBusquedaResena(`${resena.usuario?.nombre || 'Usuario'} - ${resena.comentario?.substring(0, 30) || 'Sin comentario'}...`);
+                            setMostrarDropdownResena(false);
+                          }}
+                          style={{
+                            padding: '12px 16px',
+                            cursor: 'pointer',
+                            borderBottom: '1px solid rgba(255,255,255,0.05)',
+                            fontSize: '0.9rem',
+                            transition: 'all 0.2s ease',
+                            color: '#fff'
+                          }}
+                                                     onMouseEnter={(e) => {
+                             e.currentTarget.style.background = 'linear-gradient(135deg, rgba(100, 181, 246, 0.2) 0%, rgba(100, 181, 246, 0.1) 100%)';
+                             e.currentTarget.style.transform = 'translateX(4px)';
+                             e.currentTarget.style.boxShadow = '0 4px 12px rgba(100, 181, 246, 0.2)';
+                           }}
+                           onMouseLeave={(e) => {
+                             e.currentTarget.style.background = 'transparent';
+                             e.currentTarget.style.transform = 'translateX(0)';
+                             e.currentTarget.style.boxShadow = 'none';
+                           }}
+                        >
+                          <div style={{ 
+                            fontWeight: '600', 
+                            marginBottom: '4px', 
+                            fontSize: '1rem',
+                            color: '#fff',
+                            letterSpacing: '0.5px'
+                          }}>
+                            {resena.usuario?.nombre || 'Usuario'}
+                          </div>
+                          <div style={{ 
+                            fontSize: '0.85rem', 
+                            color: 'rgba(255,255,255,0.8)', 
+                            marginBottom: '4px',
+                            lineHeight: '1.3'
+                          }}>
+                            {resena.comentario?.substring(0, 50) || 'Sin comentario'}...
+                          </div>
+                          <div style={{ 
+                            fontSize: '0.75rem', 
+                            color: 'rgba(255,255,255,0.6)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}>
+                            <span style={{ fontSize: '0.7rem' }}>📅</span>
+                            {new Date(resena.fechaCreacion).toLocaleDateString()}
+                          </div>
+                        </div>
+                      ))}
+                    {resenasList.filter(resena => 
+                      !busquedaResena || 
+                      resena.usuario?.nombre?.toLowerCase().includes(busquedaResena.toLowerCase())
+                    ).length === 0 && (
+                      <div style={{
+                        padding: '20px 16px',
+                        textAlign: 'center',
+                        color: 'rgba(255,255,255,0.6)',
+                        fontSize: '0.9rem',
+                        fontStyle: 'italic',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}>
+                        <span style={{ fontSize: '1.5rem', opacity: '0.5' }}>🔍</span>
+                        {busquedaResena ? 'No se encontraron reseñas con ese nombre' : 'No hay reseñas disponibles'}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+
+
+              {resenaSeleccionada && (
+                <div style={{ 
+                  padding: '1rem', 
+                  backgroundColor: 'rgba(255,255,255,0.05)', 
+                  borderRadius: '8px', 
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  marginBottom: '1rem'
+                }}>
+                  <h5 style={{ margin: '0 0 0.5rem 0', color: '#fff' }}>Reseña seleccionada:</h5>
+                  {resenasList.find(r => r.id === resenaSeleccionada) && (
+                    <div>
+                      <p style={{ margin: '0 0 0.5rem 0', color: '#ccc' }}>
+                        <strong>Usuario:</strong> {resenasList.find(r => r.id === resenaSeleccionada)?.usuario?.nombre || 'Desconocido'}
+                      </p>
+                      <p style={{ margin: '0 0 0.5rem 0', color: '#ccc' }}>
+                        <strong>Comentario:</strong> {resenasList.find(r => r.id === resenaSeleccionada)?.comentario || 'Sin comentario'}
+                      </p>
+                      <p style={{ margin: '0', color: '#ccc' }}>
+                        <strong>Fecha:</strong> {new Date(resenasList.find(r => r.id === resenaSeleccionada)?.fechaCreacion || '').toLocaleDateString()}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {resenasLoading && (
+                <div style={{ textAlign: 'center', color: '#666', fontStyle: 'italic' }}>
+                  Cargando reseñas...
+                </div>
+              )}
+
+
+
+              <div className={styles.modalBtnGroup}>
+                <button 
+                  className={styles.deleteBtn} 
+                  type="submit" 
+                  disabled={eliminarResenaLoading || !resenaSeleccionada || resenasList.length === 0}
+                >
+                  <FaTrash className={styles.btnIcon} />
+                  {eliminarResenaLoading ? 'Eliminando...' : 'Eliminar Reseña'}
+                </button>
+                <button 
+                  className={styles.cancelBtn} 
+                  type="button" 
+                  onClick={() => {
+                    setResenasModal(false);
+                    setResenaSeleccionada(null);
+                    setResenasMsg(null);
+                    setBusquedaResena('');
+                    setMostrarDropdownResena(false);
+                  }} 
+                  disabled={eliminarResenaLoading}
+                >
+                  <FaTimes className={styles.btnIcon} />
+                  Cancelar
+                </button>
+              </div>
+              {resenasMsg && (
+                <div className={`${styles.message} ${resenasMsg.includes('correctamente') ? styles.success : styles.error}`}>
+                  {resenasMsg}
+                </div>
+              )}
+            </form>
+          </div>
+                 )}
+
     </div>
   );
 };
