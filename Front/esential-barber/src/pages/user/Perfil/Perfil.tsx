@@ -689,7 +689,7 @@ const Perfil: React.FC = () => {
             <button 
               className={styles.profileImageEdit}
               onClick={openAvatarSelector}
-              title="Cambiar avatar"
+              title="Modificar avatar"
             >
               <FaUserEdit />
             </button>

@@ -319,6 +319,23 @@
   .modalBody {
     padding: 0 20px 20px 20px;
   }
+  
+  .serviceContent {
+    gap: 14px;
+  }
+  
+  .serviceIcon {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .serviceName {
+    font-size: 1.05rem;
+  }
+  
+  .serviceDescription {
+    font-size: 0.88rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -351,17 +368,27 @@
     padding: 0 16px 16px 16px;
   }
   
+  .servicesContainer {
+    gap: 14px;
+  }
+  
   .serviceCard {
     padding: 16px;
   }
   
   .serviceContent {
     gap: 12px;
+    align-items: center;
   }
   
   .serviceIcon {
     width: 40px;
     height: 40px;
+  }
+  
+  .serviceInfo {
+    flex: 1;
+    min-width: 0;
   }
   
   .serviceName {
@@ -370,11 +397,13 @@
   
   .serviceDescription {
     font-size: 0.85rem;
+    line-height: 1.3;
   }
   
   .serviceDetails {
     gap: 8px;
     margin-top: 6px;
+    flex-wrap: wrap;
   }
   
   .servicePrice,
@@ -387,6 +416,7 @@
     padding: 10px 16px;
     font-size: 0.85rem;
     min-width: 70px;
+    flex-shrink: 0;
   }
   
   .continueButton {
@@ -436,31 +466,36 @@
   }
   
   .serviceContent {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+    gap: 10px;
+    align-items: center;
   }
   
   .serviceIcon {
     width: 36px;
     height: 36px;
+    flex-shrink: 0;
   }
   
   .serviceInfo {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
   }
   
   .serviceName {
     font-size: 0.95rem;
+    line-height: 1.2;
   }
   
   .serviceDescription {
     font-size: 0.8rem;
+    line-height: 1.3;
+    margin-bottom: 4px;
   }
   
   .serviceDetails {
     gap: 6px;
     margin-top: 4px;
+    flex-wrap: wrap;
   }
   
   .servicePrice,
@@ -470,10 +505,10 @@
   }
   
   .addButton {
-    width: 100%;
-    padding: 12px;
-    font-size: 0.9rem;
-    min-width: auto;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    min-width: 60px;
+    flex-shrink: 0;
   }
   
   .continueButton {
@@ -525,21 +560,45 @@
     padding: 0 10px 10px 10px;
   }
   
+  .servicesContainer {
+    gap: 10px;
+  }
+  
   .serviceCard {
     padding: 10px;
+  }
+  
+  .serviceContent {
+    gap: 8px;
+    align-items: center;
   }
   
   .serviceIcon {
     width: 32px;
     height: 32px;
+    flex-shrink: 0;
+  }
+  
+  .serviceInfo {
+    flex: 1;
+    min-width: 0;
   }
   
   .serviceName {
     font-size: 0.9rem;
+    line-height: 1.2;
   }
   
   .serviceDescription {
     font-size: 0.75rem;
+    line-height: 1.3;
+    margin-bottom: 3px;
+  }
+  
+  .serviceDetails {
+    gap: 4px;
+    margin-top: 3px;
+    flex-wrap: wrap;
   }
   
   .servicePrice,
@@ -549,13 +608,133 @@
   }
   
   .addButton {
-    padding: 10px;
-    font-size: 0.85rem;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    min-width: 50px;
+    flex-shrink: 0;
   }
   
   .continueButton {
     padding: 10px 12px;
     font-size: 0.85rem;
+  }
+}
+
+/* Pantallas muy estrechas */
+@media (max-width: 320px) {
+  .modalOverlay {
+    padding: 2px;
+  }
+  
+  .modalContent {
+    border-radius: 6px;
+  }
+  
+  .modalHeader {
+    padding: 8px 8px 0 8px;
+  }
+  
+  .modalTitle {
+    font-size: 1rem;
+  }
+  
+  .closeButton {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+  
+  .modalBody {
+    padding: 0 8px 8px 8px;
+  }
+  
+  .servicesContainer {
+    gap: 8px;
+  }
+  
+  .serviceCard {
+    padding: 8px;
+  }
+  
+  .serviceContent {
+    gap: 6px;
+    align-items: center;
+  }
+  
+  .serviceIcon {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+  
+  .serviceInfo {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .serviceName {
+    font-size: 0.85rem;
+    line-height: 1.1;
+  }
+  
+  .serviceDescription {
+    font-size: 0.7rem;
+    line-height: 1.2;
+    margin-bottom: 2px;
+  }
+  
+  .serviceDetails {
+    gap: 3px;
+    margin-top: 2px;
+    flex-wrap: wrap;
+  }
+  
+  .servicePrice,
+  .serviceDuration {
+    font-size: 0.65rem;
+    padding: 1px 3px;
+  }
+  
+  .addButton {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    min-width: 45px;
+    flex-shrink: 0;
+  }
+  
+  .continueButton {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Pantallas muy anchas */
+@media (min-width: 1200px) {
+  .modalContent {
+    max-width: 700px;
+  }
+  
+  .serviceContent {
+    gap: 20px;
+  }
+  
+  .serviceIcon {
+    width: 52px;
+    height: 52px;
+  }
+  
+  .serviceName {
+    font-size: 1.2rem;
+  }
+  
+  .serviceDescription {
+    font-size: 1rem;
+  }
+  
+  .addButton {
+    padding: 14px 24px;
+    font-size: 1rem;
+    min-width: 90px;
   }
 }
 
@@ -581,6 +760,52 @@
   
   .serviceCard {
     padding: 12px 20px;
+  }
+  
+  .serviceContent {
+    gap: 12px;
+    align-items: center;
+  }
+  
+  .serviceIcon {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+  
+  .serviceInfo {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .serviceName {
+    font-size: 0.95rem;
+    line-height: 1.2;
+  }
+  
+  .serviceDescription {
+    font-size: 0.8rem;
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+  
+  .serviceDetails {
+    gap: 6px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+  
+  .servicePrice,
+  .serviceDuration {
+    font-size: 0.75rem;
+    padding: 3px 6px;
+  }
+  
+  .addButton {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    min-width: 60px;
+    flex-shrink: 0;
   }
   
   .continueButton {
