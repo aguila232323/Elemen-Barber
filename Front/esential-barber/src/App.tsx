@@ -13,6 +13,7 @@ import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import Perfil from './pages/user/Perfil/Perfil';
 import Register from './pages/auth/Register';
 import ResetPassword from './pages/auth/ResetPassword';
+import GoogleCallback from './pages/auth/GoogleCallback';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import CitasAdmin from './pages/admin/CitasAdmin';
 import Configuracion from './pages/admin/Configuracion';
@@ -70,6 +71,7 @@ function AppContent() {
           <Route path="/auth/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
           <Route path="/register" element={<Register />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/auth/google/callback" element={<GoogleCallback />} />
           <Route path="/citas" element={user && user.rol === 'ADMIN' ? <CitasAdmin /> : <Citas onLoginSuccess={handleLoginSuccess} />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/admin/configuracion" element={<Configuracion />} />

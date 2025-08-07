@@ -103,6 +103,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
   };
 
   const handleGoogleLogin = useGoogleLogin({
+    scope: 'openid email profile https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events',
     onSuccess: async (response) => {
       try {
         setLoading(true);
@@ -152,6 +153,42 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
           // Si hay token, proceder con el login
           if (data.token) {
             localStorage.setItem('authToken', data.token);
+            
+            // Verificar acceso a Google Calendar para usuarios de Google
+            if (userInfo.email) {
+              console.log('🔍 Verificando acceso a Google Calendar...');
+              console.log('   - Email:', userInfo.email);
+              console.log('   - Access Token:', response.access_token ? 'SÍ' : 'NO');
+              try {
+                const calendarResponse = await fetch('http://localhost:8080/api/auth/google/check-calendar-access', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${data.token}`
+                  },
+                  body: JSON.stringify({
+                    email: userInfo.email,
+                    accessToken: response.access_token
+                  }),
+                });
+                
+                console.log('📡 Respuesta del servidor Calendar:', calendarResponse.status);
+                
+                if (calendarResponse.ok) {
+                  const calendarData = await calendarResponse.json();
+                  console.log('✅ Verificación de Calendar completada:', calendarData);
+                  console.log('   - Status:', calendarData.status);
+                  console.log('   - Message:', calendarData.message);
+                  console.log('   - Has Calendar Access:', calendarData.hasCalendarAccess);
+                } else {
+                  const errorData = await calendarResponse.json();
+                  console.log('⚠️ Error al verificar acceso a Calendar:', errorData);
+                }
+              } catch (calendarErr) {
+                console.log('⚠️ Error al verificar acceso a Calendar:', calendarErr);
+              }
+            }
+            
             setUser('reload');
             if (onLoginSuccess) onLoginSuccess();
             if (onClose) onClose();

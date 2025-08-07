@@ -64,6 +64,7 @@ public class GoogleAuthService {
             // Actualizar imagen de Google si viene de Google y no la tiene o es diferente
             if (picture != null && !picture.isEmpty() && (usuario.getGooglePictureUrl() == null || !usuario.getGooglePictureUrl().equals(picture))) {
                 usuario.setGooglePictureUrl(picture);
+                System.out.println("🖼️ Actualizando Google Picture URL para " + email + ": " + picture);
             }
             
             // Guardar cambios si se actualizó teléfono o imagen
@@ -94,6 +95,11 @@ public class GoogleAuthService {
             newUser.setTelefono(telefono); // Guardar el teléfono si está disponible
             newUser.setGooglePictureUrl(picture); // Guardar la imagen de Google si está disponible
 
+            System.out.println("🆕 Creando nuevo usuario de Google:");
+            System.out.println("   - Email: " + email);
+            System.out.println("   - Nombre: " + name);
+            System.out.println("   - Picture URL: " + picture);
+
             Usuario savedUser = usuarioRepository.save(newUser);
             String token = jwtUtils.generateJwtToken(savedUser.getEmail(), savedUser.getNombre());
             
@@ -102,10 +108,15 @@ public class GoogleAuthService {
                 Map<String, Object> response = new HashMap<>();
                 response.put("requiresPhone", true);
                 response.put("email", email);
+                response.put("isNewUser", true);
                 return response;
             }
             
-            return Map.of("token", token);
+            // Indicar que es un usuario nuevo para autorizar Calendar automáticamente
+            return Map.of(
+                "token", token,
+                "isNewUser", true
+            );
         }
     }
 } 

@@ -7,6 +7,7 @@ import com.pomelo.app.springboot.app.dto.JwtResponse;
 import com.pomelo.app.springboot.app.entity.Usuario;
 import com.pomelo.app.springboot.app.service.AuthService;
 import com.pomelo.app.springboot.app.service.GoogleAuthService;
+import com.pomelo.app.springboot.app.service.GoogleCalendarService;
 import com.pomelo.app.springboot.app.service.UsuarioService;
 import com.pomelo.app.springboot.app.repository.UsuarioRepository;
 import com.pomelo.app.springboot.app.config.JwtUtils;
@@ -27,13 +28,15 @@ public class AuthController {
 
     private final AuthService authService;
     private final GoogleAuthService googleAuthService;
+    private final GoogleCalendarService googleCalendarService;
     private final UsuarioService usuarioService;
     private final UsuarioRepository usuarioRepository;
     private final JwtUtils jwtUtils;
 
-    public AuthController(AuthService authService, GoogleAuthService googleAuthService, UsuarioService usuarioService, UsuarioRepository usuarioRepository, JwtUtils jwtUtils) {
+    public AuthController(AuthService authService, GoogleAuthService googleAuthService, GoogleCalendarService googleCalendarService, UsuarioService usuarioService, UsuarioRepository usuarioRepository, JwtUtils jwtUtils) {
         this.authService = authService;
         this.googleAuthService = googleAuthService;
+        this.googleCalendarService = googleCalendarService;
         this.usuarioService = usuarioService;
         this.usuarioRepository = usuarioRepository;
         this.jwtUtils = jwtUtils;
@@ -149,6 +152,181 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/google/authorize-calendar")
+    @Operation(summary = "Autorizar Google Calendar durante registro", description = "Autoriza el acceso al Google Calendar durante el registro")
+    public ResponseEntity<?> authorizeCalendarDuringRegistration(@RequestBody Map<String, String> request) {
+        try {
+            System.out.println("🔍 DEBUG: Iniciando autorización de Calendar para: " + request);
+            
+            String email = request.get("email");
+            String code = request.get("code");
+            
+            System.out.println("📧 Email: " + email);
+            System.out.println("🔑 Code: " + (code != null ? code.substring(0, Math.min(10, code.length())) + "..." : "null"));
+            
+            if (email == null || email.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Email requerido"));
+            }
+            if (code == null || code.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Código de autorización requerido"));
+            }
+
+            // Buscar usuario
+            Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+            if (!usuarioOpt.isPresent()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Usuario no encontrado"));
+            }
+
+            Usuario usuario = usuarioOpt.get();
+            
+            // Verificar que es un usuario de Google
+            if (!"GOOGLE_AUTH".equals(usuario.getPassword())) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Este usuario no está autenticado con Google"));
+            }
+
+            // Procesar autorización de Calendar usando el servicio existente
+            try {
+                // Crear credenciales de Google usando el código de autorización
+                com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow flow = 
+                    new com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow.Builder(
+                        new com.google.api.client.http.javanet.NetHttpTransport(),
+                        com.google.api.client.json.gson.GsonFactory.getDefaultInstance(),
+                        "127461189204-p16ctc72mp90hmedchmon1fbb8qjk905.apps.googleusercontent.com",
+                        "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",
+                        java.util.Arrays.asList("https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/calendar.events"))
+                        .setAccessType("offline")
+                        .setApprovalPrompt("force")
+                        .build();
+
+                // Intercambiar código por tokens
+                com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse tokenResponse = 
+                    flow.newTokenRequest(code)
+                        .setRedirectUri("http://localhost:3000/auth/google/callback")
+                        .execute();
+
+                // Calcular fecha de expiración
+                java.time.LocalDateTime expiry = java.time.LocalDateTime.now().plusSeconds(tokenResponse.getExpiresInSeconds());
+
+                // Guardar tokens en la base de datos
+                googleCalendarService.saveCalendarTokens(
+                    usuario,
+                    tokenResponse.getAccessToken(),
+                    tokenResponse.getRefreshToken(),
+                    expiry
+                );
+
+                return ResponseEntity.ok(Map.of(
+                    "message", "Autorización de Google Calendar completada exitosamente",
+                    "status", "success",
+                    "userEmail", usuario.getEmail()
+                ));
+            } catch (Exception calendarError) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Error al procesar autorización de Calendar: " + calendarError.getMessage()
+                ));
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Error al autorizar Google Calendar: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/google/check-calendar-access")
+    @Operation(summary = "Verificar acceso a Google Calendar", description = "Verifica si el usuario tiene acceso a Google Calendar usando su access token")
+    public ResponseEntity<?> checkCalendarAccess(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            String accessToken = request.get("accessToken");
+            
+            System.out.println("🔍 DEBUG: Verificando acceso a Calendar para: " + email);
+            
+            if (email == null || email.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Email requerido"));
+            }
+            if (accessToken == null || accessToken.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Access token requerido"));
+            }
+
+            // Buscar usuario
+            Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+            if (!usuarioOpt.isPresent()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Usuario no encontrado"));
+            }
+
+            Usuario usuario = usuarioOpt.get();
+            
+            // Verificar que es un usuario de Google
+            if (!"GOOGLE_AUTH".equals(usuario.getPassword())) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Este usuario no está autenticado con Google"));
+            }
+
+            try {
+                // Intentar acceder a la API de Calendar usando el access token
+                String calendarUrl = "https://www.googleapis.com/calendar/v3/users/me/calendarList";
+                java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+                java.net.http.HttpRequest calendarRequest = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create(calendarUrl))
+                    .header("Authorization", "Bearer " + accessToken)
+                    .GET()
+                    .build();
+
+                java.net.http.HttpResponse<String> response = client.send(calendarRequest, 
+                    java.net.http.HttpResponse.BodyHandlers.ofString());
+
+                System.out.println("📡 Respuesta de Google Calendar API: " + response.statusCode());
+
+                if (response.statusCode() == 200) {
+                    // El usuario tiene acceso a Calendar, guardar el access token
+                    // Convertir el access token a un formato que podamos guardar
+                    String tokenForStorage = accessToken.substring(0, Math.min(100, accessToken.length()));
+                    
+                    // Calcular expiración (los access tokens de Google suelen durar 1 hora)
+                    java.time.LocalDateTime expiry = java.time.LocalDateTime.now().plusHours(1);
+                    
+                    System.out.println("✅ Verificación exitosa de Calendar para: " + email);
+                    System.out.println("   - Status Code: " + response.statusCode());
+                    System.out.println("   - Guardando access token...");
+                    
+                    // Guardar tokens en la base de datos
+                    googleCalendarService.saveCalendarTokens(
+                        usuario,
+                        accessToken,
+                        null, // No tenemos refresh token en este flujo
+                        expiry
+                    );
+
+                    System.out.println("✅ Usuario autorizado para Google Calendar: " + email);
+                    
+                    return ResponseEntity.ok(Map.of(
+                        "message", "Usuario autorizado para Google Calendar",
+                        "status", "success",
+                        "userEmail", usuario.getEmail(),
+                        "hasCalendarAccess", true
+                    ));
+                } else {
+                    System.out.println("❌ Error en verificación de Calendar para: " + email);
+                    System.out.println("   - Status Code: " + response.statusCode());
+                    System.out.println("   - Response Body: " + response.body());
+                    
+                    return ResponseEntity.ok(Map.of(
+                        "message", "Usuario no tiene acceso a Google Calendar",
+                        "status", "no_access",
+                        "userEmail", usuario.getEmail(),
+                        "hasCalendarAccess", false
+                    ));
+                }
+            } catch (Exception calendarError) {
+                System.out.println("❌ Error al verificar acceso a Calendar: " + calendarError.getMessage());
+                return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Error al verificar acceso a Calendar: " + calendarError.getMessage()
+                ));
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Error al verificar acceso: " + e.getMessage()));
+        }
+    }
+
     @PostMapping("/forgot-password")
     @Operation(summary = "Recuperar contraseña", description = "Envía un enlace de recuperación de contraseña al email")
     public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
@@ -217,6 +395,33 @@ public class AuthController {
             
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("valid", false, "error", "Error al validar token: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/debug/user/{email}")
+    @Operation(summary = "Debug usuario", description = "Endpoint temporal para debuggear el estado del usuario")
+    public ResponseEntity<?> debugUser(@PathVariable String email) {
+        try {
+            Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+            if (!usuarioOpt.isPresent()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Usuario no encontrado"));
+            }
+
+            Usuario usuario = usuarioOpt.get();
+            
+            return ResponseEntity.ok(Map.of(
+                "email", usuario.getEmail(),
+                "nombre", usuario.getNombre(),
+                "password", usuario.getPassword(),
+                "googlePictureUrl", usuario.getGooglePictureUrl(),
+                "googleCalendarToken", usuario.getGoogleCalendarToken() != null ? "SÍ" : "NO",
+                "googleCalendarRefreshToken", usuario.getGoogleCalendarRefreshToken() != null ? "SÍ" : "NO",
+                "googleCalendarTokenExpiry", usuario.getGoogleCalendarTokenExpiry(),
+                "isGoogleUser", "GOOGLE_AUTH".equals(usuario.getPassword())
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Error al debuggear usuario: " + e.getMessage()));
         }
     }
 }

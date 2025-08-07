@@ -3,6 +3,7 @@ import styles from './Perfil.module.css';
 import { useNavigate } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSave, FaTimes, FaSignOutAlt, FaLock, FaEye, FaEyeSlash, FaCheckCircle, FaTrash, FaUserEdit } from 'react-icons/fa';
 import defaultProfile from '../../../assets/images/usuario.png';
+// import GoogleCalendarInfo from '../../../components/GoogleCalendarInfo';
 
 // Función para generar avatar genérico basado en el nombre
 const generarAvatar = (nombre: string): string => {
@@ -986,6 +987,9 @@ const Perfil: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Sección de Google Calendar - Comentada temporalmente */}
+      {/* <GoogleCalendarInfo /> */}
 
       {/* Modal de confirmación de eliminación */}
       {showDeleteConfirm && (

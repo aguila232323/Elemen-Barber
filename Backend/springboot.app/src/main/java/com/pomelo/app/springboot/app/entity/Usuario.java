@@ -55,6 +55,16 @@ public class Usuario {
     @Column(name = "avatar", length = 10, columnDefinition = "VARCHAR(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
     private String avatar;
 
+    // Campos para Google Calendar OAuth2
+    @Column(name = "google_calendar_token", length = 1000)
+    private String googleCalendarToken;
+
+    @Column(name = "google_calendar_refresh_token", length = 1000)
+    private String googleCalendarRefreshToken;
+
+    @Column(name = "google_calendar_token_expiry")
+    private java.time.LocalDateTime googleCalendarTokenExpiry;
+
     public String getEmail(){
         return email;
     }
@@ -181,5 +191,30 @@ public class Usuario {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    // Getters y setters para Google Calendar OAuth2
+    public String getGoogleCalendarToken() {
+        return googleCalendarToken;
+    }
+
+    public void setGoogleCalendarToken(String googleCalendarToken) {
+        this.googleCalendarToken = googleCalendarToken;
+    }
+
+    public String getGoogleCalendarRefreshToken() {
+        return googleCalendarRefreshToken;
+    }
+
+    public void setGoogleCalendarRefreshToken(String googleCalendarRefreshToken) {
+        this.googleCalendarRefreshToken = googleCalendarRefreshToken;
+    }
+
+    public java.time.LocalDateTime getGoogleCalendarTokenExpiry() {
+        return googleCalendarTokenExpiry;
+    }
+
+    public void setGoogleCalendarTokenExpiry(java.time.LocalDateTime googleCalendarTokenExpiry) {
+        this.googleCalendarTokenExpiry = googleCalendarTokenExpiry;
     }
 }

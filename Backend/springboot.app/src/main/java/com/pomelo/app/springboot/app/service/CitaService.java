@@ -37,6 +37,9 @@ public class CitaService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private GoogleCalendarService googleCalendarService;
+
     public Cita crearCita(Cita cita, String rolUsuario) {
         // Validar tiempo mínimo de reserva para usuarios no admin
         if (!"ADMIN".equals(rolUsuario)) {
@@ -62,7 +65,29 @@ public class CitaService {
         }
         
         cita.setEstado("confirmada");
-        return citaRepository.save(cita);
+        Cita citaGuardada = citaRepository.save(cita);
+        
+        // Intentar crear evento en Google Calendar para usuarios de Google
+        try {
+            System.out.println("🎯 Intentando crear evento en Google Calendar...");
+            
+            // Recargar el usuario desde la base de datos para obtener los tokens más recientes
+            Usuario usuarioActualizado = usuarioRepository.findByEmail(citaGuardada.getCliente().getEmail()).orElse(citaGuardada.getCliente());
+            
+            googleCalendarService.createCalendarEvent(citaGuardada, usuarioActualizado);
+            System.out.println("✅ Evento de Google Calendar creado exitosamente");
+        } catch (Exception e) {
+            // No fallar la creación de la cita si falla el Google Calendar
+            System.err.println("❌ Error al crear evento en Google Calendar: " + e.getMessage());
+            System.err.println("⚠️ La cita se creó correctamente, pero falló la integración con Google Calendar");
+            // No hacer e.printStackTrace() para evitar logs muy largos
+        } catch (Error e) {
+            // Capturar también errores de inicialización de clases
+            System.err.println("❌ Error de inicialización en Google Calendar: " + e.getMessage());
+            System.err.println("⚠️ La cita se creó correctamente, pero falló la integración con Google Calendar");
+        }
+        
+        return citaGuardada;
     }
 
     public List<Cita> obtenerCitasPorUsuario(Long usuarioId) {
@@ -107,11 +132,28 @@ public class CitaService {
             // Si es una cita periódica, borrar todas las citas periódicas del usuario
             if (cita.isFija() && cita.getPeriodicidadDias() != null && cita.getPeriodicidadDias() > 0) {
                 List<Cita> citasPeriodicas = citaRepository.findByClienteAndFijaTrueAndPeriodicidadDiasIsNotNull(cita.getCliente());
+                
+                // Intentar eliminar eventos de Google Calendar para todas las citas periódicas
+                for (Cita citaPeriodica : citasPeriodicas) {
+                    try {
+                        googleCalendarService.deleteCalendarEvent(citaPeriodica, citaPeriodica.getCliente());
+                    } catch (Exception e) {
+                        System.err.println("Error al eliminar evento de Google Calendar: " + e.getMessage());
+                    }
+                }
+                
                 citaRepository.deleteAll(citasPeriodicas);
             } else {
                 // Si no es periódica, solo cambiar el estado
                 cita.setEstado("cancelada");
                 citaRepository.save(cita);
+                
+                // Intentar eliminar evento de Google Calendar
+                try {
+                    googleCalendarService.deleteCalendarEvent(cita, cita.getCliente());
+                } catch (Exception e) {
+                    System.err.println("Error al eliminar evento de Google Calendar: " + e.getMessage());
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException("Error al cancelar la cita: " + e.getMessage(), e);
