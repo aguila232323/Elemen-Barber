@@ -67,18 +67,18 @@ public class CitaService {
         cita.setEstado("confirmada");
         Cita citaGuardada = citaRepository.save(cita);
         
-        // Intentar crear evento en Google Calendar para usuarios de Google
+        // Intentar crear eventos en Google Calendar para usuarios de Google y admin
         try {
-            System.out.println("🎯 Intentando crear evento en Google Calendar...");
+            System.out.println("🎯 Intentando crear eventos en Google Calendar...");
             
             // Recargar el usuario desde la base de datos para obtener los tokens más recientes
             Usuario usuarioActualizado = usuarioRepository.findByEmail(citaGuardada.getCliente().getEmail()).orElse(citaGuardada.getCliente());
             
-            googleCalendarService.createCalendarEvent(citaGuardada, usuarioActualizado);
-            System.out.println("✅ Evento de Google Calendar creado exitosamente");
+            googleCalendarService.createCalendarEventsForUserAndAdmin(citaGuardada, usuarioActualizado);
+            System.out.println("✅ Eventos de Google Calendar creados exitosamente");
         } catch (Exception e) {
             // No fallar la creación de la cita si falla el Google Calendar
-            System.err.println("❌ Error al crear evento en Google Calendar: " + e.getMessage());
+            System.err.println("❌ Error al crear eventos en Google Calendar: " + e.getMessage());
             System.err.println("⚠️ La cita se creó correctamente, pero falló la integración con Google Calendar");
             // No hacer e.printStackTrace() para evitar logs muy largos
         } catch (Error e) {
@@ -136,9 +136,9 @@ public class CitaService {
                 // Intentar eliminar eventos de Google Calendar para todas las citas periódicas
                 for (Cita citaPeriodica : citasPeriodicas) {
                     try {
-                        googleCalendarService.deleteCalendarEvent(citaPeriodica, citaPeriodica.getCliente());
+                        googleCalendarService.deleteCalendarEventsForUserAndAdmin(citaPeriodica, citaPeriodica.getCliente());
                     } catch (Exception e) {
-                        System.err.println("Error al eliminar evento de Google Calendar: " + e.getMessage());
+                        System.err.println("Error al eliminar eventos de Google Calendar: " + e.getMessage());
                     }
                 }
                 
@@ -148,11 +148,11 @@ public class CitaService {
                 cita.setEstado("cancelada");
                 citaRepository.save(cita);
                 
-                // Intentar eliminar evento de Google Calendar
+                // Intentar eliminar eventos de Google Calendar
                 try {
-                    googleCalendarService.deleteCalendarEvent(cita, cita.getCliente());
+                    googleCalendarService.deleteCalendarEventsForUserAndAdmin(cita, cita.getCliente());
                 } catch (Exception e) {
-                    System.err.println("Error al eliminar evento de Google Calendar: " + e.getMessage());
+                    System.err.println("Error al eliminar eventos de Google Calendar: " + e.getMessage());
                 }
             }
         } catch (Exception e) {

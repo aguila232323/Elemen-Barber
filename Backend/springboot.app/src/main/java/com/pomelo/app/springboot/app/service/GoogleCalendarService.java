@@ -31,6 +31,12 @@ public class GoogleCalendarService {
     @Value("${google.client.secret}")
     private String googleClientSecret;
 
+    @Value("${admin.email:elemenbarber@gmail.com}")
+    private String adminEmail;
+
+    @Value("${admin.google.calendar.enabled:true}")
+    private boolean adminCalendarEnabled;
+
     private static final String APPLICATION_NAME = "Esential Barber";
     private static NetHttpTransport HTTP_TRANSPORT;
     private static final GsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
@@ -366,6 +372,249 @@ public class GoogleCalendarService {
             
         } catch (Exception e) {
             System.err.println("❌ Error al eliminar evento con HTTP directo: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Obtiene el usuario admin para Google Calendar
+     */
+    private Usuario getAdminUser() {
+        return usuarioRepository.findByEmail(adminEmail).orElse(null);
+    }
+
+    /**
+     * Crea eventos tanto en el calendario del usuario como en el del admin
+     */
+    public void createCalendarEventsForUserAndAdmin(Cita cita, Usuario usuario) {
+        try {
+            System.out.println("🎯 Creando eventos en Calendar para usuario y admin...");
+            
+            // Crear evento en el calendario del usuario
+            createCalendarEvent(cita, usuario);
+            
+            // Crear evento en el calendario del admin si está habilitado
+            if (adminCalendarEnabled) {
+                Usuario adminUser = getAdminUser();
+                if (adminUser != null && isGoogleUser(adminUser) && isCalendarAuthorized(adminUser)) {
+                    System.out.println("👨‍💼 Creando evento en calendario del admin...");
+                    createCalendarEventForAdmin(cita, adminUser, usuario);
+                } else {
+                    System.out.println("⚠️ Admin no configurado para Google Calendar o no autorizado");
+                }
+            } else {
+                System.out.println("ℹ️ Calendario del admin deshabilitado");
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error al crear eventos en Calendar: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Crea un evento en el calendario del admin con información del cliente
+     */
+    private void createCalendarEventForAdmin(Cita cita, Usuario adminUser, Usuario cliente) {
+        try {
+            System.out.println("🔧 Creando evento para admin usando HTTP directo...");
+            
+            // Crear el JSON del evento con información del cliente
+            LocalDateTime fechaHora = cita.getFechaHora();
+            ZonedDateTime zonedDateTime = fechaHora.atZone(ZoneId.of("Europe/Madrid"));
+            int duracionMinutos = cita.getServicio().getDuracionMinutos();
+            ZonedDateTime endDateTime = zonedDateTime.plusMinutes(duracionMinutos);
+            
+            JsonObject event = new JsonObject();
+            event.addProperty("summary", "📅 CITA - " + cita.getServicio().getNombre() + " - " + cliente.getNombre());
+            event.addProperty("location", "Esential Barber");
+            event.addProperty("description", 
+                "Cliente: " + cliente.getNombre() + "\n" +
+                "Email: " + cliente.getEmail() + "\n" +
+                "Teléfono: " + (cliente.getTelefono() != null ? cliente.getTelefono() : "No proporcionado") + "\n" +
+                "Servicio: " + cita.getServicio().getNombre() + "\n" +
+                "Comentario: " + (cita.getComentario() != null ? cita.getComentario() : "Sin comentarios")
+            );
+            
+            // Configurar fecha y hora de inicio
+            JsonObject start = new JsonObject();
+            start.addProperty("dateTime", zonedDateTime.format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            start.addProperty("timeZone", "Europe/Madrid");
+            event.add("start", start);
+            
+            // Configurar fecha y hora de fin
+            JsonObject end = new JsonObject();
+            end.addProperty("dateTime", endDateTime.format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            end.addProperty("timeZone", "Europe/Madrid");
+            event.add("end", end);
+            
+            String eventJson = new Gson().toJson(event);
+            System.out.println("📝 JSON del evento para admin: " + eventJson);
+            
+            // Crear la petición HTTP
+            java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create("https://www.googleapis.com/calendar/v3/calendars/primary/events"))
+                    .header("Authorization", "Bearer " + adminUser.getGoogleCalendarToken())
+                    .header("Content-Type", "application/json")
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(eventJson))
+                    .build();
+            
+            System.out.println("📡 Enviando petición HTTP a Google Calendar API (Admin)...");
+            java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+            
+            System.out.println("📊 Respuesta del servidor (Admin):");
+            System.out.println("   - Status Code: " + response.statusCode());
+            System.out.println("   - Response Body: " + response.body());
+            
+            if (response.statusCode() == 200 || response.statusCode() == 201) {
+                System.out.println("✅ Evento creado exitosamente en Google Calendar del Admin");
+                System.out.println("   Admin: " + adminUser.getEmail());
+                System.out.println("   Cliente: " + cliente.getEmail());
+                System.out.println("   Cita: " + cita.getServicio().getNombre() + " - " + cita.getFechaHora());
+            } else {
+                System.err.println("❌ Error al crear evento en Google Calendar del Admin");
+                System.err.println("   Status Code: " + response.statusCode());
+                System.err.println("   Response: " + response.body());
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error al crear evento para admin con HTTP directo: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Elimina eventos tanto del calendario del usuario como del admin
+     */
+    public void deleteCalendarEventsForUserAndAdmin(Cita cita, Usuario usuario) {
+        try {
+            System.out.println("🗑️ Eliminando eventos de Calendar para usuario y admin...");
+            
+            // Eliminar evento del calendario del usuario
+            deleteCalendarEvent(cita, usuario);
+            
+            // Eliminar evento del calendario del admin si está habilitado
+            if (adminCalendarEnabled) {
+                Usuario adminUser = getAdminUser();
+                if (adminUser != null && isGoogleUser(adminUser) && isCalendarAuthorized(adminUser)) {
+                    System.out.println("👨‍💼 Eliminando evento del calendario del admin...");
+                    deleteCalendarEventForAdmin(cita, adminUser, usuario);
+                } else {
+                    System.out.println("⚠️ Admin no configurado para Google Calendar o no autorizado");
+                }
+            } else {
+                System.out.println("ℹ️ Calendario del admin deshabilitado");
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error al eliminar eventos de Calendar: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Elimina un evento del calendario del admin
+     */
+    private void deleteCalendarEventForAdmin(Cita cita, Usuario adminUser, Usuario cliente) {
+        try {
+            System.out.println("🔧 Eliminando evento del admin usando HTTP directo...");
+            
+            // Buscar eventos que coincidan con la fecha y hora de la cita
+            LocalDateTime fechaHora = cita.getFechaHora();
+            ZonedDateTime zonedDateTime = fechaHora.atZone(ZoneId.of("Europe/Madrid"));
+            int duracionMinutos = cita.getServicio().getDuracionMinutos();
+            ZonedDateTime endDateTime = zonedDateTime.plusMinutes(duracionMinutos);
+            
+            // Formatear fechas para la búsqueda
+            String timeMin = zonedDateTime.format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+            String timeMax = endDateTime.format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+            
+            // URL para buscar eventos (buscar por el nombre del cliente)
+            String searchUrl = String.format(
+                "https://www.googleapis.com/calendar/v3/calendars/primary/events?" +
+                "timeMin=%s&timeMax=%s&q=%s",
+                java.net.URLEncoder.encode(timeMin, "UTF-8"),
+                java.net.URLEncoder.encode(timeMax, "UTF-8"),
+                java.net.URLEncoder.encode(cliente.getNombre(), "UTF-8")
+            );
+            
+            System.out.println("🔍 Buscando eventos del admin en Google Calendar...");
+            System.out.println("   - URL: " + searchUrl);
+            
+            // Crear la petición HTTP para buscar eventos
+            java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+            java.net.http.HttpRequest searchRequest = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create(searchUrl))
+                    .header("Authorization", "Bearer " + adminUser.getGoogleCalendarToken())
+                    .GET()
+                    .build();
+            
+            java.net.http.HttpResponse<String> searchResponse = client.send(searchRequest, java.net.http.HttpResponse.BodyHandlers.ofString());
+            
+            System.out.println("📊 Respuesta de búsqueda (Admin):");
+            System.out.println("   - Status Code: " + searchResponse.statusCode());
+            System.out.println("   - Response Body: " + searchResponse.body());
+            
+            if (searchResponse.statusCode() == 200) {
+                // Parsear la respuesta para encontrar eventos
+                JsonObject responseJson = new Gson().fromJson(searchResponse.body(), JsonObject.class);
+                if (responseJson.has("items")) {
+                    var items = responseJson.getAsJsonArray("items");
+                    System.out.println("🔍 Encontrados " + items.size() + " eventos del admin");
+                    
+                    for (var item : items) {
+                        JsonObject event = item.getAsJsonObject();
+                        String eventId = event.get("id").getAsString();
+                        String summary = event.has("summary") ? event.get("summary").getAsString() : "";
+                        
+                        System.out.println("   - Event ID: " + eventId);
+                        System.out.println("   - Summary: " + summary);
+                        
+                        // Verificar si es el evento que queremos eliminar
+                        if (summary.contains("CITA") && 
+                            summary.contains(cita.getServicio().getNombre()) &&
+                            summary.contains(cliente.getNombre())) {
+                            
+                            System.out.println("🗑️ Eliminando evento del admin: " + eventId);
+                            
+                            // Crear petición para eliminar el evento
+                            String deleteUrl = "https://www.googleapis.com/calendar/v3/calendars/primary/events/" + eventId;
+                            java.net.http.HttpRequest deleteRequest = java.net.http.HttpRequest.newBuilder()
+                                    .uri(java.net.URI.create(deleteUrl))
+                                    .header("Authorization", "Bearer " + adminUser.getGoogleCalendarToken())
+                                    .DELETE()
+                                    .build();
+                            
+                            java.net.http.HttpResponse<String> deleteResponse = client.send(deleteRequest, java.net.http.HttpResponse.BodyHandlers.ofString());
+                            
+                            System.out.println("📊 Respuesta de eliminación (Admin):");
+                            System.out.println("   - Status Code: " + deleteResponse.statusCode());
+                            
+                            if (deleteResponse.statusCode() == 204) {
+                                System.out.println("✅ Evento eliminado exitosamente del Google Calendar del Admin");
+                                System.out.println("   Admin: " + adminUser.getEmail());
+                                System.out.println("   Cliente: " + cliente.getEmail());
+                                System.out.println("   Cita: " + cita.getServicio().getNombre() + " - " + cita.getFechaHora());
+                                System.out.println("   Event ID: " + eventId);
+                            } else {
+                                System.err.println("❌ Error al eliminar evento del Google Calendar del Admin");
+                                System.err.println("   Status Code: " + deleteResponse.statusCode());
+                                System.err.println("   Response: " + deleteResponse.body());
+                            }
+                        }
+                    }
+                } else {
+                    System.out.println("ℹ️ No se encontraron eventos del admin para eliminar");
+                }
+            } else {
+                System.err.println("❌ Error al buscar eventos del admin en Google Calendar");
+                System.err.println("   Status Code: " + searchResponse.statusCode());
+                System.err.println("   Response: " + searchResponse.body());
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error al eliminar evento del admin con HTTP directo: " + e.getMessage());
             e.printStackTrace();
         }
     }
