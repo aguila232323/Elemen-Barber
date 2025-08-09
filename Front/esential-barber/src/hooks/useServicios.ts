@@ -8,6 +8,7 @@ export interface Servicio {
   duracionMinutos: number;
   emoji?: string;
   textoDescriptivo?: string;
+  colorGoogleCalendar?: string;
 }
 
 export const useServicios = () => {

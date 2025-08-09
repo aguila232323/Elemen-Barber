@@ -22,12 +22,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.2rem 2rem;
-  background: #fff;
-  border-bottom: 1px solid #e9ecef;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 0.8rem 1rem;
+  background: linear-gradient(135deg, #1976d2, #1565c0);
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 6px 18px rgba(25,118,210,0.25);
   z-index: 10;
   flex-shrink: 0;
+  color: #fff;
+  border-radius: 0 0 12px 12px;
 }
 
 .mobile-header-left,
@@ -43,27 +45,29 @@
 }
 
 .mobile-header-title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 0.4rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.2rem;
+  letter-spacing: 0.4px;
 }
 
 .mobile-header-hours {
-  font-size: 0.9rem;
-  color: #6c757d;
-  font-weight: 500;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.85);
+  font-weight: 600;
 }
 
 .mobile-header-icon {
-  font-size: 1.3rem;
-  color: #6c757d;
+  font-size: 1.1rem;
+  color: rgba(255,255,255,0.9);
   cursor: pointer;
-  transition: color 0.3s ease;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .mobile-header-icon:hover {
-  color: #1976d2;
+  color: #fff;
+  transform: scale(1.1);
 }
 
 /* Navegación de días */
@@ -807,14 +811,15 @@
 
 /* ===== TOOLBAR ===== */
 .citas-admin-toolbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.8rem;
   margin-bottom: 1rem;
   background: linear-gradient(135deg, #1976d2, #1565c0);
-  border-radius: 12px;
-  padding: 1rem 1.2rem;
-  box-shadow: 0 4px 16px rgba(25,118,210,0.15);
+  border-radius: 16px;
+  padding: 0.8rem 1rem;
+  box-shadow: 0 10px 28px rgba(25,118,210,0.25);
 }
 
 .toolbar-left, .toolbar-right {
@@ -824,9 +829,10 @@
 }
 
 .toolbar-center {
-  font-weight: 800;
-  font-size: 1.2rem;
+  font-weight: 900;
+  font-size: 1.25rem;
   color: #ffffff;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
 .toolbar-month-year {
@@ -836,10 +842,10 @@
 }
 
 .citas-admin-nav-btn {
-  background: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.18);
   border: none;
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  padding: 0.45rem 0.9rem;
   color: #fff;
   cursor: pointer;
   font-weight: 600;
@@ -847,12 +853,20 @@
   display: flex;
   align-items: center;
   gap: 0.3rem;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
 .citas-admin-nav-btn:hover {
-  background: rgba(255,255,255,0.3);
-  transform: translateY(-2px);
+  background: rgba(255,255,255,0.28);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
 }
+
+.toolbar-group { display: flex; align-items: center; gap: 0.4rem; }
+.view-btn { opacity: 0.85; }
+.view-btn.active { background: rgba(0,0,0,0.2); opacity: 1; border: 1px solid rgba(255,255,255,0.25); }
+.nav-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
+.today-btn { font-weight: 800; }
 
 /* ===== CALENDAR CONTAINER ===== */
 .calendar-container {
@@ -1187,42 +1201,40 @@
 
 /* ===== CUSTOM EVENT COMPONENT ===== */
 .custom-event-component {
-  background: #1976d2;
-  color: #fff;
+  background: transparent; /* el color real se inyecta inline desde React */
+  color: #0f172a !important; /* forzar texto oscuro por defecto */
   padding: 4px 8px;
   border-radius: 6px;
   font-size: 0.85rem;
   font-weight: 600;
-  border-left: 3px solid #1976d2;
+  border-left: 3px solid transparent; /* el borde real se inyecta inline */
   position: relative;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s ease;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-.custom-event-component[data-status="pendiente"] {
-  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-  border-left-color: #1976d2;
-  box-shadow: 0 2px 8px rgba(25,118,210,0.15);
-}
+/* Los estados mantienen solo sombras (el color ya viene del servicio) */
+.custom-event-component[data-status="pendiente"] { box-shadow: 0 2px 8px rgba(25,118,210,0.15); }
 
 .custom-event-component[data-status="en_curso"] {
-  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-  border-left-color: #ff9800;
+  /* No se define background aquí para no pisar el fondo del servicio */
   box-shadow: 0 2px 8px rgba(255,152,0,0.15);
   animation: pulse 2s infinite;
 }
 
 .custom-event-component[data-status="completada"] {
-  background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
-  border-left-color: #4caf50;
+  /* Sin background aquí: el fondo viene del color del servicio */
   box-shadow: 0 2px 8px rgba(76,175,80,0.15);
-  opacity: 0.8;
+  opacity: 0.92;
 }
 
 .custom-event-component[data-status="cancelada"] {
-  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-  border-left-color: #e74c3c;
+  /* Sin background aquí: el fondo viene del color del servicio (o lo dejamos translúcido) */
   box-shadow: 0 2px 8px rgba(231,76,60,0.15);
   opacity: 0.7;
   text-decoration: line-through;
@@ -1233,11 +1245,12 @@
   justify-content: space-between;
   align-items: center;
 }
-
-.event-service {
-  flex: 1;
-  font-size: 0.8rem;
-}
+ 
+ .event-service {
+   flex: 1;
+   font-size: 0.8rem;
+   color: #0a0a0a; /* más contraste para el nombre del servicio */
+ }
 
 .event-status {
   font-size: 0.7rem;
@@ -1247,11 +1260,12 @@
   font-weight: 600;
 }
 
-.event-client {
-  font-size: 0.75rem;
-  opacity: 0.9;
-  margin-top: 2px;
-}
+ .event-client {
+   font-size: 0.78rem;
+   color: #111827; /* gris muy oscuro para cliente */
+   opacity: 0.95;
+   margin-top: 2px;
+ }
 
 /* ===== MODALS ===== */
 .modal-overlay {
@@ -2324,29 +2338,27 @@
 }
 
 .rbc-event {
-  background: #1976d2 !important;
-  color: #fff !important;
+  background: transparent !important; /* Evitar doble color (contenedor) */
+  color: inherit !important;
   border-radius: 8px !important;
-  padding: 5px 14px !important;
+  padding: 0 !important; /* El padding lo gestiona el componente personalizado */
   font-weight: 700 !important;
   font-size: 1.05rem !important;
-  box-shadow: 0 2px 8px rgba(25,118,210,0.10);
+  box-shadow: none;
+  border: none !important; /* sin borde externo */
   white-space: normal !important;
-  text-shadow: 0 2px 8px #0002;
+  text-shadow: none;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   min-height: 32px;
-  overflow: auto;
+  overflow: visible;
   margin-bottom: 2px;
   cursor: pointer;
   transition: box-shadow 0.18s;
   position: relative;
 }
 
-.rbc-event:hover {
-  box-shadow: 0 4px 16px rgba(25,118,210,0.18);
-  background: #1251a3 !important;
-}
+.rbc-event:hover { box-shadow: none; }
 
 .rbc-event-content {
   white-space: normal !important;
@@ -2363,6 +2375,13 @@
   font-size: 1.13rem !important;
   text-shadow: none;
 }
+
+/* Encabezados y labels del RBC en claro sobre fondo oscuro del contenedor */
+.rbc-toolbar-label { font-weight: 800; color: #e5eefc; }
+.rbc-header { color: #e8f0ff; font-weight: 700; }
+.rbc-time-gutter .rbc-time-slot,
+.rbc-time-header-gutter .rbc-label,
+.rbc-time-content .rbc-time-slot { color: #d9e4ff !important; font-weight: 600; }
 
 .rbc-off-range-bg, .rbc-off-range {
   background: #f5f5f5 !important;
@@ -2381,6 +2400,25 @@
   font-weight: 700 !important;
   cursor: pointer;
 }
+
+/* ===== AGENDA (Fecha / Hora / Cita) ===== */
+.rbc-agenda-view .rbc-agenda-table thead > tr > th {
+  color: #0f172a !important; /* más oscuro para mejor legibilidad */
+  background: #e9eef6 !important;
+  font-weight: 800 !important;
+}
+.rbc-agenda-date-cell,
+.rbc-agenda-time-cell,
+.rbc-agenda-event-cell { color: #0f172a; }
+
+/* Forzar color oscuro y peso alto del nombre del día (Agenda) */
+.rbc-agenda-view .rbc-agenda-date-cell {
+  color: #0b1220 !important;
+  font-weight: 800 !important;
+}
+
+/* Encabezados de días en Month/Week (por si el tema los aclara demasiado) */
+.rbc-header { color: #0f172a !important; font-weight: 800 !important; }
 
 .rbc-agenda-table td, .rbc-agenda-table th {
   font-size: 1.05rem;
@@ -2401,6 +2439,23 @@
   font-weight: 600;
 }
 
+/* Ajuste de color para las horas (gutter) en vistas Día/Semana */
+.rbc-time-gutter .rbc-time-slot,
+.rbc-time-header-gutter .rbc-label,
+.rbc-time-content .rbc-time-slot {
+  color: #222 !important; /* Texto oscuro para mejor legibilidad */
+  font-weight: 600;
+}
+
+/* Opcional: mejorar legibilidad de líneas en la vista de tiempo */
+.rbc-time-view .rbc-time-gutter .rbc-timeslot-group {
+  border-color: #e9ecef;
+}
+
+.rbc-time-view .rbc-time-content {
+  border-top: 1px solid #e9ecef;
+}
+
 /* ===== RESPONSIVE CALENDAR ===== */
 @media (max-width: 768px) {
   .rbc-calendar {
@@ -2412,11 +2467,7 @@
     font-size: 1rem;
   }
   
-  .rbc-event {
-    font-size: 0.9rem !important;
-    padding: 3px 10px !important;
-    min-height: 28px;
-  }
+  .rbc-event { padding: 0 !important; background: transparent !important; }
   
   .rbc-date-cell {
     font-size: 1rem !important;
@@ -2433,11 +2484,7 @@
     font-size: 0.9rem;
   }
   
-  .rbc-event {
-    font-size: 0.8rem !important;
-    padding: 2px 8px !important;
-    min-height: 24px;
-  }
+  .rbc-event { padding: 0 !important; background: transparent !important; }
   
   .rbc-date-cell {
     font-size: 0.9rem !important;
@@ -2454,11 +2501,7 @@
     font-size: 0.85rem;
   }
   
-  .rbc-event {
-    font-size: 0.75rem !important;
-    padding: 1px 6px !important;
-    min-height: 20px;
-  }
+  .rbc-event { padding: 0 !important; background: transparent !important; }
   
   .rbc-date-cell {
     font-size: 0.85rem !important;

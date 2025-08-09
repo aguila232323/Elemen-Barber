@@ -203,6 +203,38 @@ public class CitaController {
         }
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Reprogramar cita", description = "Actualiza la fecha y hora de una cita")
+    public ResponseEntity<?> reprogramarCita(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> request
+    ) {
+        try {
+            String fechaHoraStr = (String) request.get("fechaHora");
+            if (fechaHoraStr == null || fechaHoraStr.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "fechaHora requerida (formato ISO yyyy-MM-ddTHH:mm:ss)"));
+            }
+
+            java.time.LocalDateTime nuevaFechaHora = java.time.LocalDateTime.parse(fechaHoraStr);
+
+            Cita cita = citaService.listarTodasLasCitas().stream()
+                    .filter(c -> c.getId().equals(id))
+                    .findFirst()
+                    .orElse(null);
+            if (cita == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Cita no encontrada"));
+            }
+
+            cita.setFechaHora(nuevaFechaHora);
+            // Persistir
+            com.pomelo.app.springboot.app.entity.Cita guardada = citaService.crearCita(cita, "ADMIN");
+            return ResponseEntity.ok(Map.of("message", "Cita reprogramada", "cita", guardada));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Error al reprogramar cita: " + e.getMessage()));
+        }
+    }
+
     // Para admin
     @GetMapping("/todas")
     @PreAuthorize("hasRole('ADMIN')")

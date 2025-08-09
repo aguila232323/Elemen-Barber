@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'moment/locale/es';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { FaCalendarAlt, FaPlus, FaTimes, FaSave, FaBars, FaChevronLeft, FaChevronRight, FaBell, FaFilter, FaEllipsisV, FaUser, FaClock, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaCalendarAlt, FaTimes, FaSave, FaBars, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import './CitasAdminCustom.css';
+import { useServicios } from '../../hooks/useServicios';
 
 const localizer = momentLocalizer(moment);
 moment.locale('es');
@@ -17,6 +18,7 @@ interface Servicio {
   duracionMinutos: number;
   emoji?: string;
   textoDescriptivo?: string;
+  colorGoogleCalendar?: string;
 }
 
 interface Usuario {
@@ -38,313 +40,14 @@ interface Cita {
   usuario: Usuario;
 }
 
-// Componente móvil para vista de día
-const MobileDayView = ({ events, selectedDate, onEventClick, onAddEvent }: any) => {
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [selectedDay, setSelectedDay] = useState(moment());
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
-    
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    
-    return () => {
-      clearInterval(timer);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+// (Vista móvil personalizada eliminada; se usa RBC también en móvil)
 
-  const getTimeSlots = () => {
-    const slots = [];
-    // Crear slots de 15 minutos desde 9:00 hasta 19:00 (10 horas)
-    for (let hour = 9; hour <= 19; hour++) {
-      for (let minute = 0; minute < 60; minute += 15) {
-        const timeSlot = moment().hour(hour).minute(minute).second(0);
-        const isHourSlot = minute === 0; // Horas completas
-        const isQuarterSlot = minute === 15 || minute === 30 || minute === 45; // Cuartos de hora
-        
-        slots.push({
-          time: timeSlot,
-          isHourSlot,
-          isQuarterSlot,
-          displayTime: isHourSlot ? timeSlot.format('HH:mm') : timeSlot.format('mm')
-        });
-      }
-    }
-    return slots;
-  };
-
-  const getEventsForTimeSlot = (timeSlot: moment.Moment) => {
-    return events.filter((event: any) => {
-      const eventStart = moment(event.start);
-      const eventEnd = moment(event.end);
-      // Un evento está en un slot si comienza en ese slot o si el slot está dentro del evento
-      return (eventStart.isSame(timeSlot, 'hour') && eventStart.minute() === timeSlot.minute()) ||
-             (eventStart.isBefore(timeSlot) && eventEnd.isAfter(timeSlot));
-    });
-  };
-
-  const isCurrentTime = (timeSlot: moment.Moment) => {
-    const now = moment();
-    return timeSlot.isSame(now, 'hour') && 
-           Math.abs(timeSlot.minute() - now.minute()) <= 15;
-  };
-
-  const getDayEvents = (date: moment.Moment) => {
-    return events.filter((event: any) => 
-      moment(event.start).isSame(date, 'day')
-    ).sort((a: any, b: any) => {
-      return moment(a.start).diff(moment(b.start));
-    });
-  };
-
-  const getDayOccupancy = (date: moment.Moment) => {
-    const dayEvents = getDayEvents(date);
-    const totalSlots = 40; // 10 horas * 4 slots por hora (9:00-19:00)
-    let occupiedSlots = 0;
-    dayEvents.forEach((event: any) => {
-      const duracionMinutos = event.servicio?.duracionMinutos || 45;
-      const slotsOcupados = Math.ceil(duracionMinutos / 15);
-      occupiedSlots += slotsOcupados;
-    });
-    return Math.round((occupiedSlots / totalSlots) * 100);
-  };
-
-  // Calcular posición y altura de eventos simplificado
-  const calculateEventPosition = (event: any) => {
-    const start = moment(event.start);
-    const end = moment(event.end);
-    
-    // Altura fija del slot (debe coincidir exactamente con CSS)
-    const slotHeight = 30; // 30px por slot de 15 minutos
-    
-    // Calcular posición top basada en la hora exacta
-    const startHour = start.hour();
-    const startMinute = start.minute();
-    
-    // Calcular el índice del slot desde las 9:00
-    // Cada hora tiene 4 slots de 15 minutos
-    const slotIndex = (startHour - 9) * 4 + Math.floor(startMinute / 15);
-    const topPosition = slotIndex * slotHeight;
-    
-    // Calcular altura basada en la duración en minutos
-    const durationMinutes = end.diff(start, 'minutes');
-    const height = Math.ceil(durationMinutes / 15) * slotHeight;
-    
-    // Debug: Mostrar información del cálculo
-    console.log(`Evento: ${event.usuario?.nombre} - ${start.format('HH:mm')}`, {
-      startHour,
-      startMinute,
-      slotIndex,
-      topPosition,
-      durationMinutes,
-      height,
-      slotHeight,
-      startTime: start.format('HH:mm'),
-      endTime: end.format('HH:mm'),
-      // Debug adicional
-      expectedSlots: Math.floor(startMinute / 15),
-      actualTop: topPosition,
-      expectedTop: slotIndex * slotHeight,
-      // Debug de altura
-      slotsNeeded: Math.ceil(durationMinutes / 15),
-      expectedHeight: Math.ceil(durationMinutes / 15) * slotHeight
-    });
-    
-    return { top: topPosition, height };
-  };
-
-  // Calcular posición de la línea de tiempo actual simplificado
-  const calculateCurrentTimePosition = () => {
-    const now = moment();
-    const currentHour = now.hour();
-    const currentMinute = now.minute();
-    
-    if (currentHour < 9 || currentHour > 19) return -100; // Fuera del horario
-    
-    // Altura fija del slot (debe coincidir exactamente con CSS)
-    const slotHeight = 30; // 30px por slot de 15 minutos
-    
-    // Calcular el índice del slot desde las 9:00
-    // Cada hora tiene 4 slots de 15 minutos
-    const slotIndex = (currentHour - 9) * 4 + Math.floor(currentMinute / 15);
-    return slotIndex * slotHeight;
-  };
-
-  return (
-    <div className="mobile-day-view">
-      {/* Header móvil */}
-      <div className="mobile-header">
-        <div className="mobile-header-left">
-          <FaBell className="mobile-header-icon" />
-        </div>
-        <div className="mobile-header-center">
-          <div className="mobile-header-title">Hoy</div>
-          <div className="mobile-header-hours">9:00 - 19:00</div>
-        </div>
-        <div className="mobile-header-right">
-          <FaFilter className="mobile-header-icon" />
-          <FaEllipsisV className="mobile-header-icon" />
-        </div>
-      </div>
-
-      {/* Navegación de días */}
-      <div className="mobile-day-navigation">
-        {Array.from({ length: 7 }, (_, i) => {
-          const date = moment().add(i - 3, 'days');
-          const isSelected = date.isSame(selectedDay, 'day');
-          const occupancy = getDayOccupancy(date);
-          const dayEvents = getDayEvents(date);
-          
-          return (
-            <div 
-              key={i} 
-              className={`mobile-day-item ${isSelected ? 'selected' : ''}`}
-              onClick={() => setSelectedDay(date)}
-            >
-              <div className="mobile-day-name">{date.format('ddd').toUpperCase()}</div>
-              <div className="mobile-day-number">{date.format('D')}</div>
-              {dayEvents.length > 0 && (
-                <div className="mobile-day-indicator">
-                  <div className="mobile-day-dot"></div>
-                  <span className="mobile-day-count">{dayEvents.length}</span>
-                </div>
-              )}
-              {occupancy > 80 && (
-                <div className="mobile-day-busy">🔥</div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Información del día seleccionado */}
-      <div className="mobile-day-info">
-        <div className="mobile-day-date">
-          {selectedDay.format('dddd, D [de] MMMM')}
-        </div>
-        <div className="mobile-day-stats">
-          <div className="mobile-day-events">
-            {getDayEvents(selectedDay).length} citas
-          </div>
-          <div className="mobile-day-occupancy">
-            {getDayOccupancy(selectedDay)}% ocupado
-          </div>
-        </div>
-      </div>
-
-      {/* Timeline unificado */}
-      <div className="mobile-timeline">
-        <div className="mobile-timeline-unified">
-          <div className="mobile-timeline-axis">
-            {getTimeSlots().map((slot, index) => (
-              <div 
-                key={index} 
-                className={`mobile-timeline-slot ${slot.isHourSlot ? 'hour-slot' : ''} ${slot.isQuarterSlot ? 'quarter-slot' : ''}`}
-              >
-                <div className="mobile-timeline-time">
-                  {slot.displayTime}
-                </div>
-                <div className="mobile-timeline-tick"></div>
-              </div>
-            ))}
-          </div>
-
-          {/* Contenedor de eventos unificado */}
-          <div className="mobile-events-container">
-            {/* Línea de tiempo actual */}
-            <div 
-              className="mobile-current-time-line"
-              style={{
-                top: `${calculateCurrentTimePosition()}px`
-              }}
-            >
-              <div className="mobile-current-time-dot"></div>
-            </div>
-
-            {/* Eventos */}
-            {events.filter((event: any) => moment(event.start).isSame(selectedDay, 'day')).map((event: any, index: number) => {
-              const { top, height } = calculateEventPosition(event);
-              const start = moment(event.start);
-              const end = moment(event.end);
-              
-              return (
-                <div
-                  key={event.id}
-                  className="mobile-event-card"
-                  style={{
-                    top: `${top}px`,
-                    height: `${height}px`,
-                    backgroundColor: getEventColor(event.servicio?.nombre),
-                    border: '2px solid red' // Debug visual temporal
-                  }}
-                  onClick={() => onEventClick(event)}
-                >
-                  <div className="mobile-event-content">
-                    <div className="mobile-event-title">
-                      {event.usuario?.nombre} • {event.servicio?.nombre}
-                    </div>
-                    <div className="mobile-event-time">
-                      {start.format('HH:mm')} - {end.format('HH:mm')}
-                    </div>
-                    <div className="mobile-event-status">
-                      {event.statusLabel}
-                    </div>
-                  </div>
-                  {event.comentario && (
-                    <div className="mobile-event-icon">💬</div>
-                  )}
-                  {event.periodicidadDias && (
-                    <div className="mobile-event-periodic">🔄</div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Botones de acción */}
-      <div className="mobile-action-buttons">
-        <button className="mobile-action-btn secondary">
-          <FaCalendarAlt />
-        </button>
-        <button className="mobile-action-btn primary" onClick={onAddEvent}>
-          <FaPlus />
-        </button>
-      </div>
-    </div>
-  );
-};
-
-// Función para obtener color según el servicio
-const getEventColor = (serviceName: string) => {
-  const colors: { [key: string]: string } = {
-    'Corte': '#4CAF50',
-    'Barba': '#2196F3',
-    'Corte + Barba': '#FF9800',
-    'Tinte': '#9C27B0',
-    'Peinado': '#E91E63',
-    'Tratamiento': '#607D8B',
-    'Otros': '#795548'
-  };
-  
-  return colors[serviceName] || '#4CAF50';
-};
+// (getEventColor) no se usa tras simplificar estilos
 
 // Datos de ejemplo para demostración
-const getExampleEvents = () => {
-  // Retornar array vacío para usar solo datos reales del backend
-  // Las citas canceladas ya están filtradas en el array 'events'
-  return [];
-};
+// getExampleEvents: no usado, se eliminó para limpiar warnings
 
-// Toolbar profesional personalizado con responsive
+// Toolbar personalizada (desktop y móvil) con navegación y cambio de vistas
 const CustomToolbar = (toolbar: any) => {
   const goToBack = () => {
     console.log('Going back from:', toolbar.date);
@@ -355,20 +58,21 @@ const CustomToolbar = (toolbar: any) => {
       console.error('onNavigate not available');
     }
   };
-  const goToNext = () => {
-    console.log('Going next from:', toolbar.date);
-    console.log('Toolbar object:', toolbar);
-    if (toolbar.onNavigate) {
-      toolbar.onNavigate('NEXT');
-    } else {
-      console.error('onNavigate not available');
-    }
-  };
+  // goToNext ya declarado más abajo
   const goToToday = () => {
     console.log('Going to today from:', toolbar.date);
     console.log('Toolbar object:', toolbar);
     if (toolbar.onNavigate) {
       toolbar.onNavigate('TODAY');
+    } else {
+      console.error('onNavigate not available');
+    }
+  };
+  const goToNext = () => {
+    console.log('Going next from:', toolbar.date);
+    console.log('Toolbar object:', toolbar);
+    if (toolbar.onNavigate) {
+      toolbar.onNavigate('NEXT');
     } else {
       console.error('onNavigate not available');
     }
@@ -396,21 +100,17 @@ const CustomToolbar = (toolbar: any) => {
   
   const handleViewChange = (view: string) => {
     console.log('Changing view to:', view);
-    toolbar.onView(view);
+    if (toolbar.onView) toolbar.onView(view);
   };
 
   return (
     <div className="citas-admin-toolbar">
-      <div className="toolbar-left">
-        <button onClick={goToBack} className="citas-admin-nav-btn">
+      <div className="toolbar-left toolbar-group">
+        <button onClick={goToBack} className="citas-admin-nav-btn nav-btn" title="Anterior">
           <FaChevronLeft />
         </button>
-        
-        <button onClick={() => handleViewChange('month')} className="citas-admin-nav-btn">
-          Mes
-        </button>
-        
-        <button onClick={goToNext} className="citas-admin-nav-btn">
+        <button onClick={goToToday} className="citas-admin-nav-btn today-btn">Hoy</button>
+        <button onClick={goToNext} className="citas-admin-nav-btn nav-btn" title="Siguiente">
           <FaChevronRight />
         </button>
       </div>
@@ -419,10 +119,23 @@ const CustomToolbar = (toolbar: any) => {
         {label()}
       </div>
       
-      <div className="toolbar-right">
-        <button onClick={goToToday} className="citas-admin-nav-btn">
-          Hoy
-        </button>
+      <div className="toolbar-right toolbar-group">
+        <button 
+          onClick={() => handleViewChange('day')} 
+          className={`citas-admin-nav-btn view-btn ${toolbar.view === 'day' ? 'active' : ''}`}
+        >Día</button>
+        <button 
+          onClick={() => handleViewChange('week')} 
+          className={`citas-admin-nav-btn view-btn ${toolbar.view === 'week' ? 'active' : ''}`}
+        >Semana</button>
+        <button 
+          onClick={() => handleViewChange('month')} 
+          className={`citas-admin-nav-btn view-btn ${toolbar.view === 'month' ? 'active' : ''}`}
+        >Mes</button>
+        <button 
+          onClick={() => handleViewChange('agenda')} 
+          className={`citas-admin-nav-btn view-btn ${toolbar.view === 'agenda' ? 'active' : ''}`}
+        >Agenda</button>
       </div>
     </div>
   );
@@ -435,6 +148,7 @@ const CitasAdmin: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isMobile, setIsMobile] = useState(false);
   const [showMobileView, setShowMobileView] = useState(false);
+  const [currentView, setCurrentView] = useState<any>(Views.MONTH);
   const [showSidebar, setShowSidebar] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [showDayEvents, setShowDayEvents] = useState(false);
@@ -531,13 +245,85 @@ const CitasAdmin: React.FC = () => {
 
   // Convertir citas al formato del calendario
   // Las citas canceladas ya están filtradas en el backend, pero mantenemos el filtro aquí como seguridad adicional
+  const { servicios } = useServicios();
+  const servicioIdToColor = useMemo(() => {
+    const map = new Map<number, string | undefined>();
+    (servicios || []).forEach((s: any) => map.set(s.id, s.colorGoogleCalendar));
+    return map;
+  }, [servicios]);
+
   const events = citas
-    .filter(cita => cita.estado !== 'cancelada') // Filtrar citas canceladas
+    .filter(cita => cita.estado !== 'cancelada')
     .map(cita => {
     const status = getCitaStatus(new Date(cita.fechaHora), cita.servicio?.duracionMinutos || 45, cita.estado);
-    return {
+
+      const rawColor = (cita.servicio?.colorGoogleCalendar || servicioIdToColor.get(cita.servicio?.id) || '').trim();
+
+      const colorIdHexMap: Record<string, string> = {
+        '1': '#a4bdfc', // lavender
+        '2': '#7ae7bf', // sage
+        '3': '#dbadff', // grape
+        '4': '#ff887c', // flamingo
+        '5': '#fbd75b', // banana
+        '6': '#ffb878', // tangerine
+        '7': '#46d6db', // peacock
+        '8': '#e1e1e1', // graphite
+        '9': '#5484ed', // blueberry
+        '10': '#51b749', // basil
+        '11': '#dc2127', // tomato
+      };
+
+      const rgbToHex = (r: number, g: number, b: number) => {
+        const to2 = (v: number) => v.toString(16).padStart(2, '0');
+        return `#${to2(r)}${to2(g)}${to2(b)}`;
+      };
+
+      const normalizeHex = (val: string | undefined): string | undefined => {
+        if (!val) return undefined;
+        if (/^#?[0-9a-fA-F]{6}$/.test(val)) return val.startsWith('#') ? val : `#${val}`;
+        const mRgb = val.match(/^rgb\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i);
+        if (mRgb) {
+          const r = Math.min(255, parseInt(mRgb[1], 10));
+          const g = Math.min(255, parseInt(mRgb[2], 10));
+          const b = Math.min(255, parseInt(mRgb[3], 10));
+          return rgbToHex(r, g, b);
+        }
+        const mRgba = val.match(/^rgba\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0|0?\.\d+|1)\s*\)$/i);
+        if (mRgba) {
+          const r = Math.min(255, parseInt(mRgba[1], 10));
+          const g = Math.min(255, parseInt(mRgba[2], 10));
+          const b = Math.min(255, parseInt(mRgba[3], 10));
+          return rgbToHex(r, g, b);
+        }
+        if (/^\d{1,2}$/.test(val) && colorIdHexMap[val]) return colorIdHexMap[val];
+        return undefined;
+      };
+
+      const toRgba = (hexColor: string, alpha: number) => {
+        if (!hexColor || !/^#?[0-9a-fA-F]{6}$/.test(hexColor)) return null;
+        const clean = hexColor.startsWith('#') ? hexColor.slice(1) : hexColor;
+        const r = parseInt(clean.slice(0, 2), 16);
+        const g = parseInt(clean.slice(2, 4), 16);
+        const b = parseInt(clean.slice(4, 6), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      };
+
+      const serviceBorderColor = normalizeHex(rawColor);
+      const serviceBgColor = toRgba(serviceBorderColor || '', 0.6) || undefined; // fondo más sólido
+      const computeTextColor = (hexColor?: string) => {
+        if (!hexColor) return undefined;
+        const clean = hexColor.startsWith('#') ? hexColor.slice(1) : hexColor;
+        const r = parseInt(clean.slice(0,2),16);
+        const g = parseInt(clean.slice(2,4),16);
+        const b = parseInt(clean.slice(4,6),16);
+        const luminance = 0.2126*r + 0.7152*g + 0.0722*b;
+        return luminance < 140 ? '#ffffff' : '#0f172a';
+      };
+      const serviceTextColor = computeTextColor(serviceBorderColor);
+
+      return {
       id: cita.id,
-                      title: `${cita.usuario?.nombre} - ${cita.servicio?.emoji || ''} ${cita.servicio?.nombre}`,
+        title: `${cita.servicio?.nombre || 'Servicio'} - ${cita.usuario?.nombre || 'Cliente'}`,
       start: new Date(cita.fechaHora),
       end: moment(cita.fechaHora).add(cita.servicio?.duracionMinutos || 45, 'minutes').toDate(),
       resource: cita,
@@ -546,6 +332,9 @@ const CitasAdmin: React.FC = () => {
       statusColor: status.color,
       statusBgColor: status.bgColor,
       statusBorderColor: status.borderColor,
+        serviceColor: serviceBgColor,
+        serviceBorderColor,
+        serviceTextColor,
       servicio: cita.servicio,
       usuario: cita.usuario,
       comentario: cita.comentario,
@@ -562,13 +351,16 @@ const CitasAdmin: React.FC = () => {
         className="custom-event-component"
         data-status={event.status}
         style={{
-          backgroundColor: event.statusBgColor,
-          borderColor: event.statusBorderColor,
-          color: event.statusColor
+          backgroundColor: event.serviceColor || event.statusBgColor, // color del servicio como fondo
+          border: 'none',
+          color: event.serviceTextColor || '#0f172a'
         }}
       >
         <div className="event-header">
-          <div className="event-service">{event.servicio?.nombre}</div>
+          <div className="event-service">
+            {event.servicio?.emoji ? `${event.servicio.emoji} ` : ''}
+            {event.servicio?.nombre}
+          </div>
           <div 
             className="event-status"
             style={{ backgroundColor: event.statusColor, color: '#fff' }}
@@ -581,21 +373,54 @@ const CitasAdmin: React.FC = () => {
     );
   };
 
+  // Estilo de contenedor del evento (por si el tema sobreescribe estilos internos)
+  const eventPropGetter = (_event: any) => {
+    const style: React.CSSProperties = {
+      backgroundColor: 'transparent',
+      border: 'none',
+      boxShadow: 'none'
+    };
+    return { style } as any;
+  };
+
   // Actualizar estados de eventos
   const updateEventStatuses = () => {
-    const updatedEvents = events.map(event => {
-      const status = getCitaStatus(event.start, event.servicio?.duracionMinutos || 45, event.status);
-      return {
-        ...event,
-        status: status.status,
-        statusLabel: status.label,
-        statusColor: status.color,
-        statusBgColor: status.bgColor,
-        statusBorderColor: status.borderColor
-      };
-    });
-    // Aquí podrías actualizar el estado si fuera necesario
+    // Se recalcularían estados si se guardaran en estado local
   };
+
+  // Textos y formatos del calendario en español
+  const calendarMessagesEs = {
+    date: 'Fecha',
+    time: 'Hora',
+    event: 'Cita',
+    allDay: 'Todo el día',
+    week: 'Semana',
+    work_week: 'Semana laboral',
+    day: 'Día',
+    month: 'Mes',
+    previous: 'Anterior',
+    next: 'Siguiente',
+    yesterday: 'Ayer',
+    tomorrow: 'Mañana',
+    today: 'Hoy',
+    agenda: 'Agenda',
+    noEventsInRange: 'No hay eventos en este rango',
+    showMore: (total: number) => `+${total} más`,
+  } as const;
+
+  const calendarFormatsEs = {
+    dayFormat: (date: Date, culture: any, loc: any) => loc.format(date, 'dddd D', culture),
+    weekdayFormat: (date: Date, culture: any, loc: any) => loc.format(date, 'dddd', culture),
+    dayHeaderFormat: (date: Date, culture: any, loc: any) => loc.format(date, 'dddd D [de] MMMM', culture),
+    dayRangeHeaderFormat: ({ start, end }: { start: Date; end: Date }, culture: any, loc: any) =>
+      `${loc.format(start, 'D MMM', culture)} — ${loc.format(end, 'D MMM', culture)}`,
+    agendaHeaderFormat: ({ start, end }: { start: Date; end: Date }, culture: any, loc: any) =>
+      `${loc.format(start, 'D [de] MMM', culture)} — ${loc.format(end, 'D [de] MMM', culture)}`,
+    agendaDateFormat: (date: Date, culture: any, loc: any) => loc.format(date, 'ddd D/MM', culture),
+    agendaTimeRangeFormat: ({ start, end }: { start: Date; end: Date }, culture: any, loc: any) =>
+      `${loc.format(start, 'HH:mm', culture)} – ${loc.format(end, 'HH:mm', culture)}`,
+    timeGutterFormat: (date: Date, culture: any, loc: any) => loc.format(date, 'HH:mm', culture),
+  } as const;
 
   // Actualizar estados cada minuto
   useEffect(() => {
@@ -639,9 +464,10 @@ const CitasAdmin: React.FC = () => {
   const handleSelectSlot = (slotInfo: any) => {
     console.log('Slot seleccionado:', slotInfo);
     setSelectedDate(slotInfo.start);
-    setShowDayEvents(true);
-    
-    // Mostrar información de ocupación del día seleccionado
+    // En desktop, cambiar a vista de día directamente; en móvil ya estamos en RBC con view controlado
+    setCurrentView(Views.DAY);
+    setShowDayEvents(false);
+    // Log opcional
     const occupancy = getDayOccupancy(slotInfo.start);
     console.log('Ocupación del día:', occupancy);
   };
@@ -656,10 +482,7 @@ const CitasAdmin: React.FC = () => {
     setSelectedEvent(event);
   };
 
-  const handleAddEvent = () => {
-    console.log('Añadir nuevo evento');
-    // Aquí podrías abrir un modal para crear una nueva cita
-  };
+  const handleAddEvent = () => { /* reservado para futura creación rápida */ };
 
   // Función para manejar la creación de cita periódica
   const handleCreatePeriodicAppointment = (cita: any) => {
@@ -668,10 +491,7 @@ const CitasAdmin: React.FC = () => {
   };
 
   // Función para cerrar el modal de cita periódica
-  const handleClosePeriodicModal = () => {
-    setShowPeriodicModal(false);
-    setSelectedCitaForPeriodic(null);
-  };
+  const handleClosePeriodicModal = () => { setShowPeriodicModal(false); setSelectedCitaForPeriodic(null); };
 
   // Funciones para manejar el formulario de periodicidad
   const handlePeriodicFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -778,18 +598,34 @@ const CitasAdmin: React.FC = () => {
     return <div className="error-message">{error}</div>;
   }
 
-  // Vista móvil
+  // Vista móvil: usar react-big-calendar directamente para evitar solapados
   if (showMobileView) {
-    // Usar datos de ejemplo si no hay eventos reales
-    const eventsToShow = events.length > 0 ? events : getExampleEvents();
-    
     return (
-      <div className="mobile-admin-container">
-        <MobileDayView 
-          events={eventsToShow}
-          selectedDate={selectedDate}
-          onEventClick={handleSelectEvent}
-          onAddEvent={handleAddEvent}
+      <div className="mobile-admin-container" style={{ height: '100vh' }}>
+        <Calendar
+          localizer={localizer}
+          events={events}
+          startAccessor="start"
+          endAccessor="end"
+          messages={calendarMessagesEs}
+          formats={calendarFormatsEs}
+          components={{ toolbar: CustomToolbar, event: EventComponent }}
+            eventPropGetter={eventPropGetter}
+          popup
+          selectable
+          views={['day', 'week', 'month', 'agenda']}
+          defaultView={Views.DAY}
+          view={currentView}
+          onView={(v) => setCurrentView(v)}
+          onSelectEvent={handleSelectEvent}
+          onSelectSlot={handleSelectSlot}
+          onNavigate={(date) => setSelectedDate(date)}
+          date={selectedDate}
+          step={15}
+          timeslots={4}
+          min={moment().hour(9).minute(0).toDate()}
+          max={moment().hour(21).minute(15).toDate()}
+          style={{ height: '100%' }}
         />
       </div>
     );
@@ -971,23 +807,29 @@ const CitasAdmin: React.FC = () => {
             events={events}
             startAccessor="start"
             endAccessor="end"
+            messages={calendarMessagesEs}
+            formats={calendarFormatsEs}
             style={{ height: '100%' }}
             components={{
               toolbar: CustomToolbar,
               event: EventComponent
             }}
+              eventPropGetter={eventPropGetter}
             onSelectSlot={handleSelectSlot}
             onNavigate={handleNavigate}
             onSelectEvent={handleSelectEvent}
             selectable
             popup
             defaultView={Views.MONTH}
-            views={['month', 'week', 'day']}
+            views={['month', 'week', 'day', 'agenda']}
+            view={currentView}
+            onView={(v) => setCurrentView(v)}
             step={15}
             timeslots={4}
-            min={moment().hour(10).minute(0).toDate()}
-            max={moment().hour(19).minute(0).toDate()}
+            min={moment().hour(9).minute(0).toDate()}
+            max={moment().hour(21).minute(15).toDate()}
             date={selectedDate}
+            onDrillDown={(date) => { setSelectedDate(date); setCurrentView(Views.DAY); }}
           />
         </div>
       </div>
