@@ -23,9 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.ArrayList;
@@ -336,10 +334,7 @@ public class CitaController {
         }
     }
 
-    // Horario estándar: martes a sábado, 9-14 y 16-21:15 (citas cada hora)
-    private static final List<String> HORAS_TRABAJO = Arrays.asList(
-        "09:00", "10:00", "11:00", "12:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"
-    );
+    // (Constante no usada eliminada)
 
     @GetMapping("/disponibilidad")
     @Operation(summary = "Disponibilidad de citas", description = "Devuelve los slots libres para un día y duración concreta")
@@ -400,6 +395,11 @@ public class CitaController {
                 boolean hueco = true;
                 LocalTime slotInicio = slots.get(i);
                 LocalTime slotFin = slotInicio.plusMinutes(45 * slotsNecesarios);
+                // Ocultar 14:15 en días que no sean sábado (aplica a todos los roles)
+                DayOfWeek diaSemanaGeneral = dia.getDayOfWeek();
+                if (diaSemanaGeneral != DayOfWeek.SATURDAY && slotInicio.equals(LocalTime.of(14, 15))) {
+                    continue;
+                }
                 
                 // Comprobar que el rango completo cabe dentro de algún tramo
                 boolean dentroHorario = false;
@@ -529,6 +529,11 @@ public class CitaController {
                     boolean hueco = true;
                     LocalTime slotInicio = slots.get(i);
                     LocalTime slotFin = slotInicio.plusMinutes(45 * slotsNecesarios);
+                    // Ocultar 14:15 en días que no sean sábado (aplica a todos los roles)
+                    DayOfWeek diaSemanaGeneral = fecha.getDayOfWeek();
+                    if (diaSemanaGeneral != DayOfWeek.SATURDAY && slotInicio.equals(LocalTime.of(14, 15))) {
+                        continue;
+                    }
                     boolean dentroHorario = false;
                     for (LocalTime[] tramo : tramos) {
                         if (!slotInicio.isBefore(tramo[0]) && !slotFin.isAfter(tramo[1])) {

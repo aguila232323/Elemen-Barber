@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import styles from './ContactoResenas.module.css'
-import { FaMapMarkerAlt, FaWhatsapp, FaEnvelope, FaFacebookF, FaInstagram, FaTiktok, FaTwitter } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaEnvelope, FaFacebookF, FaInstagram, FaTiktok, FaTwitter } from 'react-icons/fa';
 
 const ContactoResenas: React.FC = () => {
   const [mapaLoaded, setMapaLoaded] = useState(false);
@@ -43,12 +43,14 @@ const ContactoResenas: React.FC = () => {
             </div>
             
             <div className={styles.contactoItem}>
-              <span className={`${styles.contactoIconContainer} ${styles.iconWhatsapp}`}>
-                <FaWhatsapp />
+              <span className={`${styles.contactoIconContainer} ${styles.iconLocation}`}>
+                <FaInstagram />
               </span>
               <span className={styles.contactoTexto}>
-                +34 683 23 55 47<br/>
-                <span className={styles.contactoSubtitulo}>Atención al cliente</span>
+                <a href="https://www.instagram.com/luisilloobarber/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)', textDecoration: 'none', fontWeight: 700 }}>
+                  @luisilloobarber
+                </a><br/>
+                <span className={styles.contactoSubtitulo}>Instagram</span>
               </span>
             </div>
             
@@ -66,9 +68,6 @@ const ContactoResenas: React.FC = () => {
           <div className={styles.socialButtons}>
             <button className={styles.socialBtn}>
               <FaFacebookF /> Facebook
-            </button>
-            <button className={styles.socialBtn}>
-              <FaInstagram /> Instagram
             </button>
             <button className={styles.socialBtn}>
               <FaTiktok /> Tiktok

@@ -93,8 +93,12 @@ public class RecordatorioService {
                             System.out.println("📋 Estado: " + cita.getEstado());
                             
                             emailService.enviarRecordatorioCita(cita);
-                            
-                            System.out.println("✅ Recordatorio enviado exitosamente");
+                            // Marcar como enviado para evitar duplicados
+                            cita.setRecordatorioCitaEnviado(true);
+                            cita.setFechaRecordatorioCita(LocalDateTime.now());
+                            citaRepository.save(cita);
+
+                            System.out.println("✅ Recordatorio enviado exitosamente (marcado como enviado)");
                             System.out.println("-".repeat(40));
                         } else {
                             System.out.println("⚠️ Cita ID " + cita.getId() + " no elegible (estado: " + cita.getEstado() + ")");

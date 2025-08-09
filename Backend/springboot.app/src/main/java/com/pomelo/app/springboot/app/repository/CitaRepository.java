@@ -38,6 +38,7 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
            "JOIN FETCH c.servicio s " +
            "WHERE c.fechaHora BETWEEN :fechaInicio AND :fechaFin " +
            "AND LOWER(c.estado) IN ('confirmada', 'pendiente') " +
+           "AND c.recordatorioCitaEnviado = false " +
            "ORDER BY c.fechaHora ASC")
     List<Cita> findCitasProximas(@Param("fechaInicio") LocalDateTime fechaInicio, 
                                   @Param("fechaFin") LocalDateTime fechaFin);

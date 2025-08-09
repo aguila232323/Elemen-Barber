@@ -402,16 +402,16 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
               <div key={dia} style={{display:'flex',flexDirection:'column',alignItems:'center',cursor: esSeleccionable?'pointer':'not-allowed',opacity:esSeleccionable?1:0.45}} onClick={()=>{if(esSeleccionable){setDiaSeleccionado(dia);setHoraSeleccionada(null);}}}>
                 <div style={{
                   width:'2rem',height:'2rem',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
-                  background: diaSeleccionado===dia?'#1976d2':sinSlotsDisponibles?'#f5f5f5':'#fff',
-                  color: diaSeleccionado===dia?'#fff':sinSlotsDisponibles?'#999':'#1976d2',
-                  border: diaSeleccionado===dia?'2px solid #1976d2':sinSlotsDisponibles?'1.5px solid #ddd':'1.5px solid #1976d2',
+                  background: diaSeleccionado===dia?'#1976d2':(esPasado || sinSlotsDisponibles)?'#f5f5f5':'#fff',
+                  color: diaSeleccionado===dia?'#fff':(esPasado || sinSlotsDisponibles)?'#999':'#1976d2',
+                  border: diaSeleccionado===dia?'2px solid #1976d2':(esPasado || sinSlotsDisponibles)?'1.5px solid #ddd':'1.5px solid #1976d2',
                   fontWeight:800,marginBottom:2,
                   fontSize:'0.9rem',
                   boxShadow: diaSeleccionado===dia?'0 2px 8px rgba(25,118,210,0.10)':'none',
                   transition:'all 0.18s',
                   letterSpacing:0.5
                 }}>{dia}</div>
-                <div style={{width:'1.2rem',height:'0.25rem',borderRadius:3,background:sinSlotsDisponibles?'#ddd':colorBarra,marginBottom:2}}></div>
+                <div style={{width:'1.2rem',height:'0.25rem',borderRadius:3,background:(esPasado || sinSlotsDisponibles)?'#ddd':colorBarra,marginBottom:2}}></div>
               </div>
             )
           })}

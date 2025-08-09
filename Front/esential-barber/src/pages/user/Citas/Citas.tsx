@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import styles from './Citas.module.css';
-import logoBarberia from '../../../assets/images/logoElemental.png';
+import fotoLuis from '../../../assets/images/luis.jpg';
 import SeleccionarServicioModal from '../../../components/SeleccionarServicioModal';
 import CalendarBooking from '../../../components/CalendarBooking';
 import ResenaModal from '../../../components/ResenaModal';
-import { FaPlus, FaSave, FaTimes, FaUserPlus, FaStar } from 'react-icons/fa';
+import { FaSave, FaTimes, FaUserPlus, FaStar } from 'react-icons/fa';
 
 interface Cita {
   id: number;
@@ -394,8 +394,8 @@ const Citas: React.FC<CitasProps> = () => {
               )}
             <ul className={styles.citasHistorialLista}>
               {citas.map(cita => {
-                const fecha = cita.fechaHora ? cita.fechaHora.split('T')[0] : '';
-                const hora = cita.fechaHora ? cita.fechaHora.split('T')[1]?.substring(0,5) : '';
+                // const fecha = cita.fechaHora ? cita.fechaHora.split('T')[0] : '';
+                // const hora = cita.fechaHora ? cita.fechaHora.split('T')[1]?.substring(0,5) : '';
                 // Formato bonito de fecha
                 const dateObj = cita.fechaHora ? new Date(cita.fechaHora) : null;
                 const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -432,7 +432,7 @@ const Citas: React.FC<CitasProps> = () => {
                         {cita.servicio?.nombre}
                       </div>
                       <div className={styles.citaInfoBarberia}>
-                        <img src={logoBarberia} alt="Logo Elemen Barber" className={styles.citaLogoBarberia} />
+                        <img src={fotoLuis} alt="Luis" className={styles.citaLogoBarberia} />
                         <div className={styles.citaInfoText}>
                           <span className={styles.citaNombreBarberia}>{nombreBarberia}</span>
                           <span className={styles.citaNombrePeluquero}>con {nombrePeluquero}</span>
