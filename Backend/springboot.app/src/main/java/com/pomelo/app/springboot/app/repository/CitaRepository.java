@@ -31,12 +31,27 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
                                                    @Param("estado") String estado);
     
     /**
-     * Busca citas que están programadas para dentro de 1 hora
-     * Excluye citas canceladas
+     * Busca citas próximas con relaciones cargadas para evitar LazyInitialization
      */
-    @Query("SELECT c FROM Cita c WHERE c.fechaHora BETWEEN :fechaInicio AND :fechaFin " +
-           "AND c.estado IN ('CONFIRMADA', 'PENDIENTE') " +
+    @Query("SELECT c FROM Cita c " +
+           "JOIN FETCH c.cliente cl " +
+           "JOIN FETCH c.servicio s " +
+           "WHERE c.fechaHora BETWEEN :fechaInicio AND :fechaFin " +
+           "AND LOWER(c.estado) IN ('confirmada', 'pendiente') " +
            "ORDER BY c.fechaHora ASC")
     List<Cita> findCitasProximas(@Param("fechaInicio") LocalDateTime fechaInicio, 
                                   @Param("fechaFin") LocalDateTime fechaFin);
+
+    /**
+     * Citas cuya hora ya pasó, sin reseña y sin recordatorio de reseña enviado
+     */
+    @Query("SELECT c FROM Cita c " +
+           "JOIN FETCH c.cliente cl " +
+           "JOIN FETCH c.servicio s " +
+           "WHERE c.fechaHora < :ahora " +
+           "AND LOWER(c.estado) != 'cancelada' " +
+           "AND c.recordatorioResenaEnviado = false " +
+           "AND NOT EXISTS (SELECT r.id FROM Resena r WHERE r.cita = c) " +
+           "ORDER BY c.fechaHora DESC")
+    List<Cita> findCitasPendientesDeResena(@Param("ahora") LocalDateTime ahora);
 }

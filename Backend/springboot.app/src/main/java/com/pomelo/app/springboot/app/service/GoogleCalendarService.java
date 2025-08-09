@@ -42,10 +42,285 @@ public class GoogleCalendarService {
     private static final GsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static boolean HTTP_TRANSPORT_INITIALIZED = false;
 
-    private final UsuarioRepository usuarioRepository;
+    // Mapa de colores para diferentes servicios (más flexible)
+    private static final java.util.Map<String, String> SERVICE_COLORS = new java.util.HashMap<>();
+    
+    // Inicializar colores por defecto
+    static {
+        // Colores principales
+        SERVICE_COLORS.put("corte", "#4285F4");           // Azul
+        SERVICE_COLORS.put("barba", "#EA4335");           // Rojo
+        SERVICE_COLORS.put("tinte", "#34A853");           // Verde
+        SERVICE_COLORS.put("peinado", "#FF6B6B");         // Rosa
+        SERVICE_COLORS.put("tratamiento", "#4ECDC4");     // Turquesa
+        SERVICE_COLORS.put("afeitado", "#45B7D1");        // Azul claro
+        SERVICE_COLORS.put("masaje", "#96CEB4");          // Verde claro
+        
+        // Variaciones comunes
+        SERVICE_COLORS.put("corte de pelo", "#4285F4");
+        SERVICE_COLORS.put("corte pelo", "#4285F4");
+        SERVICE_COLORS.put("corte + barba", "#FBBC04");
+        SERVICE_COLORS.put("corte y barba", "#FBBC04");
+        SERVICE_COLORS.put("tratamiento capilar", "#4ECDC4");
+        SERVICE_COLORS.put("capilar", "#4ECDC4");
+    }
 
-    public GoogleCalendarService(UsuarioRepository usuarioRepository) {
+    private final UsuarioRepository usuarioRepository;
+    private final com.pomelo.app.springboot.app.repository.ServicioRepository servicioRepository;
+
+    public GoogleCalendarService(UsuarioRepository usuarioRepository, 
+                               com.pomelo.app.springboot.app.repository.ServicioRepository servicioRepository) {
         this.usuarioRepository = usuarioRepository;
+        this.servicioRepository = servicioRepository;
+    }
+
+    /**
+     * Obtiene el color para un servicio específico desde la base de datos
+     */
+    private String getServiceColor(String serviceName) {
+        System.out.println("🎨 DEBUG getServiceColor - Buscando color para: '" + serviceName + "'");
+        
+        if (serviceName == null || serviceName.trim().isEmpty()) {
+            System.out.println("⚠️ Nombre de servicio vacío, usando color por defecto");
+            return "#4285F4"; // Color por defecto azul
+        }
+        
+        // Buscar el servicio en la base de datos
+        try {
+            var servicios = servicioRepository.findAll();
+            System.out.println("📋 Servicios disponibles en DB: " + servicios.size());
+            for (var servicio : servicios) {
+                System.out.println("   - " + servicio.getNombre() + " (Color: " + servicio.getColorGoogleCalendar() + ")");
+            }
+            
+            // Buscar por nombre exacto
+            for (var servicio : servicios) {
+                if (servicio.getNombre().equalsIgnoreCase(serviceName)) {
+                    String color = servicio.getColorGoogleCalendar();
+                    if (color != null && !color.trim().isEmpty()) {
+                        System.out.println("✅ Color obtenido de la DB para '" + serviceName + "': " + color);
+                        return color;
+                    } else {
+                        System.out.println("⚠️ Servicio encontrado pero sin color en DB: '" + serviceName + "'");
+                    }
+                }
+            }
+            
+            // Si no encuentra por nombre exacto, buscar por coincidencia parcial
+            for (var servicio : servicios) {
+                if (servicio.getNombre().toLowerCase().contains(serviceName.toLowerCase()) ||
+                    serviceName.toLowerCase().contains(servicio.getNombre().toLowerCase())) {
+                    String color = servicio.getColorGoogleCalendar();
+                    if (color != null && !color.trim().isEmpty()) {
+                        System.out.println("✅ Color encontrado por coincidencia parcial para '" + serviceName + "': " + color);
+                        return color;
+                    }
+                }
+            }
+            
+            // Si no encuentra en la DB, usar fallback
+            System.out.println("⚠️ Servicio no encontrado en DB, usando fallback para: '" + serviceName + "'");
+            return getServiceColorFallback(serviceName);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error al obtener color de la DB para: '" + serviceName + "' - " + e.getMessage());
+            e.printStackTrace();
+            return getServiceColorFallback(serviceName);
+        }
+    }
+    
+    /**
+     * Método fallback para obtener color cuando no se puede acceder a la DB
+     */
+    private String getServiceColorFallback(String serviceName) {
+        // Normalizar el nombre del servicio (minúsculas, sin espacios extra)
+        String normalizedName = serviceName.toLowerCase().trim();
+        
+        // Buscar coincidencia exacta primero
+        if (SERVICE_COLORS.containsKey(normalizedName)) {
+            System.out.println("🎨 Color encontrado por coincidencia exacta: " + normalizedName);
+            return SERVICE_COLORS.get(normalizedName);
+        }
+        
+        // Buscar coincidencia parcial
+        for (String key : SERVICE_COLORS.keySet()) {
+            if (normalizedName.contains(key) || key.contains(normalizedName)) {
+                System.out.println("🎨 Color encontrado por coincidencia parcial: " + key + " para: " + normalizedName);
+                return SERVICE_COLORS.get(key);
+            }
+        }
+        
+        // Si no encuentra coincidencia, asignar color basado en el primer carácter
+        String defaultColor = getDefaultColorByFirstChar(normalizedName);
+        System.out.println("🎨 Color por defecto asignado para: " + normalizedName + " -> " + defaultColor);
+        return defaultColor;
+    }
+    
+    /**
+     * Asigna un color por defecto basado en el primer carácter del servicio
+     */
+    private String getDefaultColorByFirstChar(String serviceName) {
+        if (serviceName.isEmpty()) return "#4285F4";
+        
+        char firstChar = serviceName.charAt(0);
+        switch (firstChar) {
+            case 'a': case 'A': return "#45B7D1"; // Azul claro
+            case 'b': case 'B': return "#EA4335"; // Rojo
+            case 'c': case 'C': return "#4285F4"; // Azul
+            case 'd': case 'D': return "#FF9800"; // Naranja
+            case 'e': case 'E': return "#4ECDC4"; // Turquesa
+            case 'f': case 'F': return "#9C27B0"; // Púrpura
+            case 'g': case 'G': return "#34A853"; // Verde
+            case 'h': case 'H': return "#FF6B6B"; // Rosa
+            case 'i': case 'I': return "#96CEB4"; // Verde claro
+            case 'j': case 'J': return "#DDA0DD"; // Púrpura claro
+            case 'k': case 'K': return "#FBBC04"; // Amarillo
+            case 'l': case 'L': return "#FF5722"; // Naranja rojizo
+            case 'm': case 'M': return "#96CEB4"; // Verde claro
+            case 'n': case 'N': return "#607D8B"; // Gris azulado
+            case 'o': case 'O': return "#DDA0DD"; // Púrpura claro
+            case 'p': case 'P': return "#FF6B6B"; // Rosa
+            case 'q': case 'Q': return "#795548"; // Marrón
+            case 'r': case 'R': return "#EA4335"; // Rojo
+            case 's': case 'S': return "#4285F4"; // Azul
+            case 't': case 'T': return "#4ECDC4"; // Turquesa
+            case 'u': case 'U': return "#9C27B0"; // Púrpura
+            case 'v': case 'V': return "#34A853"; // Verde
+            case 'w': case 'W': return "#FF9800"; // Naranja
+            case 'x': case 'X': return "#607D8B"; // Gris azulado
+            case 'y': case 'Y': return "#FBBC04"; // Amarillo
+            case 'z': case 'Z': return "#FF5722"; // Naranja rojizo
+            default: return "#4285F4"; // Azul por defecto
+        }
+    }
+
+    /**
+     * Convierte un color hexadecimal a un colorId de Google Calendar
+     * Google Calendar usa colorId del 1 al 11, cada uno con un color predefinido
+     */
+    private String getColorId(String hexColor) {
+        System.out.println("🎨 DEBUG getColorId - Convirtiendo color hexadecimal: " + hexColor);
+        
+        // Mapa inteligente que convierte colores personalizados a los 11 colores de Google Calendar
+        java.util.Map<String, String> colorMap = new java.util.HashMap<>();
+        
+        // Colores oficiales de Google Calendar (IDs 1-11)
+        colorMap.put("#4285F4", "1");   // Azul
+        colorMap.put("#EA4335", "2");   // Rojo
+        colorMap.put("#FBBC04", "3");   // Amarillo
+        colorMap.put("#34A853", "4");   // Verde
+        colorMap.put("#FF6B6B", "5");   // Rosa
+        colorMap.put("#4ECDC4", "6");   // Turquesa
+        colorMap.put("#45B7D1", "7");   // Azul claro
+        colorMap.put("#96CEB4", "8");   // Verde claro
+        colorMap.put("#DDA0DD", "9");   // Púrpura claro
+        colorMap.put("#FF9800", "10");  // Naranja
+        colorMap.put("#9C27B0", "11");  // Púrpura
+        
+        // Mapeo inteligente de colores personalizados a colores de Google Calendar
+        // Rosas y magentas → ID 5 (Rosa)
+        colorMap.put("#FF69B4", "5");   // Hot Pink
+        colorMap.put("#FF1493", "5");   // Deep Pink
+        colorMap.put("#FFB6C1", "5");   // Light Pink
+        colorMap.put("#FFC0CB", "5");   // Pink
+        
+        // Violetas y púrpuras → ID 11 (Púrpura)
+        colorMap.put("#8A2BE2", "11");  // Blue Violet
+        colorMap.put("#9370DB", "11");  // Medium Purple
+        colorMap.put("#9932CC", "11");  // Dark Orchid
+        colorMap.put("#BA55D3", "11");  // Medium Orchid
+        
+        // Rojos y naranjas → ID 2 (Rojo) o ID 10 (Naranja)
+        colorMap.put("#FF4500", "2");   // Orange Red
+        colorMap.put("#FF6347", "2");   // Tomato
+        colorMap.put("#DC143C", "2");   // Crimson
+        colorMap.put("#FF7F50", "2");   // Coral
+        colorMap.put("#FFA500", "10");  // Orange
+        colorMap.put("#FF8C00", "10");  // Dark Orange
+        
+        // Verdes → ID 4 (Verde) o ID 8 (Verde claro)
+        colorMap.put("#32CD32", "4");   // Lime Green
+        colorMap.put("#98FB98", "8");   // Pale Green
+        colorMap.put("#90EE90", "8");   // Light Green
+        colorMap.put("#00FF00", "4");   // Lime
+        
+        // Azules → ID 1 (Azul) o ID 7 (Azul claro)
+        colorMap.put("#87CEEB", "7");   // Sky Blue
+        colorMap.put("#00BFFF", "7");   // Deep Sky Blue
+        colorMap.put("#1E90FF", "1");   // Dodger Blue
+        colorMap.put("#4169E1", "1");   // Royal Blue
+        
+        // Amarillos y dorados → ID 3 (Amarillo)
+        colorMap.put("#FFD700", "3");   // Gold
+        colorMap.put("#FFFF00", "3");   // Yellow
+        colorMap.put("#F0E68C", "3");   // Khaki
+        colorMap.put("#FFEFD5", "3");   // Peach Puff
+        
+        // Turquesas y cian → ID 6 (Turquesa)
+        colorMap.put("#00CED1", "6");   // Dark Turquoise
+        colorMap.put("#20B2AA", "6");   // Light Sea Green
+        colorMap.put("#48D1CC", "6");   // Medium Turquoise
+        colorMap.put("#40E0D0", "6");   // Turquoise
+        
+        // Si el color no está en el mapa, usar el color más cercano basado en el primer carácter
+        if (!colorMap.containsKey(hexColor)) {
+            System.out.println("⚠️ Color personalizado no encontrado: " + hexColor + ", usando mapeo inteligente");
+            String colorId = getClosestGoogleColor(hexColor);
+            System.out.println("🎨 Color más cercano para " + hexColor + ": " + colorId);
+            return colorId;
+        }
+        
+        String colorId = colorMap.get(hexColor);
+        System.out.println("🎨 Color ID asignado para " + hexColor + ": " + colorId);
+        return colorId;
+    }
+    
+    /**
+     * Encuentra el color de Google Calendar más cercano basado en el color hexadecimal
+     */
+    private String getClosestGoogleColor(String hexColor) {
+        if (hexColor == null || hexColor.length() != 7) {
+            return "1"; // Azul por defecto
+        }
+        
+        // Extraer componentes RGB
+        int r = Integer.parseInt(hexColor.substring(1, 3), 16);
+        int g = Integer.parseInt(hexColor.substring(3, 5), 16);
+        int b = Integer.parseInt(hexColor.substring(5, 7), 16);
+        
+        // Definir los colores de Google Calendar en RGB
+        int[][] googleColors = {
+            {66, 133, 244},   // ID 1: Azul
+            {234, 67, 53},    // ID 2: Rojo
+            {251, 188, 4},    // ID 3: Amarillo
+            {52, 168, 83},    // ID 4: Verde
+            {255, 107, 107},  // ID 5: Rosa
+            {78, 205, 196},   // ID 6: Turquesa
+            {69, 183, 209},   // ID 7: Azul claro
+            {150, 206, 180},  // ID 8: Verde claro
+            {221, 160, 221},  // ID 9: Púrpura claro
+            {255, 152, 0},    // ID 10: Naranja
+            {156, 39, 176}    // ID 11: Púrpura
+        };
+        
+        // Encontrar el color más cercano usando distancia euclidiana
+        double minDistance = Double.MAX_VALUE;
+        int closestColorId = 1;
+        
+        for (int i = 0; i < googleColors.length; i++) {
+            double distance = Math.sqrt(
+                Math.pow(r - googleColors[i][0], 2) +
+                Math.pow(g - googleColors[i][1], 2) +
+                Math.pow(b - googleColors[i][2], 2)
+            );
+            
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestColorId = i + 1;
+            }
+        }
+        
+        return String.valueOf(closestColorId);
     }
 
     private synchronized NetHttpTransport getHttpTransport() {
@@ -198,6 +473,12 @@ public class GoogleCalendarService {
             event.addProperty("location", "Esential Barber");
             event.addProperty("description", "Cita para el servicio: " + cita.getServicio().getNombre() + 
                             "\nComentario: " + (cita.getComentario() != null ? cita.getComentario() : "Sin comentarios"));
+            
+            // Añadir color al evento
+            String serviceColor = getServiceColor(cita.getServicio().getNombre());
+            String colorId = getColorId(serviceColor);
+            event.addProperty("colorId", colorId);
+            System.out.println("🎨 Color asignado para " + cita.getServicio().getNombre() + ": " + serviceColor + " (ID: " + colorId + ")");
             
             // Configurar fecha y hora de inicio
             JsonObject start = new JsonObject();
@@ -435,6 +716,12 @@ public class GoogleCalendarService {
                 "Servicio: " + cita.getServicio().getNombre() + "\n" +
                 "Comentario: " + (cita.getComentario() != null ? cita.getComentario() : "Sin comentarios")
             );
+            
+            // Añadir color al evento del admin
+            String serviceColor = getServiceColor(cita.getServicio().getNombre());
+            String colorId = getColorId(serviceColor);
+            event.addProperty("colorId", colorId);
+            System.out.println("🎨 Color asignado para admin - " + cita.getServicio().getNombre() + ": " + serviceColor + " (ID: " + colorId + ")");
             
             // Configurar fecha y hora de inicio
             JsonObject start = new JsonObject();

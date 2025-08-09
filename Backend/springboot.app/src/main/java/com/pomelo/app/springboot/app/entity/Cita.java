@@ -34,6 +34,12 @@ public class Cita {
     @Column
     private Integer periodicidadDias;
 
+    @Column(name = "recordatorio_resena_enviado", nullable = false)
+    private boolean recordatorioResenaEnviado = false;
+
+    @Column(name = "fecha_recordatorio_resena")
+    private LocalDateTime fechaRecordatorioResena;
+
     public Long getId() {
         return id;
     }
@@ -96,5 +102,21 @@ public class Cita {
 
     public void setPeriodicidadDias(Integer periodicidadDias) {
         this.periodicidadDias = periodicidadDias;
+    }
+
+    public boolean isRecordatorioResenaEnviado() {
+        return recordatorioResenaEnviado;
+    }
+
+    public void setRecordatorioResenaEnviado(boolean recordatorioResenaEnviado) {
+        this.recordatorioResenaEnviado = recordatorioResenaEnviado;
+    }
+
+    public LocalDateTime getFechaRecordatorioResena() {
+        return fechaRecordatorioResena;
+    }
+
+    public void setFechaRecordatorioResena(LocalDateTime fechaRecordatorioResena) {
+        this.fechaRecordatorioResena = fechaRecordatorioResena;
     }
 }

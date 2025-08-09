@@ -43,6 +43,12 @@ public class ServicioService {
             if (servicio.getDuracionMinutos() <= 0) {
                 throw new RuntimeException("La duración debe ser mayor a 0");
             }
+            
+            // Establecer color por defecto si no se proporciona
+            if (servicio.getColorGoogleCalendar() == null || servicio.getColorGoogleCalendar().trim().isEmpty()) {
+                servicio.setColorGoogleCalendar("#4285F4");
+            }
+            
             return servicioRepository.save(servicio);
         } catch (Exception e) {
             throw new RuntimeException("Error al crear servicio: " + e.getMessage(), e);
@@ -82,6 +88,10 @@ public class ServicioService {
                 // Actualizar texto descriptivo
                 if (servicioActualizado.getTextoDescriptivo() != null) {
                     servicio.setTextoDescriptivo(servicioActualizado.getTextoDescriptivo());
+                }
+                // Actualizar color de Google Calendar
+                if (servicioActualizado.getColorGoogleCalendar() != null) {
+                    servicio.setColorGoogleCalendar(servicioActualizado.getColorGoogleCalendar());
                 }
                 return servicioRepository.save(servicio);
             }).orElseThrow(() -> new RuntimeException("Servicio no encontrado"));

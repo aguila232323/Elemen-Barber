@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
 import styles from './GooglePhoneModal.module.css';
+import { 
+  cleanPhoneNumber,
+  validateSpanishPhone,
+  getPhoneErrorMessage,
+  normalizePhoneForStorage,
+  handlePhoneChange,
+  handlePhoneBlur
+} from '../../utils/phoneUtils';
 
 interface GooglePhoneModalProps {
   email: string;
@@ -14,8 +22,13 @@ const GooglePhoneModal: React.FC<GooglePhoneModalProps> = ({ email, onComplete, 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!telefono.trim()) {
-      setError('Por favor, introduce tu número de teléfono');
+    const clean = cleanPhoneNumber(telefono);
+    if (clean.length !== 9) {
+      setError('El número de teléfono debe tener 9 dígitos');
+      return;
+    }
+    if (!validateSpanishPhone(telefono)) {
+      setError(getPhoneErrorMessage(telefono) || 'Número de teléfono inválido');
       return;
     }
 
@@ -23,6 +36,7 @@ const GooglePhoneModal: React.FC<GooglePhoneModalProps> = ({ email, onComplete, 
     setError('');
 
     try {
+      const telefonoNormalizado = normalizePhoneForStorage(telefono);
       const response = await fetch('http://localhost:8080/api/auth/google/complete', {
         method: 'POST',
         headers: {
@@ -30,7 +44,7 @@ const GooglePhoneModal: React.FC<GooglePhoneModalProps> = ({ email, onComplete, 
         },
         body: JSON.stringify({
           email: email,
-          telefono: telefono.trim()
+          telefono: telefonoNormalizado
         }),
       });
 
@@ -86,7 +100,8 @@ const GooglePhoneModal: React.FC<GooglePhoneModalProps> = ({ email, onComplete, 
                 type='tel' 
                 placeholder='Ej: +34 600 123 456' 
                 value={telefono} 
-                onChange={e => setTelefono(e.target.value)} 
+                onChange={e => handlePhoneChange(e.target.value, setTelefono)} 
+                onBlur={() => handlePhoneBlur(telefono, setTelefono)}
                 required 
                 className={styles.input}
                 pattern="[0-9+\-\s\(\)]+"

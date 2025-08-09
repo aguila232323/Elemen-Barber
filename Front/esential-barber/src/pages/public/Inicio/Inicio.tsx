@@ -6,7 +6,6 @@ import { Autoplay, EffectCoverflow } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/effect-coverflow';
 import { useServicios } from '../../../hooks/useServicios';
-import ColorDemo from '../../../components/ColorDemo/ColorDemo';
 
 const reviews = [
   { 
@@ -475,8 +474,7 @@ const Inicio: React.FC = () => {
         )}
       </div>
       
-      {/* Componente de demostración de colores */}
-      <ColorDemo />
+      {/* Componente de demostración de colores oculto */}
     </>
   )
 }

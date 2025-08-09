@@ -1,8 +1,6 @@
 package com.pomelo.app.springboot.app.service;
 
 import com.pomelo.app.springboot.app.entity.Cita;
-import com.pomelo.app.springboot.app.entity.Usuario;
-import com.pomelo.app.springboot.app.entity.Servicio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -58,6 +56,18 @@ public class EmailService {
     @Async
     public void enviarRecordatorioCita(Cita cita) {
         try {
+            System.out.println("📧 INICIANDO ENVÍO DE RECORDATORIO");
+            System.out.println("👤 Cliente: " + cita.getCliente().getNombre());
+            System.out.println("📧 Email destino: " + cita.getCliente().getEmail());
+            System.out.println("📅 Fecha cita: " + cita.getFechaHora());
+            System.out.println("📋 Servicio: " + cita.getServicio().getNombre());
+            
+            // Verificar que mailSender esté disponible
+            if (mailSender == null) {
+                System.err.println("❌ ERROR: JavaMailSender no está disponible");
+                throw new RuntimeException("JavaMailSender no está configurado");
+            }
+            
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
@@ -75,17 +85,24 @@ public class EmailService {
                 fechaFormateada = cita.getFechaHora().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
             }
             
+            System.out.println("📝 Fecha formateada: " + fechaFormateada);
+            
             // Crear contenido HTML del email de recordatorio
             String htmlContent = crearEmailRecordatorioHTML(cita.getCliente().getNombre(), cita.getServicio().getNombre(), 
                                                          fechaFormateada, cita.getServicio().getDuracionMinutos(), 
                                                          cita.getServicio().getPrecio());
             
+            System.out.println("📄 Contenido HTML generado correctamente");
+            
             helper.setText(htmlContent, true);
+            
+            System.out.println("📤 Enviando email...");
             mailSender.send(message);
-            System.out.println("✅ Email de recordatorio enviado a: " + cita.getCliente().getEmail());
+            System.out.println("✅ Email de recordatorio enviado exitosamente a: " + cita.getCliente().getEmail());
             
         } catch (Exception e) {
             System.err.println("❌ Error al enviar email de recordatorio: " + e.getMessage());
+            System.err.println("🔍 Detalles del error:");
             e.printStackTrace();
         }
     }
@@ -179,6 +196,70 @@ public class EmailService {
             System.err.println("❌ Error al enviar email de notificación de cita periódica: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    @Async
+    public void enviarRecordatorioResena(String emailDestino, String nombreCliente, String nombreServicio, String reviewUrl) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(emailDestino);
+            helper.setSubject("⭐ ¿Nos dejas tu reseña? - Elemen");
+            helper.setFrom("Elemen Barber <elemenbarber@gmail.com>");
+
+            String htmlContent = crearEmailRecordatorioResenaHTML(nombreCliente, nombreServicio, reviewUrl);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            System.out.println("✅ Email de recordatorio de reseña enviado a: " + emailDestino);
+        } catch (Exception e) {
+            System.err.println("❌ Error al enviar email de recordatorio de reseña: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private String crearEmailRecordatorioResenaHTML(String nombreCliente, String nombreServicio, String reviewUrl) {
+        return String.format("""
+            <!DOCTYPE html>
+            <html lang=\"es\">
+            <head>
+                <meta charset=\"UTF-8\">
+                <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+                <title>Tu opinión nos importa</title>
+                <style>
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#f4f4f4; margin:0; padding:0; }
+                    .container { max-width:600px; margin:20px auto; background:#fff; border-radius:10px; box-shadow:0 4px 6px rgba(0,0,0,0.1); overflow:hidden; }
+                    .header { background: linear-gradient(135deg, #2c3e50 0%%, #34495e 50%%, #1a1a1a 100%%); color:#fff; padding:30px; text-align:center; }
+                    .content { padding: 30px; }
+                    .cta { text-align:center; margin: 30px 0; }
+                    .button { display:inline-block; padding:14px 24px; background:#1976d2; color:#fff !important; text-decoration:none; border-radius:8px; font-weight:700; }
+                    .note { color:#6c757d; font-size:14px; text-align:center; }
+                    .footer { background:#f8f9fa; padding:20px; text-align:center; border-top:1px solid #e9ecef; }
+                </style>
+            </head>
+            <body>
+                <div class=\"container\">
+                    <div class=\"header\">
+                        <img src=\"https://esentialbarber.com/logoElemental.png\" alt=\"Elemen\" style=\"width:80px; border-radius:8px;\">
+                        <h1>Elemen</h1>
+                        <p>Tu opinión nos ayuda a mejorar</p>
+                    </div>
+                    <div class=\"content\">
+                        <p>Hola %s,</p>
+                        <p>Esperamos que hayas disfrutado de tu servicio de <strong>%s</strong>. ¿Podrías dejarnos una reseña? ¡Tardas menos de un minuto!</p>
+                        <div class=\"cta\">
+                            <a class=\"button\" href=\"%s\">⭐ Dejar reseña</a>
+                        </div>
+                        <p class=\"note\">Gracias por confiar en nosotros.</p>
+                    </div>
+                    <div class=\"footer\">
+                        <div>Elemen · +34 683 23 55 47 · elemenbarber@gmail.com</div>
+                    </div>
+                </div>
+            </body>
+            </html>
+        """, nombreCliente, nombreServicio, reviewUrl);
     }
 
     private String crearEmailConfirmacionHTML(String nombreCliente, String nombreServicio, String fechaHora, int duracion, double precio) {
@@ -483,7 +564,7 @@ public class EmailService {
                         <div class="greeting">Hola %s,</div>
                         
                         <div class="reminder-message">
-                            <strong>⏰ Te recordamos que tienes una cita programada para mañana</strong>
+                            <strong>⏰ Te recordamos que tienes una cita próximamente</strong>
                         </div>
                         
                         <div class="appointment-details">

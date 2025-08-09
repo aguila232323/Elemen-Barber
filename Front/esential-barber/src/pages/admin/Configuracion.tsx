@@ -2,6 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaCog, FaSave, FaTimes, FaCalendarAlt, FaUserPlus, FaCalendarCheck, FaUmbrellaBeach } from 'react-icons/fa';
 import styles from './Configuracion.module.css';
 
+// Colores oficiales de Google Calendar
+const GOOGLE_CALENDAR_COLORS = [
+  { id: 1, hex: '#4285F4', name: 'Azul' },
+  { id: 2, hex: '#EA4335', name: 'Rojo' },
+  { id: 3, hex: '#FBBC04', name: 'Amarillo' },
+  { id: 4, hex: '#34A853', name: 'Verde' },
+  { id: 5, hex: '#FF6B6B', name: 'Rosa' },
+  { id: 6, hex: '#4ECDC4', name: 'Turquesa' },
+  { id: 7, hex: '#45B7D1', name: 'Azul claro' },
+  { id: 8, hex: '#96CEB4', name: 'Verde claro' },
+  { id: 9, hex: '#DDA0DD', name: 'Púrpura claro' },
+  { id: 10, hex: '#FF9800', name: 'Naranja' },
+  { id: 11, hex: '#9C27B0', name: 'Púrpura' }
+];
+
 interface Servicio {
   id: number;
   nombre: string;
@@ -10,6 +25,7 @@ interface Servicio {
   duracionMinutos: number;
   emoji?: string;
   textoDescriptivo?: string;
+  colorGoogleCalendar?: string;
 }
 
 interface Usuario {
@@ -33,7 +49,9 @@ interface Cita {
 
 const Configuracion: React.FC = () => {
   const [modal, setModal] = useState<'add' | 'edit' | 'delete' | null>(null);
-  const [addForm, setAddForm] = useState({ nombre: '', descripcion: '', precio: '', duracion: '', emoji: '', textoDescriptivo: '' });
+  const [addForm, setAddForm] = useState({ nombre: '', descripcion: '', precio: '', duracion: '', emoji: '', textoDescriptivo: '', colorGoogleCalendar: '#4285F4' });
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [activeColorPicker, setActiveColorPicker] = useState<'add' | 'edit' | null>(null);
   const [addLoading, setAddLoading] = useState(false);
   const [addMsg, setAddMsg] = useState<string | null>(null);
 
@@ -41,7 +59,7 @@ const Configuracion: React.FC = () => {
   const [servicios, setServicios] = useState<Servicio[]>([]);
   const [serviciosLoading, setServiciosLoading] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
-  const [editForm, setEditForm] = useState({ nombre: '', descripcion: '', precio: '', duracion: '', emoji: '', textoDescriptivo: '' });
+  const [editForm, setEditForm] = useState({ nombre: '', descripcion: '', precio: '', duracion: '', emoji: '', textoDescriptivo: '', colorGoogleCalendar: '#4285F4' });
   const [editLoading, setEditLoading] = useState(false);
   const [editMsg, setEditMsg] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -241,7 +259,7 @@ const Configuracion: React.FC = () => {
     if (type === 'edit' || type === 'delete') fetchServicios();
     if (type === 'edit') {
       setEditId(null);
-      setEditForm({ nombre: '', descripcion: '', precio: '', duracion: '', emoji: '', textoDescriptivo: '' });
+      setEditForm({ nombre: '', descripcion: '', precio: '', duracion: '', emoji: '', textoDescriptivo: '', colorGoogleCalendar: '#4285F4' });
       setEditMsg(null);
     }
     if (type === 'delete') {
@@ -608,6 +626,7 @@ const Configuracion: React.FC = () => {
         duracion: serv.duracionMinutos.toString(),
         emoji: serv.emoji || '',
         textoDescriptivo: serv.textoDescriptivo || '',
+        colorGoogleCalendar: serv.colorGoogleCalendar || '#4285F4',
       });
     }
   };
@@ -624,6 +643,21 @@ const Configuracion: React.FC = () => {
 
   const handleAddChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setAddForm({ ...addForm, [e.target.name]: e.target.value });
+  };
+
+  const handleColorSelect = (color: string, formType: 'add' | 'edit') => {
+    if (formType === 'add') {
+      setAddForm({ ...addForm, colorGoogleCalendar: color });
+    } else {
+      setEditForm({ ...editForm, colorGoogleCalendar: color });
+    }
+    setShowColorPicker(false);
+    setActiveColorPicker(null);
+  };
+
+  const openColorPicker = (formType: 'add' | 'edit') => {
+    setShowColorPicker(true);
+    setActiveColorPicker(formType);
   };
 
   // Handlers para formularios de citas
@@ -675,12 +709,13 @@ const Configuracion: React.FC = () => {
           precio: parseFloat(addForm.precio),
           duracionMinutos: parseInt(addForm.duracion),
           emoji: addForm.emoji,
-          textoDescriptivo: addForm.textoDescriptivo
+          textoDescriptivo: addForm.textoDescriptivo,
+          colorGoogleCalendar: addForm.colorGoogleCalendar
         })
       });
       if (!res.ok) throw new Error('Error al añadir servicio');
       setAddMsg('¡Servicio añadido correctamente!');
-              setAddForm({ nombre: '', descripcion: '', precio: '', duracion: '', emoji: '', textoDescriptivo: '' });
+              setAddForm({ nombre: '', descripcion: '', precio: '', duracion: '', emoji: '', textoDescriptivo: '', colorGoogleCalendar: '#4285F4' });
       setTimeout(() => {
         setModal(null);
         setAddMsg(null);
@@ -712,7 +747,8 @@ const Configuracion: React.FC = () => {
           precio: parseFloat(editForm.precio),
           duracionMinutos: parseInt(editForm.duracion),
           emoji: editForm.emoji,
-          textoDescriptivo: editForm.textoDescriptivo
+          textoDescriptivo: editForm.textoDescriptivo,
+          colorGoogleCalendar: editForm.colorGoogleCalendar
         })
       });
       if (!res.ok) throw new Error('Error al modificar servicio');
@@ -721,7 +757,7 @@ const Configuracion: React.FC = () => {
         setModal(null);
         setEditMsg(null);
         setEditId(null);
-        setEditForm({ nombre: '', descripcion: '', precio: '', duracion: '', emoji: '', textoDescriptivo: '' });
+        setEditForm({ nombre: '', descripcion: '', precio: '', duracion: '', emoji: '', textoDescriptivo: '', colorGoogleCalendar: '#4285F4' });
       }, 1200);
     } catch (err: any) {
       setEditMsg(err.message || 'Error al modificar servicio');
@@ -998,6 +1034,27 @@ const Configuracion: React.FC = () => {
             <input className={styles.input} name="precio" type="number" placeholder="Precio (€)" min="0" step="0.01" value={addForm.precio} onChange={handleAddChange} required />
             <input className={styles.input} name="duracion" type="number" placeholder="Duración (minutos)" min="1" value={addForm.duracion} onChange={handleAddChange} required />
             <input className={styles.input} name="emoji" type="text" placeholder="Emoji (ej: ✂️, 💈, 🎨)" value={addForm.emoji} onChange={handleAddChange} maxLength={10} />
+            <div className={styles.colorPickerContainer}>
+              <label className={styles.colorLabel}>Color para Google Calendar:</label>
+              <div className={styles.colorSelector}>
+                <div 
+                  className={styles.selectedColor}
+                  style={{ backgroundColor: addForm.colorGoogleCalendar }}
+                  onClick={() => openColorPicker('add')}
+                >
+                  <span className={styles.colorName}>
+                    {GOOGLE_CALENDAR_COLORS.find(c => c.hex === addForm.colorGoogleCalendar)?.name || 'Personalizado'}
+                  </span>
+                </div>
+                <button 
+                  type="button" 
+                  className={styles.colorPickerButton}
+                  onClick={() => openColorPicker('add')}
+                >
+                  Elegir Color
+                </button>
+              </div>
+            </div>
             <textarea className={styles.input} name="textoDescriptivo" placeholder="Texto descriptivo para pantalla de inicio" value={addForm.textoDescriptivo} onChange={handleAddChange} maxLength={200} />
             <div className={styles.modalBtnGroup}>
               <button className={styles.saveBtn} type="submit" disabled={addLoading}>
@@ -1032,6 +1089,27 @@ const Configuracion: React.FC = () => {
             <input className={styles.input} name="precio" type="number" placeholder="Nuevo precio (€)" min="0" step="0.01" value={editForm.precio} onChange={handleEditChange} required />
             <input className={styles.input} name="duracion" type="number" placeholder="Nueva duración (minutos)" min="1" value={editForm.duracion} onChange={handleEditChange} required />
             <input className={styles.input} name="emoji" type="text" placeholder="Emoji (ej: ✂️, 💈, 🎨)" value={editForm.emoji} onChange={handleEditChange} maxLength={10} />
+            <div className={styles.colorPickerContainer}>
+              <label className={styles.colorLabel}>Color para Google Calendar:</label>
+              <div className={styles.colorSelector}>
+                <div 
+                  className={styles.selectedColor}
+                  style={{ backgroundColor: editForm.colorGoogleCalendar }}
+                  onClick={() => openColorPicker('edit')}
+                >
+                  <span className={styles.colorName}>
+                    {GOOGLE_CALENDAR_COLORS.find(c => c.hex === editForm.colorGoogleCalendar)?.name || 'Personalizado'}
+                  </span>
+                </div>
+                <button 
+                  type="button" 
+                  className={styles.colorPickerButton}
+                  onClick={() => openColorPicker('edit')}
+                >
+                  Elegir Color
+                </button>
+              </div>
+            </div>
             <textarea className={styles.input} name="textoDescriptivo" placeholder="Texto descriptivo para pantalla de inicio" value={editForm.textoDescriptivo} onChange={handleEditChange} maxLength={200} />
             <div className={styles.modalBtnGroup}>
               <button className={styles.saveBtn} type="submit" disabled={editLoading}>
@@ -2227,6 +2305,45 @@ const Configuracion: React.FC = () => {
             </form>
           </div>
                  )}
+
+      {/* Modal de selección de colores */}
+      {showColorPicker && (
+        <div className={styles.colorPickerModal}>
+          <div className={styles.colorPickerContent}>
+            <div className={styles.colorPickerHeader}>
+              <h3>Seleccionar Color para Google Calendar</h3>
+              <button 
+                type="button" 
+                className={styles.closeButton}
+                onClick={() => {
+                  setShowColorPicker(false);
+                  setActiveColorPicker(null);
+                }}
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div className={styles.colorGrid}>
+              {GOOGLE_CALENDAR_COLORS.map((color) => (
+                <div
+                  key={color.id}
+                  className={styles.colorOption}
+                  style={{ backgroundColor: color.hex }}
+                  onClick={() => handleColorSelect(color.hex, activeColorPicker!)}
+                  title={`${color.name} (${color.hex})`}
+                >
+                  <span className={styles.colorOptionName}>{color.name}</span>
+                </div>
+              ))}
+            </div>
+            <div className={styles.colorPickerFooter}>
+              <p className={styles.colorPickerInfo}>
+                Estos son los colores oficiales de Google Calendar. El color seleccionado se aplicará exactamente igual en tu calendario.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

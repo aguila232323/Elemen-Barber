@@ -1182,4 +1182,300 @@
     min-width: 90px;
     border-radius: 5px;
   }
+}
+
+/* Estilos para el selector de colores */
+.colorPickerContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.colorLabel {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  min-width: 150px;
+  text-align: left;
+}
+
+.colorInput {
+  width: 50px;
+  height: 40px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  padding: 0;
+}
+
+.colorInput::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: 6px;
+}
+
+.colorInput::-webkit-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+.colorValue {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: #42a5f5;
+  font-weight: 600;
+  background: rgba(66, 165, 245, 0.1);
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid rgba(66, 165, 245, 0.3);
+}
+
+/* Responsive para el selector de colores */
+@media (max-width: 768px) {
+  .colorPickerContainer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .colorLabel {
+    min-width: auto;
+    font-size: 0.85rem;
+  }
+  
+  .colorInput {
+    width: 60px;
+    height: 45px;
+  }
+  
+  .colorValue {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .colorPickerContainer {
+    padding: 0.8rem;
+  }
+  
+  .colorLabel {
+    font-size: 0.8rem;
+  }
+  
+  .colorInput {
+    width: 50px;
+    height: 40px;
+  }
+  
+  .colorValue {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.3rem;
+  }
+}
+
+/* Nuevos estilos para el selector de colores de Google Calendar */
+.colorSelector {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.selectedColor {
+  width: 60px;
+  height: 40px;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.selectedColor:hover {
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.colorName {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.colorPickerButton {
+  background: linear-gradient(135deg, #1976d2, #42a5f5);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.colorPickerButton:hover {
+  background: linear-gradient(135deg, #1565c0, #1976d2);
+  transform: translateY(-1px);
+}
+
+/* Modal de selección de colores */
+.colorPickerModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.colorPickerContent {
+  background: linear-gradient(135deg, #23272f 0%, #1a1d24 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.colorPickerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.colorPickerHeader h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.closeButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.colorGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.colorOption {
+  height: 80px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.colorOption:hover {
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.colorOptionName {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.colorPickerFooter {
+  text-align: center;
+}
+
+.colorPickerInfo {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Responsive para el modal de colores */
+@media (max-width: 768px) {
+  .colorPickerContent {
+    padding: 1.5rem;
+    width: 95%;
+  }
+  
+  .colorGrid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.8rem;
+  }
+  
+  .colorOption {
+    height: 70px;
+  }
+  
+  .colorOptionName {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .colorPickerContent {
+    padding: 1rem;
+  }
+  
+  .colorPickerHeader h3 {
+    font-size: 1.1rem;
+  }
+  
+  .colorGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+  }
+  
+  .colorOption {
+    height: 60px;
+  }
+  
+  .colorOptionName {
+    font-size: 0.7rem;
+  }
 } 

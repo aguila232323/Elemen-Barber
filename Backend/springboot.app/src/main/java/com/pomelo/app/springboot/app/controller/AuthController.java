@@ -13,7 +13,6 @@ import com.pomelo.app.springboot.app.repository.UsuarioRepository;
 import com.pomelo.app.springboot.app.config.JwtUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -134,11 +133,18 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Teléfono requerido"));
             }
 
+            // Validación estricta: 9 dígitos (o 11 con 34 / 13 con 0034) y prefijos válidos
+            var phoneValidation = new com.pomelo.app.springboot.app.service.PhoneValidationService();
+            if (!phoneValidation.validateSpanishPhone(telefono)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "El teléfono debe tener 9 dígitos válidos (España) y empezar por 6, 7 o 9"));
+            }
+            String telefonoNormalizado = phoneValidation.normalizePhoneForStorage(telefono);
+
             // Buscar usuario y actualizar teléfono
             Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
             if (usuarioOpt.isPresent()) {
                 Usuario usuario = usuarioOpt.get();
-                usuario.setTelefono(telefono);
+                usuario.setTelefono(telefonoNormalizado);
                 usuarioRepository.save(usuario);
                 
                 // Generar nuevo JWT token
@@ -191,8 +197,8 @@ public class AuthController {
                     new com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow.Builder(
                         new com.google.api.client.http.javanet.NetHttpTransport(),
                         com.google.api.client.json.gson.GsonFactory.getDefaultInstance(),
-                        "127461189204-p16ctc72mp90hmedchmon1fbb8qjk905.apps.googleusercontent.com",
-                        "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",
+                        System.getProperty("google.client.id", "${google.client.id}"),
+                        System.getProperty("google.client.secret", "${google.client.secret}"),
                         java.util.Arrays.asList("https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/calendar.events"))
                         .setAccessType("offline")
                         .setApprovalPrompt("force")
@@ -201,7 +207,7 @@ public class AuthController {
                 // Intercambiar código por tokens
                 com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse tokenResponse = 
                     flow.newTokenRequest(code)
-                        .setRedirectUri("http://localhost:3000/auth/google/callback")
+                        .setRedirectUri(System.getProperty("app.google.redirect-uri", "http://localhost:3000/auth/google/callback"))
                         .execute();
 
                 // Calcular fecha de expiración
@@ -277,9 +283,6 @@ public class AuthController {
 
                 if (response.statusCode() == 200) {
                     // El usuario tiene acceso a Calendar, guardar el access token
-                    // Convertir el access token a un formato que podamos guardar
-                    String tokenForStorage = accessToken.substring(0, Math.min(100, accessToken.length()));
-                    
                     // Calcular expiración (los access tokens de Google suelen durar 1 hora)
                     java.time.LocalDateTime expiry = java.time.LocalDateTime.now().plusHours(1);
                     

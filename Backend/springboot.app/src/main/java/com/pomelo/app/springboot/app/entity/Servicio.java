@@ -28,6 +28,9 @@ public class Servicio {
     @Column(length = 200, columnDefinition = "VARCHAR(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
     private String textoDescriptivo;
 
+    @Column(length = 7, name = "color_google_calendar")
+    private String colorGoogleCalendar;
+
     public Long getId() {
         return id;
     }
@@ -82,5 +85,13 @@ public class Servicio {
 
     public void setTextoDescriptivo(String textoDescriptivo) {
         this.textoDescriptivo = textoDescriptivo;
+    }
+
+    public String getColorGoogleCalendar() {
+        return colorGoogleCalendar;
+    }
+
+    public void setColorGoogleCalendar(String colorGoogleCalendar) {
+        this.colorGoogleCalendar = colorGoogleCalendar;
     }
 }
