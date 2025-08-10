@@ -3,12 +3,20 @@ import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'moment/locale/es';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { FaCalendarAlt, FaTimes, FaSave, FaBars, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import './CitasAdminCustom.css';
+import { FaCalendarAlt, FaTimes, FaSave, FaBars, FaChevronLeft, FaChevronRight, FaChevronDown, FaList } from 'react-icons/fa';
 import { useServicios } from '../../hooks/useServicios';
 
+// Configurar moment para español
+moment.locale('es', {
+  weekdays: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+  weekdaysShort: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+  weekdaysMin: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'],
+  months: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+  monthsShort: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+});
+
 const localizer = momentLocalizer(moment);
-moment.locale('es');
 
 interface Servicio {
   id: number;
@@ -47,34 +55,113 @@ interface Cita {
 // Datos de ejemplo para demostración
 // getExampleEvents: no usado, se eliminó para limpiar warnings
 
-// Toolbar personalizada (desktop y móvil) con navegación y cambio de vistas
-const CustomToolbar = (toolbar: any) => {
-  const goToBack = () => {
-    console.log('Going back from:', toolbar.date);
-    console.log('Toolbar object:', toolbar);
-    if (toolbar.onNavigate) {
-      toolbar.onNavigate('PREV');
-    } else {
-      console.error('onNavigate not available');
+// Nueva barra de herramientas móvil personalizada
+    const MobileCalendarToolbar = ({ currentView, onViewChange, onNavigate, date, view, onView, onNavigate: calendarNavigate, selectedDate, onDateSelect }: any) => {
+    const [showViewSelector, setShowViewSelector] = useState(false);
+    const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
+
+    useEffect(() => {
+      if (selectedDate) {
+        generateWeekDays();
+      }
+    }, [selectedDate]);
+
+    const generateWeekDays = () => {
+      if (!selectedDate) return;
+      const startOfWeek = moment(selectedDate).startOf('week');
+      const days = [];
+      
+      for (let i = 0; i < 7; i++) {
+        days.push(moment(startOfWeek).add(i, 'days').toDate());
+      }
+      
+      setCurrentWeek(days);
+    };
+
+    const goToPreviousWeek = () => {
+      if (onDateSelect && selectedDate) {
+        const newDate = moment(selectedDate).subtract(1, 'week').toDate();
+        onDateSelect(newDate);
+      }
+    };
+
+    const goToNextWeek = () => {
+      if (onDateSelect && selectedDate) {
+        const newDate = moment(selectedDate).add(1, 'week').toDate();
+        onDateSelect(newDate);
+      }
+    };
+
+    const goToTodayWeek = () => {
+      if (onDateSelect) {
+        onDateSelect(new Date());
+      }
+    };
+
+    const getDayName = (date: Date) => {
+      const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+      return days[date.getDay()];
+    };
+
+    const getDayNumber = (date: Date) => {
+      return date.getDate();
+    };
+
+    const isToday = (date: Date) => {
+      return moment(date).isSame(moment(), 'day');
+    };
+
+    const isSelected = (date: Date) => {
+      return selectedDate && moment(date).isSame(moment(selectedDate), 'day');
+    };
+
+    const canGoPrevious = () => {
+      return currentWeek.length > 0 && moment(currentWeek[0]).isAfter(moment().subtract(1, 'year'), 'day');
+    };
+
+    const canGoNext = () => {
+      return currentWeek.length > 0 && moment(currentWeek[0]).isBefore(moment().add(1, 'year'), 'day');
+    };
+
+  const viewOptions = [
+    { value: Views.DAY, label: 'Día', icon: '📅' },
+    { value: Views.WEEK, label: 'Semana', icon: '📆' },
+    { value: Views.MONTH, label: 'Mes', icon: '🗓️' },
+    { value: Views.AGENDA, label: 'Agenda', icon: '📋' }
+  ];
+
+  const currentViewLabel = viewOptions.find(option => option.value === currentView)?.label || 'Semana';
+
+  const handleViewChange = (newView: string) => {
+    if (onViewChange) {
+      onViewChange(newView);
+    } else if (onView) {
+      onView(newView);
     }
+    setShowViewSelector(false);
   };
-  // goToNext ya declarado más abajo
+
   const goToToday = () => {
-    console.log('Going to today from:', toolbar.date);
-    console.log('Toolbar object:', toolbar);
-    if (toolbar.onNavigate) {
-      toolbar.onNavigate('TODAY');
-    } else {
-      console.error('onNavigate not available');
+    if (onNavigate) {
+      onNavigate(new Date(), currentView, 'TODAY');
+    } else if (calendarNavigate) {
+      calendarNavigate('TODAY');
     }
   };
+
+  const goToBack = () => {
+    if (onNavigate) {
+      onNavigate(date, currentView, 'PREV');
+    } else if (calendarNavigate) {
+      calendarNavigate('PREV');
+    }
+  };
+
   const goToNext = () => {
-    console.log('Going next from:', toolbar.date);
-    console.log('Toolbar object:', toolbar);
-    if (toolbar.onNavigate) {
-      toolbar.onNavigate('NEXT');
-    } else {
-      console.error('onNavigate not available');
+    if (onNavigate) {
+      onNavigate(date, currentView, 'NEXT');
+    } else if (calendarNavigate) {
+      calendarNavigate('NEXT');
     }
   };
   
@@ -87,55 +174,193 @@ const CustomToolbar = (toolbar: any) => {
     return months[date.getMonth()];
   };
   
-  const label = () => {
-    const date = toolbar.date;
+  const formatDate = (date: Date) => {
     const monthName = getMonthName(date);
     const year = date.getFullYear();
-    return (
-      <span className="toolbar-month-year">
-        {monthName} {year}
-      </span>
-    );
-  };
-  
-  const handleViewChange = (view: string) => {
-    console.log('Changing view to:', view);
-    if (toolbar.onView) toolbar.onView(view);
+    return `${monthName} ${year}`;
   };
 
   return (
-    <div className="citas-admin-toolbar">
-      <div className="toolbar-left toolbar-group">
-        <button onClick={goToBack} className="citas-admin-nav-btn nav-btn" title="Anterior">
-          <FaChevronLeft />
+          <div className="mobile-calendar-toolbar" style={{ paddingBottom: '0px', paddingLeft: '0px', paddingRight: '0px', paddingTop: '0px' }}>
+
+
+      {/* Calendario horizontal integrado */}
+      <div className="mobile-horizontal-calendar">
+        <div className="mobile-horizontal-header">
+          <div className="mobile-horizontal-nav">
+            <button
+              className="mobile-horizontal-nav-button"
+              onClick={goToPreviousWeek}
+              disabled={!canGoPrevious()}
+            >
+              <FaChevronLeft size={14} />
+            </button>
+            <span className="mobile-horizontal-nav-text">
+              {currentWeek.length > 0 && (
+                <>
+                  {moment(currentWeek[0]).locale('es').format('MMM D')} - {moment(currentWeek[6]).locale('es').format('MMM D, YYYY')}
+                </>
+              )}
+            </span>
+            <button
+              className="mobile-horizontal-nav-button"
+              onClick={goToNextWeek}
+              disabled={!canGoNext()}
+            >
+              <FaChevronRight size={14} />
+            </button>
+          </div>
+          
+          {/* Selector de vista */}
+          <div className="mobile-horizontal-view-selector">
+            <button 
+              className="mobile-view-selector-button"
+              onClick={() => setShowViewSelector(!showViewSelector)}
+            >
+              <span className="view-icon">{viewOptions.find(option => option.value === currentView)?.icon || '📅'}</span>
+              <FaChevronDown size={12} className={`chevron ${showViewSelector ? 'rotated' : ''}`} />
+            </button>
+            
+            {showViewSelector && (
+                              <div 
+                  className="mobile-view-dropdown"
+                  style={{
+                    position: 'fixed',
+                    top: 'auto',
+                    left: 'auto',
+                    zIndex: 99999,
+                    transform: 'translateY(130px)'
+                  }}
+                >
+                {viewOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    className={`mobile-view-option ${currentView === option.value ? 'active' : ''}`}
+                    onClick={() => handleViewChange(option.value)}
+                  >
+                    <span className="view-icon">{option.icon}</span>
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div className="mobile-horizontal-hours">
+          <div className="mobile-horizontal-days">
+            {currentWeek.map((day, index) => (
+              <button
+                key={index}
+                className={`mobile-horizontal-day ${isToday(day) ? 'today' : ''} ${isSelected(day) ? 'selected' : ''}`}
+                onClick={() => onDateSelect && onDateSelect(day)}
+              >
+                <div className="mobile-horizontal-day-name">{getDayName(day)}</div>
+                <div className="mobile-horizontal-day-number">{getDayNumber(day)}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Componente de calendario horizontal móvil
+const MobileHorizontalCalendar = ({ selectedDate, onDateSelect }: { selectedDate: Date, onDateSelect: (date: Date) => void }) => {
+  const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
+
+  useEffect(() => {
+    generateWeekDays();
+  }, [selectedDate]);
+
+  const generateWeekDays = () => {
+    const startOfWeek = moment(selectedDate).startOf('week');
+    const days = [];
+    
+    for (let i = 0; i < 7; i++) {
+      days.push(moment(startOfWeek).add(i, 'days').toDate());
+    }
+    
+    setCurrentWeek(days);
+  };
+
+  const goToPreviousWeek = () => {
+    const newDate = moment(selectedDate).subtract(1, 'week').toDate();
+    onDateSelect(newDate);
+  };
+
+  const goToNextWeek = () => {
+    const newDate = moment(selectedDate).add(1, 'week').toDate();
+    onDateSelect(newDate);
+  };
+
+  const goToToday = () => {
+    onDateSelect(new Date());
+  };
+
+  const getDayName = (date: Date) => {
+    return moment(date).format('ddd').toUpperCase();
+  };
+
+  const getDayNumber = (date: Date) => {
+    return moment(date).format('D');
+  };
+
+  const isToday = (date: Date) => {
+    return moment(date).isSame(moment(), 'day');
+  };
+
+  const isSelected = (date: Date) => {
+    return moment(date).isSame(selectedDate, 'day');
+  };
+
+  const canGoPrevious = () => {
+    return moment(selectedDate).isAfter(moment().subtract(1, 'month'), 'day');
+  };
+
+  const canGoNext = () => {
+    return moment(selectedDate).isBefore(moment().add(3, 'months'), 'day');
+  };
+
+  return (
+    <div className="mobile-horizontal-calendar">
+      <div className="mobile-horizontal-header">
+        <p className="mobile-horizontal-hours">Horario: 9:00 - 19:00</p>
+      </div>
+      <div className="mobile-horizontal-nav">
+        <button 
+          className="mobile-horizontal-nav-button"
+          onClick={goToPreviousWeek}
+          disabled={!canGoPrevious()}
+          title="Semana anterior"
+        >
+          ←
         </button>
-        <button onClick={goToToday} className="citas-admin-nav-btn today-btn">Hoy</button>
-        <button onClick={goToNext} className="citas-admin-nav-btn nav-btn" title="Siguiente">
-          <FaChevronRight />
+        <span className="mobile-horizontal-nav-text">
+          {moment(currentWeek[0]).format('MMM D')} - {moment(currentWeek[6]).format('MMM D, YYYY')}
+        </span>
+        <button 
+          className="mobile-horizontal-nav-button"
+          onClick={goToNextWeek}
+          disabled={!canGoNext()}
+          title="Semana siguiente"
+        >
+          →
         </button>
       </div>
-      
-      <div className="toolbar-center">
-        {label()}
-      </div>
-      
-      <div className="toolbar-right toolbar-group">
-        <button 
-          onClick={() => handleViewChange('day')} 
-          className={`citas-admin-nav-btn view-btn ${toolbar.view === 'day' ? 'active' : ''}`}
-        >Día</button>
-        <button 
-          onClick={() => handleViewChange('week')} 
-          className={`citas-admin-nav-btn view-btn ${toolbar.view === 'week' ? 'active' : ''}`}
-        >Semana</button>
-        <button 
-          onClick={() => handleViewChange('month')} 
-          className={`citas-admin-nav-btn view-btn ${toolbar.view === 'month' ? 'active' : ''}`}
-        >Mes</button>
-        <button 
-          onClick={() => handleViewChange('agenda')} 
-          className={`citas-admin-nav-btn view-btn ${toolbar.view === 'agenda' ? 'active' : ''}`}
-        >Agenda</button>
+      <div className="mobile-horizontal-days">
+        {currentWeek.map((date, index) => (
+          <div
+            key={index}
+            className={`mobile-horizontal-day ${isSelected(date) ? 'selected' : ''} ${isToday(date) ? 'today' : ''}`}
+            onClick={() => onDateSelect(date)}
+            title={moment(date).format('dddd, D [de] MMMM [de] YYYY')}
+          >
+            <span className="mobile-horizontal-day-name">{getDayName(date)}</span>
+            <span className="mobile-horizontal-day-number">{getDayNumber(date)}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -321,7 +546,7 @@ const CitasAdmin: React.FC = () => {
       };
       const serviceTextColor = computeTextColor(serviceBorderColor);
 
-      return {
+    return {
       id: cita.id,
         title: `${cita.servicio?.nombre || 'Servicio'} - ${cita.usuario?.nombre || 'Cliente'}`,
       start: new Date(cita.fechaHora),
@@ -353,6 +578,7 @@ const CitasAdmin: React.FC = () => {
         style={{
           backgroundColor: event.serviceColor || event.statusBgColor, // color del servicio como fondo
           border: 'none',
+          borderLeft: event.serviceBorderColor ? `6px solid ${event.serviceBorderColor}` : undefined, // franja más intensa
           color: event.serviceTextColor || '#0f172a'
         }}
       >
@@ -369,6 +595,9 @@ const CitasAdmin: React.FC = () => {
           </div>
         </div>
         <div className="event-client">{event.usuario?.nombre}</div>
+        <div className="event-time-inside">
+          {moment(event.start).format('HH:mm')} - {moment(event.end).format('HH:mm')}
+        </div>
       </div>
     );
   };
@@ -410,13 +639,24 @@ const CitasAdmin: React.FC = () => {
 
   const calendarFormatsEs = {
     dayFormat: (date: Date, culture: any, loc: any) => loc.format(date, 'dddd D', culture),
-    weekdayFormat: (date: Date, culture: any, loc: any) => loc.format(date, 'dddd', culture),
+    weekdayFormat: (date: Date, culture: any, loc: any) => {
+      // Traducir explícitamente los días de la semana a español
+      const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+      return diasSemana[date.getDay()];
+    },
     dayHeaderFormat: (date: Date, culture: any, loc: any) => loc.format(date, 'dddd D [de] MMMM', culture),
     dayRangeHeaderFormat: ({ start, end }: { start: Date; end: Date }, culture: any, loc: any) =>
       `${loc.format(start, 'D MMM', culture)} — ${loc.format(end, 'D MMM', culture)}`,
     agendaHeaderFormat: ({ start, end }: { start: Date; end: Date }, culture: any, loc: any) =>
       `${loc.format(start, 'D [de] MMM', culture)} — ${loc.format(end, 'D [de] MMM', culture)}`,
-    agendaDateFormat: (date: Date, culture: any, loc: any) => loc.format(date, 'ddd D/MM', culture),
+    agendaDateFormat: (date: Date, culture: any, loc: any) => {
+      // Traducir explícitamente los días de la semana a español
+      const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+      const diaSemana = diasSemana[date.getDay()];
+      const dia = date.getDate().toString().padStart(2, '0');
+      const mes = (date.getMonth() + 1).toString().padStart(2, '0');
+      return `${diaSemana} ${dia}/${mes}`;
+    },
     agendaTimeRangeFormat: ({ start, end }: { start: Date; end: Date }, culture: any, loc: any) =>
       `${loc.format(start, 'HH:mm', culture)} – ${loc.format(end, 'HH:mm', culture)}`,
     timeGutterFormat: (date: Date, culture: any, loc: any) => loc.format(date, 'HH:mm', culture),
@@ -601,7 +841,8 @@ const CitasAdmin: React.FC = () => {
   // Vista móvil: usar react-big-calendar directamente para evitar solapados
   if (showMobileView) {
     return (
-      <div className="mobile-admin-container" style={{ height: '100vh' }}>
+      <div className="mobile-admin-container" style={{ height: '200vh' }}>
+        {/* Calendario principal */}
         <Calendar
           localizer={localizer}
           events={events}
@@ -609,7 +850,16 @@ const CitasAdmin: React.FC = () => {
           endAccessor="end"
           messages={calendarMessagesEs}
           formats={calendarFormatsEs}
-          components={{ toolbar: CustomToolbar, event: EventComponent }}
+          components={{ 
+            toolbar: (props: any) => (
+              <MobileCalendarToolbar
+                {...props}
+                selectedDate={selectedDate}
+                onDateSelect={(date: Date) => setSelectedDate(date)}
+              />
+            ), 
+            event: EventComponent 
+          }}
             eventPropGetter={eventPropGetter}
           popup
           selectable
@@ -625,7 +875,7 @@ const CitasAdmin: React.FC = () => {
           timeslots={4}
           min={moment().hour(9).minute(0).toDate()}
           max={moment().hour(21).minute(15).toDate()}
-          style={{ height: '100%' }}
+          style={{ height: 'calc(100% - 120px)' }}
         />
       </div>
     );
@@ -811,10 +1061,17 @@ const CitasAdmin: React.FC = () => {
             formats={calendarFormatsEs}
             style={{ height: '100%' }}
             components={{
-              toolbar: CustomToolbar,
+              toolbar: (toolbarProps: any) => (
+                <MobileCalendarToolbar
+                  currentView={currentView}
+                  onViewChange={setCurrentView}
+                  onNavigate={handleNavigate}
+                  date={selectedDate}
+                />
+              ),
               event: EventComponent
             }}
-              eventPropGetter={eventPropGetter}
+            eventPropGetter={eventPropGetter}
             onSelectSlot={handleSelectSlot}
             onNavigate={handleNavigate}
             onSelectEvent={handleSelectEvent}
