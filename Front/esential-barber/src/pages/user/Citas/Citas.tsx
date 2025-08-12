@@ -84,7 +84,6 @@ const Citas: React.FC<CitasProps> = () => {
         if (!res.ok) throw new Error('No se pudieron cargar tus citas');
         const data = await res.json();
         setCitas(data);
-        console.log('Citas cargadas:', data);
         
       } catch (err: any) {
         setError(err.message || 'Error al cargar tus citas');
@@ -125,7 +124,7 @@ const Citas: React.FC<CitasProps> = () => {
         setUsuarios(usuariosData);
       }
     } catch (error) {
-      console.error('Error fetching usuarios:', error);
+      // Error fetching usuarios
     }
   };
 
@@ -142,7 +141,7 @@ const Citas: React.FC<CitasProps> = () => {
         setServicios(serviciosData);
       }
     } catch (error) {
-      console.error('Error fetching servicios:', error);
+      // Error fetching servicios
     }
   };
 
@@ -196,7 +195,6 @@ const Citas: React.FC<CitasProps> = () => {
         alert(`Error al crear la cita: ${errorData.message || 'Error desconocido'}`);
       }
     } catch (error) {
-      console.error('Error creating booking:', error);
       alert('Error al crear la cita');
     }
   };
@@ -268,7 +266,6 @@ const Citas: React.FC<CitasProps> = () => {
       alert('Cita cancelada correctamente');
     } catch (err: any) {
       setErrorCancelacion(err.message || 'Error al cancelar la cita');
-      console.error('Error al cancelar cita:', err);
     } finally {
       setCancelandoCita(null);
       setCitaACancelar(null);
@@ -325,7 +322,6 @@ const Citas: React.FC<CitasProps> = () => {
         alert(`Error al guardar la reseña: ${errorData.message || 'Error desconocido'}`);
       }
     } catch (error) {
-      console.error('Error guardando reseña:', error);
       alert('Error al guardar la reseña');
     } finally {
       setGuardandoResena(false);

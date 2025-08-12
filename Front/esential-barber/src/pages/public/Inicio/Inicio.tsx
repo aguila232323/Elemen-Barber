@@ -96,10 +96,10 @@ const Inicio: React.FC = () => {
           setResenas(data.resenas || []);
           setEstadisticasResenas(data.estadisticas || {});
         } else {
-          console.error('Error en la respuesta:', res.status, res.statusText);
+          // Error en la respuesta
         }
       } catch (error) {
-        console.error('Error cargando reseñas:', error);
+        // Error cargando reseñas
       } finally {
         setLoadingResenas(false);
       }

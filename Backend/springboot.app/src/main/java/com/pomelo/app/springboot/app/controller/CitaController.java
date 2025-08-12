@@ -11,8 +11,7 @@ import com.pomelo.app.springboot.app.service.ConfiguracionService;
 import com.pomelo.app.springboot.app.service.VacacionesService;
 import com.pomelo.app.springboot.app.service.EmailService;
 import com.pomelo.app.springboot.app.repository.ResenaRepository;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,7 +31,6 @@ import java.time.DayOfWeek;
 @RestController
 @RequestMapping("/api/citas")
 @CrossOrigin(origins = "*")
-@Tag(name = "Citas", description = "Endpoints para gestión de citas")
 public class CitaController {
 
     private final CitaService citaService;
@@ -54,7 +52,6 @@ public class CitaController {
     }
 
     @PostMapping
-    @Operation(summary = "Crear cita", description = "Crea una nueva cita para el usuario autenticado o para un cliente específico si es admin")
     public ResponseEntity<?> crearCita(@RequestBody CitaRequest citaRequest, @AuthenticationPrincipal UserDetails user) {
         try {
             // Obtener el rol del usuario
@@ -116,7 +113,6 @@ public class CitaController {
     }
 
     @GetMapping("/mis-citas")
-    @Operation(summary = "Mis citas", description = "Lista las citas del usuario autenticado")
     public ResponseEntity<?> listarCitasUsuario(@AuthenticationPrincipal UserDetails user) {
         try {
             // Buscar usuario por email para obtener el ID
@@ -182,7 +178,6 @@ public class CitaController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Cancelar cita", description = "Cancela una cita específica")
     public ResponseEntity<?> cancelarCita(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
         try {
             // Verificar que el usuario no esté baneado
@@ -205,7 +200,6 @@ public class CitaController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Reprogramar cita", description = "Actualiza la fecha y hora de una cita")
     public ResponseEntity<?> reprogramarCita(
             @PathVariable Long id,
             @RequestBody Map<String, Object> request
@@ -238,7 +232,6 @@ public class CitaController {
     // Para admin
     @GetMapping("/todas")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Todas las citas", description = "Lista todas las citas (solo para administradores)")
     public ResponseEntity<?> listarTodas() {
         try {
             List<Cita> citas = citaService.listarTodasLasCitas();
@@ -284,7 +277,6 @@ public class CitaController {
 
     @PostMapping("/fija")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Crear cita fija", description = "Crea una cita fija con periodicidad especificada")
     public ResponseEntity<?> crearCitaFija(@RequestBody Map<String, Object> request, @RequestParam int periodicidadDias) {
         try {
             // Log para debugging
@@ -351,7 +343,6 @@ public class CitaController {
 
     @DeleteMapping("/fija/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Borrar cita fija", description = "Borra una cita fija por su ID")
     public ResponseEntity<?> borrarCitaFija(@PathVariable Long id) {
         try {
             citaService.borrarCitaFija(id);
@@ -369,7 +360,6 @@ public class CitaController {
     // (Constante no usada eliminada)
 
     @GetMapping("/disponibilidad")
-    @Operation(summary = "Disponibilidad de citas", description = "Devuelve los slots libres para un día y duración concreta")
     public ResponseEntity<?> disponibilidad(
         @RequestParam String fecha,
         @RequestParam int duracion, // en minutos
@@ -510,7 +500,6 @@ public class CitaController {
     }
 
     @GetMapping("/disponibilidad-mes")
-    @Operation(summary = "Disponibilidad mensual de citas", description = "Devuelve la disponibilidad de todos los días de un mes para una duración concreta")
     public ResponseEntity<?> disponibilidadMes(
         @RequestParam int anio,
         @RequestParam int mes, // 1-12

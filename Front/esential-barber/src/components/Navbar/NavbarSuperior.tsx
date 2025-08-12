@@ -27,7 +27,7 @@ function getUserName() {
       return payload.name || payload.sub || 'Usuario';
     }
   } catch (error) {
-    console.error('Error parsing token:', error);
+    // Error parsing token
   }
   return null;
 }

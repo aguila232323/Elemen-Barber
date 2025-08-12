@@ -2,8 +2,7 @@ package com.pomelo.app.springboot.app.controller;
 
 import com.pomelo.app.springboot.app.entity.Vacaciones;
 import com.pomelo.app.springboot.app.service.VacacionesService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,7 +16,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/vacaciones")
 @CrossOrigin(origins = "*")
-@Tag(name = "Vacaciones", description = "Endpoints para gestión de períodos de vacaciones")
 public class VacacionesController {
     
     @Autowired

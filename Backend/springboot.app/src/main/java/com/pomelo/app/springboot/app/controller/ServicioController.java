@@ -2,8 +2,7 @@ package com.pomelo.app.springboot.app.controller;
 
 import com.pomelo.app.springboot.app.entity.Servicio;
 import com.pomelo.app.springboot.app.service.ServicioService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,7 +15,6 @@ import java.util.HashMap;
 @RestController
 @RequestMapping("/api/servicios")
 @CrossOrigin(origins = "*")
-@Tag(name = "Servicios", description = "Endpoints para gestión de servicios")
 public class ServicioController {
     private final ServicioService servicioService;
 
@@ -25,7 +23,6 @@ public class ServicioController {
     }
 
     @GetMapping
-    @Operation(summary = "Listar servicios", description = "Devuelve la lista de todos los servicios disponibles")
     public ResponseEntity<List<Servicio>> listarServicios() {
         try {
             return ResponseEntity.ok(servicioService.listarServicios());
@@ -35,7 +32,6 @@ public class ServicioController {
     }
 
     @GetMapping("/con-colores")
-    @Operation(summary = "Listar servicios con colores", description = "Devuelve la lista de servicios con sus colores asignados para Google Calendar")
     public ResponseEntity<List<Map<String, Object>>> listarServiciosConColores() {
         try {
             List<Servicio> servicios = servicioService.listarServicios();
@@ -147,7 +143,6 @@ public class ServicioController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Añadir servicio", description = "Crea un nuevo servicio")
     public ResponseEntity<?> crearServicio(@RequestBody Servicio servicio) {
         try {
             Servicio nuevoServicio = servicioService.crearServicio(servicio);
@@ -162,7 +157,6 @@ public class ServicioController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Eliminar servicio", description = "Elimina un servicio por su ID")
     public ResponseEntity<?> eliminarServicio(@PathVariable Long id) {
         try {
             servicioService.eliminarServicio(id);
@@ -179,7 +173,6 @@ public class ServicioController {
 
     @PutMapping("/{id}/color")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Actualizar color del servicio", description = "Actualiza el color de Google Calendar para un servicio")
     public ResponseEntity<?> actualizarColorServicio(@PathVariable Long id, @RequestBody Map<String, String> request) {
         try {
             String color = request.get("color");
@@ -215,7 +208,6 @@ public class ServicioController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Modificar servicio", description = "Modifica un servicio existente")
     public ResponseEntity<?> modificarServicio(@PathVariable Long id, @RequestBody Servicio servicio) {
         try {
             Servicio servicioModificado = servicioService.modificarServicio(id, servicio);

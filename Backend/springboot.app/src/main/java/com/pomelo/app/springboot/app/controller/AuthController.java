@@ -11,8 +11,7 @@ import com.pomelo.app.springboot.app.service.GoogleCalendarService;
 import com.pomelo.app.springboot.app.service.UsuarioService;
 import com.pomelo.app.springboot.app.repository.UsuarioRepository;
 import com.pomelo.app.springboot.app.config.JwtUtils;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +21,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
-@Tag(name = "Autenticación", description = "Endpoints para registro y login de usuarios")
 public class AuthController {
 
     private final AuthService authService;
@@ -42,7 +40,6 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    @Operation(summary = "Registrar nuevo usuario", description = "Crea una nueva cuenta de usuario y envía código de verificación")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         try {
             // Primero registrar el usuario
@@ -63,7 +60,6 @@ public class AuthController {
     }
 
     @PostMapping("/completar-registro")
-    @Operation(summary = "Completar registro", description = "Completa el registro verificando el código de email")
     public ResponseEntity<?> completarRegistro(@RequestBody Map<String, String> request) {
         try {
             String email = request.get("email");
@@ -90,7 +86,6 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Iniciar sesión", description = "Autentica un usuario existente")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
             JwtResponse response = authService.login(request);
@@ -109,7 +104,6 @@ public class AuthController {
     }
 
     @PostMapping("/google")
-    @Operation(summary = "Iniciar sesión con Google", description = "Autentica un usuario con Google OAuth")
     public ResponseEntity<?> googleAuth(@RequestBody GoogleAuthRequest request) {
         try {
             Map<String, Object> response = googleAuthService.authenticateWithGoogle(request);
@@ -120,7 +114,6 @@ public class AuthController {
     }
 
     @PostMapping("/google/complete")
-    @Operation(summary = "Completar registro con Google", description = "Completa el registro agregando teléfono")
     public ResponseEntity<?> completeGoogleAuth(@RequestBody Map<String, String> request) {
         try {
             String email = request.get("email");
@@ -159,7 +152,6 @@ public class AuthController {
     }
 
     @PostMapping("/google/authorize-calendar")
-    @Operation(summary = "Autorizar Google Calendar durante registro", description = "Autoriza el acceso al Google Calendar durante el registro")
     public ResponseEntity<?> authorizeCalendarDuringRegistration(@RequestBody Map<String, String> request) {
         try {
             System.out.println("🔍 DEBUG: Iniciando autorización de Calendar para: " + request);
@@ -238,7 +230,6 @@ public class AuthController {
     }
 
     @PostMapping("/google/check-calendar-access")
-    @Operation(summary = "Verificar acceso a Google Calendar", description = "Verifica si el usuario tiene acceso a Google Calendar usando su access token")
     public ResponseEntity<?> checkCalendarAccess(@RequestBody Map<String, String> request) {
         try {
             String email = request.get("email");
@@ -331,7 +322,6 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    @Operation(summary = "Recuperar contraseña", description = "Envía un enlace de recuperación de contraseña al email")
     public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
         try {
             String email = request.get("email");
@@ -357,7 +347,6 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    @Operation(summary = "Restablecer contraseña", description = "Restablece la contraseña usando el token de recuperación")
     public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
         try {
             String token = request.get("token");
@@ -385,7 +374,6 @@ public class AuthController {
     }
 
     @GetMapping("/validate-reset-token/{token}")
-    @Operation(summary = "Validar token de recuperación", description = "Verifica si un token de recuperación es válido")
     public ResponseEntity<?> validateResetToken(@PathVariable String token) {
         try {
             boolean isValid = usuarioService.validarTokenRecuperacion(token);
@@ -402,7 +390,6 @@ public class AuthController {
     }
 
     @GetMapping("/debug/user/{email}")
-    @Operation(summary = "Debug usuario", description = "Endpoint temporal para debuggear el estado del usuario")
     public ResponseEntity<?> debugUser(@PathVariable String email) {
         try {
             Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);

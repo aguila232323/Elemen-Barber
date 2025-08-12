@@ -144,12 +144,7 @@
 			<version>2.10.1</version>
 		</dependency>
 		
-		<!-- SpringDoc OpenAPI para Swagger -->
-		<dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>2.3.0</version>
-		</dependency>
+
 	</dependencies>
 
 	<build>

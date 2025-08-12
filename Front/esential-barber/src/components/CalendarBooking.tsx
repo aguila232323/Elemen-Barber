@@ -79,10 +79,9 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
         const data = await res.json();
         if (data.horasMinimas) {
           setTiempoMinimo(data.horasMinimas);
-          console.log('Tiempo mínimo configurado:', data.horasMinimas, 'horas');
         }
       } catch (error) {
-        console.log('Error al obtener tiempo mínimo, usando valor por defecto (24 horas)');
+        // Error al obtener tiempo mínimo, usando valor por defecto
       }
     };
     fetchTiempoMinimo();
@@ -103,7 +102,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
             setUsuarios(usuariosData);
           }
         } catch (error) {
-          console.error('Error fetching usuarios:', error);
+          // Error fetching usuarios
         }
       };
       fetchUsuarios();
@@ -231,7 +230,6 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
                       onClick={() => {
                         setUsuarioSeleccionado('');
                         setBusquedaUsuario('');
-                        console.log('Usuario deseleccionado');
                       }}
                       style={{
                         background: 'rgba(255, 255, 255, 0.2)',
@@ -363,12 +361,9 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
                           <div
                             key={usuario.id}
                             onClick={() => {
-                              console.log('Usuario seleccionado:', usuario);
                               setUsuarioSeleccionado(usuario.id);
                               setBusquedaUsuario(`${usuario.nombre} (${usuario.email})`);
                               setMostrarDropdown(false);
-                              console.log('Estado actualizado - usuarioSeleccionado:', usuario.id);
-                              console.log('Estado actualizado - busquedaUsuario:', `${usuario.nombre} (${usuario.email})`);
                             }}
                             style={{
                               padding: '12px 16px',

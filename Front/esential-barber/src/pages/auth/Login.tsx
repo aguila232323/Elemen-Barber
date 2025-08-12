@@ -109,14 +109,10 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
         setLoading(true);
         setError('');
         
-        console.log('Google login response:', response);
-        
         // Obtener información del usuario de Google usando el access token
         const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { Authorization: `Bearer ${response.access_token}` },
         }).then(res => res.json());
-
-        console.log('Google user info:', userInfo);
         
         // Verificar si el usuario tiene teléfono en Google
         const telefono = userInfo.phone_number || null;
@@ -136,10 +132,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
           }),
         });
 
-        console.log('Backend response status:', backendResponse.status);
-        
         const data = await backendResponse.json();
-        console.log('Backend response data:', data);
         
         if (backendResponse.ok) {
           // Verificar si el backend indica que necesita teléfono
@@ -156,9 +149,6 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
             
             // Verificar acceso a Google Calendar para usuarios de Google
             if (userInfo.email) {
-              console.log('🔍 Verificando acceso a Google Calendar...');
-              console.log('   - Email:', userInfo.email);
-              console.log('   - Access Token:', response.access_token ? 'SÍ' : 'NO');
               try {
                 const calendarResponse = await fetch('http://localhost:8080/api/auth/google/check-calendar-access', {
                   method: 'POST',
@@ -172,20 +162,15 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
                   }),
                 });
                 
-                console.log('📡 Respuesta del servidor Calendar:', calendarResponse.status);
-                
                 if (calendarResponse.ok) {
                   const calendarData = await calendarResponse.json();
-                  console.log('✅ Verificación de Calendar completada:', calendarData);
-                  console.log('   - Status:', calendarData.status);
-                  console.log('   - Message:', calendarData.message);
-                  console.log('   - Has Calendar Access:', calendarData.hasCalendarAccess);
+                  // Verificación de Calendar completada
                 } else {
                   const errorData = await calendarResponse.json();
-                  console.log('⚠️ Error al verificar acceso a Calendar:', errorData);
+                  // Error al verificar acceso a Calendar
                 }
               } catch (calendarErr) {
-                console.log('⚠️ Error al verificar acceso a Calendar:', calendarErr);
+                // Error al verificar acceso a Calendar
               }
             }
             
@@ -199,14 +184,12 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
           setError(data.error || 'Error en la autenticación con Google');
         }
       } catch (err: any) {
-        console.error('Google login error:', err);
         setError('Error al iniciar sesión con Google: ' + (err.message || 'Error desconocido'));
       } finally {
         setLoading(false);
       }
     },
     onError: (error) => {
-      console.error('Google OAuth error:', error);
       setError('Error al iniciar sesión con Google: ' + (error.error_description || error.error || 'Error desconocido'));
       setLoading(false);
     }

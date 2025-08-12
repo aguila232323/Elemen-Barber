@@ -429,7 +429,6 @@ const CitasAdmin: React.FC = () => {
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth <= 768;
-      console.log('checkMobile ejecutado - window.innerWidth:', window.innerWidth, 'mobile:', mobile);
       setIsMobile(mobile);
       setShowMobileView(mobile);
     };
@@ -443,7 +442,6 @@ const CitasAdmin: React.FC = () => {
   // Función para cancelar una cita
   const handleCancelCita = async (cita: any) => {
     if (!cita || !cita.id) {
-      console.error('No se puede cancelar: cita inválida');
       return;
     }
 
@@ -470,15 +468,12 @@ const CitasAdmin: React.FC = () => {
         setCitaToCancel(null);
         
         // La cita se cancela silenciosamente sin mostrar alertas
-        console.log('Cita cancelada exitosamente. Se ha enviado un correo al cliente.');
       } else {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Error al cancelar la cita');
       }
     } catch (error: any) {
-      console.error('Error al cancelar la cita:', error);
-      // Solo mostrar error en consola, no alertas molestas
-      console.error(`Error al cancelar la cita: ${error.message}`);
+      // Error al cancelar la cita
     } finally {
       setCancelingCita(null);
     }
@@ -892,18 +887,18 @@ const CitasAdmin: React.FC = () => {
   };
 
   const handleSelectSlot = (slotInfo: any) => {
-    console.log('Slot seleccionado:', slotInfo);
+    
     setSelectedDate(slotInfo.start);
     // En desktop, cambiar a vista de día directamente; en móvil ya estamos en RBC con view controlado
     setCurrentView(Views.DAY);
     setShowDayEvents(false);
     // Log opcional
     const occupancy = getDayOccupancy(slotInfo.start);
-    console.log('Ocupación del día:', occupancy);
+    
   };
 
   const handleNavigate = (newDate: Date, view: string, action: string) => {
-    console.log('Navegación:', { newDate, view, action });
+    
     
     // Manejar diferentes acciones de navegación
     switch (action) {
@@ -960,18 +955,11 @@ const CitasAdmin: React.FC = () => {
   };
 
   const handleSelectEvent = (event: any) => {
-    console.log('Evento seleccionado:', event);
-    console.log('isMobile:', isMobile);
-    console.log('showMobileView:', showMobileView);
-    
     // En móvil, mostrar el modal móvil; en desktop, mostrar el modal normal
     if (isMobile || showMobileView) {
-      console.log('Abriendo modal móvil');
       setSelectedMobileCita(event);
       setShowMobileCitaModal(true);
-      console.log('Estado actualizado - selectedMobileCita:', event, 'showMobileCitaModal: true');
     } else {
-      console.log('Abriendo modal desktop');
       setSelectedEvent(event);
     }
   };
@@ -1008,15 +996,7 @@ const CitasAdmin: React.FC = () => {
       return;
     }
     
-    console.log('selectedCitaForPeriodic:', selectedCitaForPeriodic);
-    console.log('Usuario:', selectedCitaForPeriodic.usuario);
-    console.log('Servicio:', selectedCitaForPeriodic.servicio);
-    
     if (!selectedCitaForPeriodic.usuario.id || !selectedCitaForPeriodic.servicio.id) {
-      console.error('IDs no válidos - Usuario ID:', selectedCitaForPeriodic.usuario?.id);
-      console.error('IDs no válidos - Servicio ID:', selectedCitaForPeriodic.servicio?.id);
-      console.error('Usuario completo:', selectedCitaForPeriodic.usuario);
-      console.error('Servicio completo:', selectedCitaForPeriodic.servicio);
       setPeriodicMsg(`Error: IDs no válidos - Usuario ID: ${selectedCitaForPeriodic.usuario?.id}, Servicio ID: ${selectedCitaForPeriodic.servicio?.id}`);
       return;
     }
@@ -1045,8 +1025,7 @@ const CitasAdmin: React.FC = () => {
         confirmada: selectedCitaForPeriodic.confirmada
       };
       
-      console.log('Enviando datos al backend:', requestBody);
-      console.log('URL:', `http://localhost:8080/api/citas/fija?periodicidadDias=${periodicForm.periodicidadDias}`);
+
       
       const res = await fetch(`http://localhost:8080/api/citas/fija?periodicidadDias=${periodicForm.periodicidadDias}`, {
         method: 'POST',
@@ -1077,7 +1056,6 @@ const CitasAdmin: React.FC = () => {
         window.location.reload();
       }, 1500);
     } catch (err: any) {
-      console.error('Error en handlePeriodicSubmit:', err);
       setPeriodicMsg(err.message || 'Error al crear cita periódica');
     } finally {
       setPeriodicLoading(false);
@@ -1951,7 +1929,6 @@ const CitasAdmin: React.FC = () => {
       )}
 
       {/* Modal móvil de detalles de cita */}
-      {console.log('Renderizando modal móvil - showMobileCitaModal:', showMobileCitaModal, 'selectedMobileCita:', selectedMobileCita)}
       {showMobileCitaModal && selectedMobileCita && (
         <div className="modal-overlay mobile-cita-modal-overlay" onClick={() => setShowMobileCitaModal(false)}>
           <div className="modal-content mobile-cita-modal" onClick={e => e.stopPropagation()}>

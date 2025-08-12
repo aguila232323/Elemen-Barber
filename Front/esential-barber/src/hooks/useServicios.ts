@@ -35,7 +35,6 @@ export const useServicios = () => {
         }
       } catch (err) {
         setError('Error de conexión al cargar los servicios');
-        console.error('Error fetching servicios:', err);
       } finally {
         setLoading(false);
       }

@@ -6,8 +6,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.pomelo.app.springboot.app.service.GoogleCalendarService;
 import com.pomelo.app.springboot.app.service.UsuarioService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,7 +21,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/google-calendar")
 @CrossOrigin(origins = "*")
-@Tag(name = "Google Calendar", description = "Endpoints para integración con Google Calendar")
 public class GoogleCalendarController {
 
     private final GoogleCalendarService googleCalendarService;
@@ -43,7 +41,6 @@ public class GoogleCalendarController {
     }
 
     @GetMapping("/auth-url")
-    @Operation(summary = "Obtener URL de autorización", description = "Obtiene la URL para autorizar acceso al Google Calendar")
     public ResponseEntity<?> getAuthUrl(@AuthenticationPrincipal UserDetails user) {
         try {
             // Verificar si el usuario es un usuario de Google
@@ -79,7 +76,6 @@ public class GoogleCalendarController {
     }
 
     @PostMapping("/callback")
-    @Operation(summary = "Manejar callback de autorización", description = "Procesa la respuesta de autorización de Google")
     public ResponseEntity<?> handleCallback(@RequestBody Map<String, String> request) {
         try {
             String code = request.get("code");
@@ -139,7 +135,6 @@ public class GoogleCalendarController {
     }
 
     @PostMapping("/authorize")
-    @Operation(summary = "Autorizar acceso", description = "Autoriza el acceso al Google Calendar del usuario")
     public ResponseEntity<?> authorizeCalendar(@AuthenticationPrincipal UserDetails user) {
         try {
             var usuario = usuarioService.findByEmail(user.getUsername());
@@ -176,7 +171,6 @@ public class GoogleCalendarController {
     }
 
     @GetMapping("/status")
-    @Operation(summary = "Estado de autorización", description = "Verifica el estado de autorización del Google Calendar")
     public ResponseEntity<?> getAuthStatus(@AuthenticationPrincipal UserDetails user) {
         try {
             var usuario = usuarioService.findByEmail(user.getUsername());
@@ -205,7 +199,6 @@ public class GoogleCalendarController {
     }
 
     @PostMapping("/revoke")
-    @Operation(summary = "Revocar autorización", description = "Revoca el acceso al Google Calendar del usuario")
     public ResponseEntity<?> revokeAuthorization(@AuthenticationPrincipal UserDetails user) {
         try {
             var usuario = usuarioService.findByEmail(user.getUsername());

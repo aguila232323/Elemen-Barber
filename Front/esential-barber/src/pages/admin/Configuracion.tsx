@@ -171,7 +171,7 @@ const Configuracion: React.FC = () => {
         setServicios(data);
       }
     } catch (error) {
-      console.error('Error fetching servicios:', error);
+      // Error fetching servicios
     } finally {
       setServiciosLoading(false);
     }
@@ -329,7 +329,6 @@ const Configuracion: React.FC = () => {
         }
       }
     } catch (error) {
-      console.error('Error al obtener tiempo mínimo actual:', error);
       // Mantener valores por defecto si hay error
       setTiempoMinimo(24);
       setTiempoMinimoForm({ horas: '24' });
@@ -364,7 +363,6 @@ const Configuracion: React.FC = () => {
       const data = await res.json();
       setUsuariosList(data);
     } catch (error) {
-      console.error('Error al obtener usuarios:', error);
       setUsuariosList([]);
     } finally {
       setUsuariosLoading(false);
@@ -468,7 +466,6 @@ const Configuracion: React.FC = () => {
         setResenasList([]);
       }
     } catch (error) {
-      console.error('Error fetching reseñas:', error);
       setResenasList([]);
     } finally {
       setResenasLoading(false);
@@ -504,7 +501,6 @@ const Configuracion: React.FC = () => {
         setHorasDisponibles([]);
       }
     } catch (error) {
-      console.error('Error al obtener horas disponibles:', error);
       setHorasDisponibles([]);
     } finally {
       setCargandoHoras(false);

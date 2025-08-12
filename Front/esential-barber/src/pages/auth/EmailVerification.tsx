@@ -35,7 +35,6 @@ const EmailVerification: React.FC<EmailVerificationProps> = ({
         onVerificationSuccess();
       }, 1500);
     } catch (err: any) {
-      console.error('Error al verificar código:', err);
       if (err.message.includes('fetch')) {
         setError('Error de conexión. Verifica que el servidor esté ejecutándose.');
       } else {
@@ -52,12 +51,12 @@ const EmailVerification: React.FC<EmailVerificationProps> = ({
     setResendLoading(true);
 
     try {
-      console.log('Intentando reenviar código a:', email);
+
       // Usar la función más simple que no tiene validaciones estrictas
       await reenviarCodigoSimple(email);
       setSuccess('Código de verificación reenviado correctamente');
     } catch (err: any) {
-      console.error('Error al reenviar código:', err);
+
       if (err.message.includes('fetch')) {
         setError('Error de conexión. Verifica que el servidor esté ejecutándose en http://localhost:8080');
       } else {

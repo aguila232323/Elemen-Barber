@@ -50,7 +50,7 @@ const GooglePhoneModal: React.FC<GooglePhoneModalProps> = ({ email, onComplete, 
 
       const data = await response.json();
 
-      console.log('Complete registration response:', data);
+
 
       if (response.ok && data.token) {
         // Guardar el token y completar el registro
@@ -60,7 +60,6 @@ const GooglePhoneModal: React.FC<GooglePhoneModalProps> = ({ email, onComplete, 
         setError(data.error || 'Error al completar el registro');
       }
     } catch (err: any) {
-      console.error('Complete registration error:', err);
       setError('Error de conexión. Intenta de nuevo.');
     } finally {
       setLoading(false);

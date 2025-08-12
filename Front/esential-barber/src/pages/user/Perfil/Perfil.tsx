@@ -75,7 +75,7 @@ const isImageAccessible = async (url: string): Promise<boolean> => {
     });
     return true; // Si no hay error, asumimos que es accesible
   } catch (error) {
-    console.log('Error verificando accesibilidad de imagen:', error);
+    // Error verificando accesibilidad de imagen
     return false;
   }
 };
@@ -170,10 +170,7 @@ const Perfil: React.FC = () => {
         return res.json();
       })
       .then(data => {
-        console.log('Datos del perfil recibidos:', data);
-        console.log('googlePictureUrl:', data.googlePictureUrl);
-        console.log('Tipo de googlePictureUrl:', typeof data.googlePictureUrl);
-        console.log('¿Es URL válida?:', data.googlePictureUrl ? isValidImageUrl(data.googlePictureUrl) : false);
+
         setUsuario({ 
           nombre: data.nombre, 
           email: data.email, 
@@ -190,7 +187,6 @@ const Perfil: React.FC = () => {
         setLoading(false);
       })
       .catch((err) => {
-        console.error('Error al cargar perfil:', err);
         setError('Error al cargar el perfil');
         setLoading(false);
       });
@@ -208,7 +204,7 @@ const Perfil: React.FC = () => {
   // Función para activar el proxy si hay problemas de CORS
   const activateProxy = () => {
     if (usuario.googlePictureUrl) {
-      console.log('Activando proxy para evitar problemas de CORS');
+              // Activando proxy para evitar problemas de CORS
       setUseProxy(true);
       setImageLoadError(false);
       setImageLoading(true);
@@ -254,7 +250,7 @@ const Perfil: React.FC = () => {
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
-        console.error('No hay token de autenticación');
+        // No hay token de autenticación
         return;
       }
 
@@ -279,10 +275,8 @@ const Perfil: React.FC = () => {
       }
 
       setMensaje('Avatar actualizado correctamente');
-      console.log('Avatar guardado exitosamente:', avatar);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al guardar el avatar');
-      console.error('Error al guardar avatar:', err);
     }
   };
 
@@ -323,7 +317,6 @@ const Perfil: React.FC = () => {
             setProfileImage(data.imagenUrl || null); // Recargar imagen
           })
           .catch((err) => {
-            console.error('Error al recargar datos:', err);
             setError('Error al recargar los datos');
           });
       }
@@ -373,7 +366,6 @@ const Perfil: React.FC = () => {
             const errorData = await res.json();
             errorMessage = errorData.message || errorMessage;
           } catch (jsonError) {
-            console.error('Error parsing JSON:', jsonError);
             errorMessage = `Error ${res.status}: ${res.statusText}`;
           }
           throw new Error(errorMessage);
@@ -384,7 +376,7 @@ const Perfil: React.FC = () => {
           const responseData = await res.json();
           successMessage = responseData.message || successMessage;
         } catch (jsonError) {
-          console.log('Response no es JSON, usando mensaje por defecto');
+          // Response no es JSON, usando mensaje por defecto
         }
         
         setMensaje(successMessage);
@@ -431,7 +423,6 @@ const Perfil: React.FC = () => {
             const errorData = await res.json();
             errorMessage = errorData.message || errorMessage;
           } catch (jsonError) {
-            console.error('Error parsing JSON:', jsonError);
             errorMessage = `Error ${res.status}: ${res.statusText}`;
           }
           throw new Error(errorMessage);
@@ -442,7 +433,7 @@ const Perfil: React.FC = () => {
           const responseData = await res.json();
           successMessage = responseData.message || successMessage;
         } catch (jsonError) {
-          console.log('Response no es JSON, usando mensaje por defecto');
+          // Response no es JSON, usando mensaje por defecto
         }
         
         setMensaje(successMessage);
@@ -590,11 +581,7 @@ const Perfil: React.FC = () => {
     <div className={styles.perfilCont}>
       <div className={styles.profileImageSection}>
         <div className={styles.profileImageContainer}>
-          {(() => { 
-            console.log('Renderizando perfil - googlePictureUrl:', usuario.googlePictureUrl);
-            console.log('usuario completo:', usuario);
-            return null; 
-          })()}
+
           {usuario.googlePictureUrl && isValidImageUrl(usuario.googlePictureUrl) && !imageLoadError ? (
             <img
               src={useProxy ? createProxyUrl(usuario.googlePictureUrl) : usuario.googlePictureUrl}
@@ -609,32 +596,17 @@ const Perfil: React.FC = () => {
               onLoadStart={() => {
                 setImageLoading(true);
                 setImageLoadError(false);
-                console.log('Iniciando carga de imagen de Google:', usuario.googlePictureUrl);
               }}
               onError={(e) => {
                 const imgElement = e.currentTarget as HTMLImageElement;
-                console.log('Error cargando imagen de Google:', {
-                  error: e,
-                  url: usuario.googlePictureUrl,
-                  naturalWidth: imgElement.naturalWidth,
-                  naturalHeight: imgElement.naturalHeight,
-                  complete: imgElement.complete,
-                  src: imgElement.src,
-                  errorCode: imgElement.naturalWidth === 0 ? 'CORS_OR_NETWORK_ERROR' : 'UNKNOWN_ERROR',
-                  timestamp: new Date().toISOString()
-                });
                 
                 // Intentar obtener más información del error
                 if (imgElement.naturalWidth === 0 && usuario.googlePictureUrl) {
-                  console.log('Posible error de CORS o red. URL:', usuario.googlePictureUrl);
-                  
                   // Si no estamos usando proxy, intentar activarlo
                   if (!useProxy) {
-                    console.log('Activando proxy automáticamente...');
                     activateProxy();
                     return; // No continuar con el manejo de error normal
                   } else {
-                    console.log('Ya estamos usando proxy, mostrando avatar de fallback');
                     setImageLoadError(true);
                     setImageLoading(false);
                     imgElement.style.display = 'none';
@@ -657,7 +629,6 @@ const Perfil: React.FC = () => {
                 }
               }}
               onLoad={(e) => {
-                console.log('Imagen de Google cargada exitosamente:', usuario.googlePictureUrl);
                 setImageLoading(false);
                 setImageLoadError(false);
                 // Asegurar que el avatar de fallback esté oculto

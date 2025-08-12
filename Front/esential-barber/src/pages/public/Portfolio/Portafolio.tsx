@@ -39,7 +39,6 @@ const Portafolio: React.FC = () => {
       setFotos(data);
     } catch (err) {
       setError('Error al cargar las fotos del portfolio');
-      console.error('Error cargando fotos:', err);
     } finally {
       setLoading(false);
     }
@@ -145,10 +144,10 @@ const Portafolio: React.FC = () => {
           });
 
           if (!response.ok) {
-            console.error(`Error al subir ${file.name}:`, response.statusText);
+            // Error al subir archivo
           }
         } catch (error) {
-          console.error(`Error procesando ${file.name}:`, error);
+          // Error procesando archivo
         }
       }
       
@@ -164,7 +163,6 @@ const Portafolio: React.FC = () => {
       }
     } catch (error) {
       alert('Error al procesar las imágenes.');
-      console.error('Error subiendo fotos:', error);
     } finally {
       setUploading(false);
     }
@@ -192,7 +190,6 @@ const Portafolio: React.FC = () => {
       await cargarFotos();
     } catch (error) {
       alert('Error al eliminar la foto.');
-      console.error('Error eliminando foto:', error);
     }
   };
 
