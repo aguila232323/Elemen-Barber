@@ -131,7 +131,7 @@ public class CitaService {
 
             // Si es una cita periódica, borrar todas las citas periódicas del usuario
             if (cita.isFija() && cita.getPeriodicidadDias() != null && cita.getPeriodicidadDias() > 0) {
-                List<Cita> citasPeriodicas = citaRepository.findByClienteAndFijaTrueAndPeriodicidadDiasIsNotNull(cita.getCliente());
+                List<Cita> citasPeriodicas = citaRepository.findCitasFijasByCliente(cita.getCliente());
                 
                 // Intentar eliminar eventos de Google Calendar para todas las citas periódicas
                 for (Cita citaPeriodica : citasPeriodicas) {
@@ -280,7 +280,7 @@ public class CitaService {
             // Si no se creó la cita inicial, devolver la primera cita creada
             if (citaGuardada == null) {
                 // Buscar la primera cita creada en el bucle
-                List<Cita> citasCreadasEnBD = citaRepository.findByClienteAndFijaTrueAndPeriodicidadDiasIsNotNull(cita.getCliente());
+                List<Cita> citasCreadasEnBD = citaRepository.findCitasFijasByCliente(cita.getCliente());
                 if (!citasCreadasEnBD.isEmpty()) {
                     citaGuardada = citasCreadasEnBD.get(0);
                 }

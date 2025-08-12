@@ -19,9 +19,9 @@ import java.util.UUID;
 @Configuration
 public class LoggingConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(LoggingConfig.class);
-
     public static class RequestLoggingFilter extends OncePerRequestFilter {
+        
+        private static final Logger logger = LoggerFactory.getLogger(RequestLoggingFilter.class);
         
         @Override
         protected void doFilterInternal(HttpServletRequest request, 
