@@ -20,9 +20,8 @@ const Portafolio: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [activeInstaUrl, setActiveInstaUrl] = useState('');
   const [adminModalOpen, setAdminModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [photoToDelete, setPhotoToDelete] = useState<number | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [isAdmin] = useState(user?.rol === 'ADMIN');
   const embedRef = useRef<HTMLDivElement>(null);
@@ -93,63 +92,70 @@ const Portafolio: React.FC = () => {
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Validar tipo de archivo
-      if (!file.type.startsWith('image/')) {
-        alert('Por favor selecciona solo archivos de imagen.');
-        return;
-      }
-      
-      // Validar tamaño (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('La imagen es demasiado grande. Máximo 5MB.');
-        return;
-      }
-      
-      setSelectedFile(file);
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) return;
+
+    // Validar tipos de archivo
+    const invalidFiles = files.filter(file => !file.type.startsWith('image/'));
+    if (invalidFiles.length > 0) {
+      alert('Por favor selecciona solo archivos de imagen.');
+      return;
     }
+    
+    // Validar tamaños (máximo 5MB cada uno)
+    const oversizedFiles = files.filter(file => file.size > 5 * 1024 * 1024);
+    if (oversizedFiles.length > 0) {
+      alert('Algunas imágenes son demasiado grandes. Máximo 5MB por imagen.');
+      return;
+    }
+    
+    setSelectedFiles(files);
   };
 
-  const handleAddPhoto = async () => {
-    if (!selectedFile) {
-      alert('Por favor selecciona una imagen.');
+  const handleAddPhotos = async () => {
+    if (selectedFiles.length === 0) {
+      alert('Por favor selecciona al menos una imagen.');
       return;
     }
 
     try {
       setUploading(true);
-      const base64 = await convertToBase64(selectedFile);
-      
       const token = localStorage.getItem('authToken');
       if (!token) {
         alert('No tienes permisos para realizar esta acción.');
         return;
       }
 
-      const response = await fetch('http://localhost:8080/api/portfolio/admin/añadir', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          nombre: selectedFile.name,
-          imagenBase64: base64,
-          urlInstagram: ''
-        })
-      });
+      // Subir cada archivo individualmente
+      for (const file of selectedFiles) {
+        try {
+          const base64 = await convertToBase64(file);
+          
+          const response = await fetch('http://localhost:8080/api/portfolio/admin/añadir', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              nombre: file.name,
+              imagenBase64: base64,
+              urlInstagram: ''
+            })
+          });
 
-      if (!response.ok) {
-        throw new Error('Error al subir la imagen');
+          if (!response.ok) {
+            console.error(`Error al subir ${file.name}:`, response.statusText);
+          }
+        } catch (error) {
+          console.error(`Error procesando ${file.name}:`, error);
+        }
       }
-
-      const result = await response.json();
       
       // Recargar las fotos
       await cargarFotos();
       
-      setSelectedFile(null);
+      setSelectedFiles([]);
       setAdminModalOpen(false);
       
       // Limpiar el input
@@ -157,21 +163,14 @@ const Portafolio: React.FC = () => {
         fileInputRef.current.value = '';
       }
     } catch (error) {
-      alert('Error al procesar la imagen.');
-      console.error('Error subiendo foto:', error);
+      alert('Error al procesar las imágenes.');
+      console.error('Error subiendo fotos:', error);
     } finally {
       setUploading(false);
     }
   };
 
   const handleDeletePhoto = async (id: number) => {
-    setPhotoToDelete(id);
-    setDeleteModalOpen(true);
-  };
-
-  const confirmDeletePhoto = async () => {
-    if (!photoToDelete) return;
-
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
@@ -179,7 +178,7 @@ const Portafolio: React.FC = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:8080/api/portfolio/admin/eliminar/${photoToDelete}`, {
+      const response = await fetch(`http://localhost:8080/api/portfolio/admin/eliminar/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -191,8 +190,6 @@ const Portafolio: React.FC = () => {
       }
 
       await cargarFotos();
-      setDeleteModalOpen(false);
-      setPhotoToDelete(null);
     } catch (error) {
       alert('Error al eliminar la foto.');
       console.error('Error eliminando foto:', error);
@@ -275,7 +272,7 @@ const Portafolio: React.FC = () => {
               title="Añadir imagen al portfolio"
             >
               <FaPlus />
-              <span>Añadir Imagen</span>
+              <span>Añadir Imágenes</span>
             </button>
           </div>
         )}
@@ -306,7 +303,7 @@ const Portafolio: React.FC = () => {
           <div className={styles.adminModalOverlay} onClick={() => setAdminModalOpen(false)}>
             <div className={styles.adminModalContent} onClick={e => e.stopPropagation()}>
               <div className={styles.adminModalHeader}>
-                <h3>Añadir Nueva Foto</h3>
+                <h3>Añadir Nuevas Fotos</h3>
                 <button
                   className={styles.adminModalCloseBtn}
                   onClick={() => setAdminModalOpen(false)}
@@ -322,20 +319,26 @@ const Portafolio: React.FC = () => {
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={handleFileSelect}
                     className={styles.fileInput}
                     id="photo-upload"
                   />
                   <label htmlFor="photo-upload" className={styles.fileInputLabel}>
                     <FaPlus />
-                    <span>Seleccionar Imagen</span>
+                    <span>Seleccionar Imágenes</span>
                   </label>
                 </div>
                 
-                {selectedFile && (
+                {selectedFiles.length > 0 && (
                   <div className={styles.selectedFileInfo}>
-                    <p>Archivo seleccionado: {selectedFile.name}</p>
-                    <p>Tamaño: {(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <p>Archivos seleccionados: {selectedFiles.length}</p>
+                    {selectedFiles.map((file, index) => (
+                      <div key={index} className={styles.fileItem}>
+                        <span>📷 {file.name}</span>
+                        <span>{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                      </div>
+                    ))}
                   </div>
                 )}
                 
@@ -349,10 +352,10 @@ const Portafolio: React.FC = () => {
                   </button>
                   <button
                     className={styles.addBtn}
-                    onClick={handleAddPhoto}
-                    disabled={!selectedFile || uploading}
+                    onClick={handleAddPhotos}
+                    disabled={selectedFiles.length === 0 || uploading}
                   >
-                    {uploading ? 'Subiendo...' : 'Añadir Foto'}
+                    {uploading ? 'Subiendo...' : `Añadir ${selectedFiles.length} Foto${selectedFiles.length !== 1 ? 's' : ''}`}
                   </button>
                 </div>
               </div>
@@ -360,50 +363,7 @@ const Portafolio: React.FC = () => {
           </div>
         )}
 
-        {/* Modal de confirmación de eliminación */}
-        {deleteModalOpen && (
-          <div className={styles.deleteModalOverlay} onClick={() => setDeleteModalOpen(false)}>
-            <div className={styles.deleteModalContent} onClick={e => e.stopPropagation()}>
-              <div className={styles.deleteModalHeader}>
-                <h3>Confirmar Eliminación</h3>
-                <button
-                  className={styles.deleteModalCloseBtn}
-                  onClick={() => setDeleteModalOpen(false)}
-                  aria-label="Cerrar"
-                >
-                  <FaTimes />
-                </button>
-              </div>
-              
-              <div className={styles.deleteModalBody}>
-                <div className={styles.deleteModalIcon}>
-                  <FaTrash />
-                </div>
-                <p className={styles.deleteModalText}>
-                  ¿Estás seguro de que quieres eliminar esta imagen del portfolio?
-                </p>
-                <p className={styles.deleteModalWarning}>
-                  Esta acción no se puede deshacer.
-                </p>
-              </div>
-              
-              <div className={styles.deleteModalActions}>
-                <button
-                  className={styles.cancelDeleteBtn}
-                  onClick={() => setDeleteModalOpen(false)}
-                >
-                  Cancelar
-                </button>
-                <button
-                  className={styles.confirmDeleteBtn}
-                  onClick={confirmDeletePhoto}
-                >
-                  Eliminar
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+
       </section>
     </div>
   );
