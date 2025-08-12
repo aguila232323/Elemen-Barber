@@ -136,7 +136,10 @@ const Inicio: React.FC = () => {
           </span>
           <span className={styles.infoContent}>
             <span className={styles.infoTitle}>Martes - Sábado</span>
-            <span className={styles.infoSubtitle}>9:00 - 21:15 (Sábados hasta 15:00)</span>
+            <span className={styles.infoSubtitle}>
+              <span className={styles.desktopText}>9:00 - 21:15 (Sábados hasta 15:00)</span>
+              <span className={styles.mobileText}>9:00 - 21:15</span>
+            </span>
           </span>
         </span>
         
@@ -147,7 +150,10 @@ const Inicio: React.FC = () => {
           </span>
           <span className={styles.infoContent}>
             <span className={styles.infoTitle}>Luis</span>
-            <span className={styles.infoSubtitle}>Barbero principal</span>
+            <span className={styles.infoSubtitle}>
+              <span className={styles.desktopText}>Barbero principal</span>
+              <span className={styles.mobileText}>Barbero</span>
+            </span>
           </span>
         </span>
         
@@ -158,7 +164,10 @@ const Inicio: React.FC = () => {
           </span>
           <span className={styles.infoContent}>
             <span className={styles.infoTitle}>4 Paseo Dr. Revuelta</span>
-            <span className={styles.infoSubtitle}>Begíjar, Andalucía</span>
+            <span className={styles.infoSubtitle}>
+              <span className={styles.desktopText}>Begíjar, Andalucía</span>
+              <span className={styles.mobileText}>Begíjar</span>
+            </span>
           </span>
         </span>
       </div>

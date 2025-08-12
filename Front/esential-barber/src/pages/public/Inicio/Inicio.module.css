@@ -100,6 +100,45 @@
   line-height: 1.1;
 }
 
+/* ===== TEXTO RESPONSIVE PARA INFO BAR ===== */
+.desktopText {
+  display: block;
+}
+
+.mobileText {
+  display: none;
+}
+
+/* ===== MEDIA QUERIES PARA MÓVIL ===== */
+@media (max-width: 768px) {
+  .desktopText {
+    display: none;
+  }
+  
+  .mobileText {
+    display: block;
+  }
+  
+  .infoBar {
+    gap: 2rem;
+    padding: 1.2rem 1vw;
+    font-size: 0.85rem;
+  }
+  
+  .infoItem {
+    gap: 0.5rem;
+  }
+  
+  .infoIcon {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .infoIcon svg {
+    font-size: 1rem;
+  }
+}
+
 .infoTitle {
   font-weight: 600;
   font-size: 0.93em;
