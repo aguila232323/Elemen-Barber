@@ -5931,6 +5931,570 @@
   border-bottom: 1px solid #e9ecef !important;
 }
 
+/* ===== VISTA DE SEMANA OPTIMIZADA PARA MÓVIL ===== */
+/* En móvil, la vista de semana se optimiza para mejor legibilidad */
+@media (max-width: 768px) {
+  /* Ocultar el header de días en vista de semana para móvil */
+  .rbc-time-view.rbc-week-view .rbc-time-header {
+    display: none !important;
+  }
+  
+  /* Ocultar el header del gutter en vista de semana para móvil */
+  .rbc-time-view.rbc-week-view .rbc-time-header-gutter {
+    display: none !important;
+  }
+  
+  /* Ajustar el gutter de tiempo para que no tenga header */
+  .rbc-time-view.rbc-week-view .rbc-time-gutter {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+  
+  /* Mejorar la legibilidad de las citas en vista de semana móvil */
+  .rbc-time-view.rbc-week-view .rbc-event {
+    font-size: 0.75rem !important;
+    padding: 2px 4px !important;
+    margin: 1px 2px !important;
+    border-radius: 4px !important;
+    min-height: 20px !important;
+    max-height: 26px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+  
+  /* Hacer las citas más compactas en móvil */
+  .rbc-time-view.rbc-week-view .rbc-event .custom-event-component {
+    padding: 2px 4px !important;
+    font-size: 0.7rem !important;
+    line-height: 1.2 !important;
+    min-height: 18px !important;
+  }
+  
+  /* Optimizar el ancho de las columnas de días en móvil */
+  .rbc-time-view.rbc-week-view .rbc-time-content .rbc-day-slot {
+    min-width: 80px !important;
+    max-width: 120px !important;
+    width: auto !important;
+  }
+  
+  /* Ajustar el gutter de tiempo para móvil */
+  .rbc-time-view.rbc-week-view .rbc-time-gutter {
+    min-width: 60px !important;
+    width: 60px !important;
+    max-width: 60px !important;
+  }
+  
+  /* Mejorar la separación visual entre días */
+  .rbc-time-view.rbc-week-view .rbc-time-content .rbc-day-slot {
+    border-right: 1px solid #e9ecef !important;
+  }
+  
+  /* Añadir indicador visual sutil para separar días */
+  .rbc-time-view.rbc-week-view .rbc-time-content .rbc-day-slot:last-child {
+    border-right: none !important;
+  }
+  
+  /* Añadir indicador de día actual en la columna correspondiente */
+  .rbc-time-view.rbc-week-view .rbc-time-content .rbc-day-slot.today {
+    background: rgba(102, 126, 234, 0.05) !important;
+    border-left: 3px solid #667eea !important;
+  }
+  
+  /* Mejorar la visualización de las horas en móvil */
+  .rbc-time-view.rbc-week-view .rbc-time-gutter .rbc-time-slot {
+    font-size: 0.75rem !important;
+    padding: 0 4px !important;
+    color: #6b7280 !important;
+  }
+  
+  /* Destacar las horas principales (en punto) */
+  .rbc-time-view.rbc-week-view .rbc-time-gutter .rbc-time-slot:nth-child(4n+1) {
+    font-weight: 700 !important;
+    color: #374151 !important;
+    font-size: 0.8rem !important;
+  }
+}
+
+/* ===== VISTA DE SEMANA DESKTOP MEJORADA ===== */
+/* En desktop, mantener la vista completa pero optimizada */
+@media (min-width: 769px) {
+  .rbc-time-view.rbc-week-view .rbc-time-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    border-bottom: 2px solid #667eea !important;
+  }
+  
+  .rbc-time-view.rbc-week-view .rbc-time-header .rbc-header {
+    background: transparent !important;
+    color: #374151 !important;
+    font-weight: 600 !important;
+    padding: 12px 8px !important;
+    border-right: 1px solid #e9ecef !important;
+    text-align: center !important;
+  }
+  
+  .rbc-time-view.rbc-week-view .rbc-time-header .rbc-header:last-child {
+    border-right: none !important;
+  }
+  
+  /* Mejorar la legibilidad de las citas en desktop */
+  .rbc-time-view.rbc-week-view .rbc-event {
+    font-size: 0.8rem !important;
+    padding: 3px 6px !important;
+    margin: 1px 3px !important;
+    border-radius: 6px !important;
+    min-height: 24px !important;
+    max-height: 28px !important;
+  }
+  
+  /* Mejorar la separación visual entre días en desktop */
+  .rbc-time-view.rbc-week-view .rbc-time-content .rbc-day-slot {
+    border-right: 1px solid #e9ecef !important;
+  }
+  
+  .rbc-time-view.rbc-week-view .rbc-time-content .rbc-day-slot:last-child {
+    border-right: none !important;
+  }
+  
+  /* Destacar el día actual en desktop */
+  .rbc-time-view.rbc-week-view .rbc-time-content .rbc-day-slot.today {
+    background: rgba(102, 126, 234, 0.03) !important;
+    border-left: 2px solid #667eea !important;
+  }
+}
+
+/* ===== MEJORAS GENERALES PARA VISTA DE SEMANA ===== */
+/* Transiciones suaves entre vistas */
+.rbc-time-view.rbc-week-view {
+  transition: all 0.3s ease !important;
+}
+
+/* ===== BOTÓN DE CANCELAR CITA - MODAL PC ===== */
+.event-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+/* ===== BOTÓN DE CANCELAR CITA - MODAL MÓVIL ===== */
+.mobile-cita-cancel-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 12px;
+}
+
+.mobile-cita-cancel-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+}
+
+.mobile-cita-cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Ajustar el layout de los botones móviles */
+.mobile-cita-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.event-cancel-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.event-cancel-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+}
+
+.event-cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cancel-icon {
+  font-size: 18px;
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ===== MODAL DE CONFIRMACIÓN DE CANCELACIÓN ===== */
+.cancel-confirm-modal {
+  min-width: 500px;
+  max-width: 600px;
+  max-height: 90vh;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 24px;
+  padding: 0;
+  border: none;
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.2), 0 16px 32px rgba(0, 0, 0, 0.1);
+  animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 10000 !important;
+  position: relative;
+}
+
+.cancel-confirm-header {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  color: #991b1b;
+  padding: 28px 28px 24px 28px;
+  border-radius: 24px 24px 0 0;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  border-bottom: 2px solid #fecaca;
+}
+
+.cancel-confirm-icon {
+  font-size: 32px;
+  background: rgba(239, 68, 68, 0.1);
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid #fecaca;
+}
+
+.cancel-confirm-title h3 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #991b1b;
+}
+
+.cancel-confirm-title p {
+  margin: 0;
+  font-size: 16px;
+  color: #b91c1c;
+  opacity: 0.9;
+}
+
+.cancel-confirm-info {
+  padding: 24px 28px;
+}
+
+.cita-summary {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.cita-summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.cita-summary-item:last-child {
+  border-bottom: none;
+}
+
+.summary-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+}
+
+.summary-value {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 14px;
+  text-align: right;
+}
+
+.cancel-warning {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.cancel-warning p {
+  margin: 0 0 12px 0;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.cancel-warning ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #92400e;
+}
+
+.cancel-warning li {
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.cancel-confirm-actions {
+  display: flex;
+  gap: 16px;
+  padding: 24px 28px 28px 28px;
+  justify-content: center;
+}
+
+.cancel-confirm-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 160px;
+}
+
+.cancel-confirm-btn.cancel-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cancel-confirm-btn.cancel-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+}
+
+.cancel-confirm-btn.cancel-cancel-btn {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cancel-confirm-btn.cancel-cancel-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+}
+
+.cancel-confirm-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive para el modal de confirmación */
+@media (max-width: 768px) {
+  .cancel-confirm-modal {
+    min-width: 90vw;
+    max-width: 95vw;
+    margin: 20px;
+  }
+}
+
+/* ===== Z-INDEX ALTO PARA MODAL DE CANCELACIÓN ===== */
+/* Asegurar que el modal de cancelación esté por encima de todo */
+.cancel-confirm-modal {
+  z-index: 10000 !important;
+  position: relative;
+}
+
+.cancel-confirm-modal * {
+  z-index: 10000 !important;
+}
+
+/* Overlay específico para cancelación con z-index alto */
+.modal-overlay:has(.cancel-confirm-modal) {
+  z-index: 9999 !important;
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* Asegurar que el modal de cancelación esté por encima de todos los demás modales */
+.modal-overlay:has(.cancel-confirm-modal) {
+  z-index: 9999 !important;
+}
+
+.cancel-confirm-modal {
+  z-index: 10000 !important;
+  position: relative;
+}
+
+/* Asegurar que todos los elementos del modal tengan z-index alto */
+.cancel-confirm-header,
+.cancel-confirm-info,
+.cancel-confirm-actions {
+  z-index: 10001 !important;
+  position: relative;
+}
+
+/* Overlay específico para cancelación con z-index muy alto */
+.cancel-confirm-overlay {
+  z-index: 9999 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(8px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Asegurar que el modal de cancelación esté por encima de todo */
+.cancel-confirm-overlay .cancel-confirm-modal {
+  z-index: 10000 !important;
+  position: relative !important;
+}
+
+/* ===== OPTIMIZACIÓN DE ESPACIO EN VISTA DE SEMANA ===== */
+/* Cuando se ocultan los días en vista de semana, optimizar el espacio */
+.rbc-time-view.rbc-week-view ~ .mobile-horizontal-calendar .mobile-horizontal-days,
+.rbc-time-view.rbc-week-view ~ .mobile-horizontal-calendar .mobile-horizontal-hours {
+  display: none !important;
+}
+
+/* Asegurar que el calendario ocupe todo el espacio disponible en vista de semana */
+.rbc-time-view.rbc-week-view {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Optimizar el espacio del toolbar en vista de semana */
+.rbc-time-view.rbc-week-view ~ .mobile-calendar-toolbar {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* ===== TRANSICIONES SUAVES PARA CAMBIOS DE VISTA ===== */
+/* Hacer que la ocultación/mostrado de días sea suave */
+.mobile-horizontal-days {
+  transition: all 0.3s ease !important;
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  max-height: 60px !important;
+  overflow: hidden !important;
+}
+
+/* Cuando se ocultan los días, hacer la transición suave */
+.mobile-horizontal-days.hidden,
+.rbc-time-view.rbc-week-view ~ .mobile-horizontal-days {
+  opacity: 0 !important;
+  transform: translateY(-10px) !important;
+  max-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Optimizar el espacio del contenedor principal en vista de semana */
+.rbc-time-view.rbc-week-view ~ .mobile-admin-container {
+  padding-top: 0 !important;
+}
+
+/* Asegurar que no haya espacios extra en la vista de semana */
+.rbc-time-view.rbc-week-view + * {
+  margin-top: 0 !important;
+}
+
+/* Mejorar la legibilidad de las citas en todas las vistas de semana */
+.rbc-time-view.rbc-week-view .rbc-event {
+  transition: all 0.2s ease !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.rbc-time-view.rbc-week-view .rbc-event:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Mejorar la visualización de las horas en todas las vistas */
+.rbc-time-view.rbc-week-view .rbc-time-gutter .rbc-time-slot {
+  transition: color 0.2s ease !important;
+}
+
+/* Indicador visual para el día actual en todas las vistas */
+.rbc-time-view.rbc-week-view .rbc-time-content .rbc-day-slot.today {
+  position: relative !important;
+}
+
+.rbc-time-view.rbc-week-view .rbc-time-content .rbc-day-slot.today::before {
+  content: 'HOY' !important;
+  position: absolute !important;
+  top: 2px !important;
+  right: 4px !important;
+  background: #667eea !important;
+  color: white !important;
+  font-size: 0.6rem !important;
+  font-weight: 700 !important;
+  padding: 1px 4px !important;
+  border-radius: 8px !important;
+  z-index: 10 !important;
+}
+
 /* Asegurar que el header del gutter tenga el ancho correcto */
 .rbc-time-view .rbc-time-header-gutter {
   min-width: 80px !important;
@@ -5961,4 +6525,70 @@
   max-height: none !important;
   z-index: 1 !important; /* Z-index bajo para no superponerse con la navbar */
   position: relative;
+}
+
+/* ===== ELIMINAR COMPLETAMENTE LA CLASE PROBLEMÁTICA rbc-overflowing ===== */
+/* Esta clase crea espacios en blanco extraños y hace que el calendario se vea feo */
+.rbc-overflowing,
+.rbc-time-header.rbc-overflowing,
+.rbc-time-header .rbc-overflowing,
+.rbc-time-content .rbc-overflowing,
+.rbc-time-gutter .rbc-overflowing,
+.rbc-month-view .rbc-overflowing,
+.rbc-agenda-view .rbc-overflowing {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+}
+
+/* ===== ELIMINAR ESPACIOS EN BLANCO EXTRAÑOS DEL HEADER ===== */
+/* Asegurar que el header del calendario no tenga espacios extra */
+.rbc-time-header {
+  border-bottom: 2px solid #e9ecef !important;
+  background: #ffffff !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 15 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Asegurar que no haya espacios extra en el contenido del header */
+.rbc-time-header-content {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.rbc-time-header-content .rbc-header {
+  border: none !important;
+  background: transparent !important;
+  padding: 8px 4px !important;
+  margin: 0 !important;
+  height: auto !important;
+  min-height: auto !important;
+}
+
+/* Eliminar cualquier borde o espacio extra que pueda causar problemas visuales */
+.rbc-time-header .rbc-header + .rbc-header {
+  border-left: 1px solid #e9ecef !important;
+}
+
+.rbc-time-header .rbc-header:first-child {
+  border-left: none !important;
 }

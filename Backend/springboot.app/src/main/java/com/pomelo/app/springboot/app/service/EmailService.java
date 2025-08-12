@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Async;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.MessagingException;
 import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
 import java.util.Locale;
 
 @Service
@@ -1254,5 +1255,134 @@ public class EmailService {
                             <p>Algunas citas no se pudieron crear debido a horarios ocupados. El sistema continuará creando citas en las fechas disponibles.</p>
                         </div>
                         """ : "");
+    }
+
+    @Async
+    public void enviarCancelacionCita(String emailCliente, String nombreCliente, String nombreServicio, 
+                                     LocalDateTime fechaHora, int duracionMinutos, double precio) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            
+            helper.setTo(emailCliente);
+            helper.setSubject("❌ Cita Cancelada - Elemen");
+            helper.setFrom("Elemen Barber <elemenbarber@gmail.com>");
+            
+            // Formatear fecha y hora de forma segura
+            String fechaFormateada;
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM 'de' yyyy 'a las' HH:mm", new Locale("es", "ES"));
+                fechaFormateada = fechaHora.format(formatter);
+            } catch (Exception e) {
+                // Fallback a formato simple si falla el formateo complejo
+                fechaFormateada = fechaHora.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+            }
+            
+            // Crear contenido HTML del email de cancelación
+            String htmlContent = crearEmailCancelacionHTML(nombreCliente, nombreServicio, 
+                                                        fechaFormateada, duracionMinutos, precio);
+            
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+            System.out.println("✅ Email de cancelación enviado a: " + emailCliente);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error al enviar email de cancelación: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private String crearEmailCancelacionHTML(String nombreCliente, String nombreServicio, 
+                                           String fechaFormateada, int duracionMinutos, double precio) {
+        StringBuilder html = new StringBuilder();
+        html.append("<!DOCTYPE html>");
+        html.append("<html lang=\"es\">");
+        html.append("<head>");
+        html.append("<meta charset=\"UTF-8\">");
+        html.append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">");
+        html.append("<title>Cita Cancelada - Elemen</title>");
+        html.append("<style>");
+        html.append("body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8f9fa; }");
+        html.append(".container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }");
+        html.append(".header { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; text-align: center; padding: 30px 20px; }");
+        html.append(".logo { width: 80px; height: 80px; border-radius: 50%; margin-bottom: 15px; }");
+        html.append(".header h1 { margin: 0; font-size: 28px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }");
+        html.append(".header p { margin: 10px 0 0 0; font-size: 16px; opacity: 0.9; }");
+        html.append(".content { padding: 40px 30px; }");
+        html.append(".greeting { font-size: 20px; font-weight: 600; margin-bottom: 25px; color: #2c3e50; }");
+        html.append(".cancellation-message { background: #fff5f5; border: 1px solid #fed7d7; border-radius: 8px; padding: 20px; margin-bottom: 25px; text-align: center; }");
+        html.append(".cancellation-message strong { color: #c53030; font-size: 18px; }");
+        html.append(".cita-details { background: #f8f9fa; border-radius: 8px; padding: 25px; margin-bottom: 25px; }");
+        html.append(".detail-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #e9ecef; }");
+        html.append(".detail-row:last-child { border-bottom: none; }");
+        html.append(".detail-label { font-weight: 600; color: #495057; min-width: 120px; }");
+        html.append(".detail-value { color: #6c757d; text-align: right; }");
+        html.append(".price-value { color: #28a745; font-weight: 700; font-size: 18px; }");
+        html.append(".info-section { background: #e3f2fd; border: 1px solid #bbdefb; border-radius: 8px; padding: 20px; margin-bottom: 25px; }");
+        html.append(".info-section strong { color: #1976d2; display: block; margin-bottom: 10px; }");
+        html.append(".info-section ul { margin: 10px 0; padding-left: 20px; }");
+        html.append(".info-section li { margin-bottom: 8px; color: #1565c0; }");
+        html.append(".footer { background: #f8f9fa; padding: 25px 30px; text-align: center; border-top: 1px solid #e9ecef; }");
+        html.append(".footer-logo { font-size: 24px; font-weight: 700; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }");
+        html.append(".contact-info { margin-top: 15px; color: #6c757d; font-size: 14px; line-height: 1.5; }");
+        html.append("</style>");
+        html.append("</head>");
+        html.append("<body>");
+        html.append("<div class=\"container\">");
+        html.append("<div class=\"header\">");
+        html.append("<img src=\"https://esentialbarber.com/logoElemental.png\" alt=\"Elemen\" class=\"logo\">");
+        html.append("<h1>Elemen</h1>");
+        html.append("<p>❌ Cita Cancelada</p>");
+        html.append("</div>");
+        html.append("<div class=\"content\">");
+        html.append("<div class=\"greeting\">¡Hola ").append(nombreCliente).append("!</div>");
+        html.append("<div class=\"cancellation-message\">");
+        html.append("<strong>❌ Tu cita ha sido cancelada</strong>");
+        html.append("</div>");
+        html.append("<p>Te informamos que tu cita ha sido cancelada. Aquí tienes los detalles de la cita cancelada:</p>");
+        html.append("<div class=\"cita-details\">");
+        html.append("<div class=\"detail-row\">");
+        html.append("<span class=\"detail-label\">Servicio:</span>");
+        html.append("<span class=\"detail-value\">").append(nombreServicio).append("</span>");
+        html.append("</div>");
+        html.append("<div class=\"detail-row\">");
+        html.append("<span class=\"detail-label\">Fecha y Hora:</span>");
+        html.append("<span class=\"detail-value\">").append(fechaFormateada).append("</span>");
+        html.append("</div>");
+        html.append("<div class=\"detail-row\">");
+        html.append("<span class=\"detail-label\">Duración:</span>");
+        html.append("<span class=\"detail-value\">").append(duracionMinutos).append(" minutos</span>");
+        html.append("</div>");
+        html.append("<div class=\"detail-row\">");
+        html.append("<span class=\"detail-label\">Precio:</span>");
+        html.append("<span class=\"detail-value price-value\">").append(String.format("%.2f", precio)).append(" euros</span>");
+        html.append("</div>");
+        html.append("</div>");
+        html.append("<div class=\"info-section\">");
+        html.append("<strong>📋 Información importante:</strong>");
+        html.append("<ul>");
+        html.append("<li>Tu cita ha sido cancelada exitosamente</li>");
+        html.append("<li>No se te cobrará ningún cargo por la cancelación</li>");
+        html.append("<li>Puedes reservar una nueva cita cuando lo desees</li>");
+        html.append("<li>Si tienes alguna pregunta, no dudes en contactarnos</li>");
+        html.append("</ul>");
+        html.append("</div>");
+        html.append("<p style=\"color: #6c757d; font-size: 14px;\">");
+        html.append("Para reservar una nueva cita, visita nuestra aplicación o contacta con nosotros directamente.");
+        html.append("</p>");
+        html.append("</div>");
+        html.append("<div class=\"footer\">");
+        html.append("<div class=\"footer-logo\">Elemen</div>");
+        html.append("<p>¡Gracias por tu comprensión!</p>");
+        html.append("<div class=\"contact-info\">");
+        html.append("📞 Contacto: +34 683 23 55 47<br>");
+        html.append("📧 Email: elemenbarber@gmail.com");
+        html.append("</div>");
+        html.append("</div>");
+        html.append("</div>");
+        html.append("</body>");
+        html.append("</html>");
+        
+        return html.toString();
     }
 } 

@@ -142,11 +142,43 @@ public class CitaService {
                     }
                 }
                 
+                // Enviar email de cancelación para citas periódicas
+                try {
+                    emailService.enviarCancelacionCita(
+                        cita.getCliente().getEmail(),
+                        cita.getCliente().getNombre(),
+                        cita.getServicio().getNombre(),
+                        cita.getFechaHora(),
+                        cita.getServicio().getDuracionMinutos(),
+                        cita.getServicio().getPrecio()
+                    );
+                    System.out.println("✅ Email de cancelación de cita periódica enviado a: " + cita.getCliente().getEmail());
+                } catch (Exception e) {
+                    System.err.println("❌ Error al enviar email de cancelación de cita periódica: " + e.getMessage());
+                    // No fallar la cancelación si falla el email
+                }
+                
                 citaRepository.deleteAll(citasPeriodicas);
             } else {
                 // Si no es periódica, solo cambiar el estado
                 cita.setEstado("cancelada");
                 citaRepository.save(cita);
+                
+                // Enviar email de cancelación al cliente
+                try {
+                    emailService.enviarCancelacionCita(
+                        cita.getCliente().getEmail(),
+                        cita.getCliente().getNombre(),
+                        cita.getServicio().getNombre(),
+                        cita.getFechaHora(),
+                        cita.getServicio().getDuracionMinutos(),
+                        cita.getServicio().getPrecio()
+                    );
+                    System.out.println("✅ Email de cancelación enviado a: " + cita.getCliente().getEmail());
+                } catch (Exception e) {
+                    System.err.println("❌ Error al enviar email de cancelación: " + e.getMessage());
+                    // No fallar la cancelación si falla el email
+                }
                 
                 // Intentar eliminar eventos de Google Calendar
                 try {

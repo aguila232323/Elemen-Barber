@@ -266,20 +266,23 @@ interface Cita {
           </div>
         </div>
         
-        <div className="mobile-horizontal-hours">
-          <div className="mobile-horizontal-days">
-            {currentWeek.map((day, index) => (
-              <button
-                key={index}
-                className={`mobile-horizontal-day ${isToday(day) ? 'today' : ''} ${isSelected(day) ? 'selected' : ''}`}
-                onClick={() => onDateSelect && onDateSelect(day)}
-              >
-                <div className="mobile-horizontal-day-name">{getDayName(day)}</div>
-                <div className="mobile-horizontal-day-number">{getDayNumber(day)}</div>
-              </button>
-            ))}
+        {/* Los días se ocultan en vista de semana para evitar redundancia */}
+        {currentView !== 'week' && (
+          <div className="mobile-horizontal-hours">
+            <div className="mobile-horizontal-days">
+              {currentWeek.map((day, index) => (
+                <button
+                  key={index}
+                  className={`mobile-horizontal-day ${isToday(day) ? 'today' : ''} ${isSelected(day) ? 'selected' : ''}`}
+                  onClick={() => onDateSelect && onDateSelect(day)}
+                >
+                  <div className="mobile-horizontal-day-name">{getDayName(day)}</div>
+                  <div className="mobile-horizontal-day-number">{getDayNumber(day)}</div>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
@@ -371,19 +374,22 @@ const MobileHorizontalCalendar = ({ selectedDate, onDateSelect, currentView }: {
           →
         </button>
       </div>
-      <div className="mobile-horizontal-days">
-        {currentWeek.map((date, index) => (
-          <div
-            key={index}
-            className={`mobile-horizontal-day ${isSelected(date) ? 'selected' : ''} ${isToday(date) ? 'today' : ''}`}
-            onClick={() => onDateSelect(date)}
-            title={moment(date).format('dddd, D [de] MMMM [de] YYYY')}
-          >
-            <span className="mobile-horizontal-day-name">{getDayName(date)}</span>
-            <span className="mobile-horizontal-day-number">{getDayNumber(date)}</span>
-          </div>
-        ))}
-      </div>
+      {/* Los días se ocultan en vista de semana para evitar redundancia */}
+      {currentView !== 'week' && (
+        <div className="mobile-horizontal-days">
+          {currentWeek.map((date, index) => (
+            <div
+              key={index}
+              className={`mobile-horizontal-day ${isSelected(date) ? 'selected' : ''} ${isToday(date) ? 'today' : ''}`}
+              onClick={() => onDateSelect(date)}
+              title={moment(date).format('dddd, D [de] MMMM [de] YYYY')}
+            >
+              <span className="mobile-horizontal-day-name">{getDayName(date)}</span>
+              <span className="mobile-horizontal-day-number">{getDayNumber(date)}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -414,6 +420,11 @@ const CitasAdmin: React.FC = () => {
   const [showMobileCitaModal, setShowMobileCitaModal] = useState(false);
   const [selectedMobileCita, setSelectedMobileCita] = useState<any>(null);
 
+  // Estados para cancelar citas
+  const [cancelingCita, setCancelingCita] = useState<number | null>(null);
+  const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
+  const [citaToCancel, setCitaToCancel] = useState<any>(null);
+
   // Verificar si es móvil
   useEffect(() => {
     const checkMobile = () => {
@@ -428,6 +439,56 @@ const CitasAdmin: React.FC = () => {
     
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Función para cancelar una cita
+  const handleCancelCita = async (cita: any) => {
+    if (!cita || !cita.id) {
+      console.error('No se puede cancelar: cita inválida');
+      return;
+    }
+
+    try {
+      setCancelingCita(cita.id);
+      const token = localStorage.getItem('authToken');
+      
+      const response = await fetch(`http://localhost:8080/api/citas/${cita.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        // Actualizar la lista de citas
+        setCitas(prevCitas => prevCitas.filter(c => c.id !== cita.id));
+        
+        // Cerrar modales
+        setSelectedEvent(null);
+        setShowMobileCitaModal(false);
+        setShowCancelConfirmModal(false);
+        setCitaToCancel(null);
+        
+        // La cita se cancela silenciosamente sin mostrar alertas
+        console.log('Cita cancelada exitosamente. Se ha enviado un correo al cliente.');
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al cancelar la cita');
+      }
+    } catch (error: any) {
+      console.error('Error al cancelar la cita:', error);
+      // Solo mostrar error en consola, no alertas molestas
+      console.error(`Error al cancelar la cita: ${error.message}`);
+    } finally {
+      setCancelingCita(null);
+    }
+  };
+
+  // Función para mostrar el modal de confirmación de cancelación
+  const showCancelConfirmation = (cita: any) => {
+    setCitaToCancel(cita);
+    setShowCancelConfirmModal(true);
+  };
 
   // Función para determinar el estado dinámico de una cita
   const getCitaStatus = (fechaHora: Date, duracionMinutos: number = 45, estadoOriginal?: string) => {
@@ -1031,7 +1092,6 @@ const CitasAdmin: React.FC = () => {
   const renderModals = () => (
     <>
       {/* Modal móvil de detalles de cita */}
-      {console.log('Renderizando modal móvil - showMobileCitaModal:', showMobileCitaModal, 'selectedMobileCita:', selectedMobileCita)}
       {showMobileCitaModal && selectedMobileCita && (
         <div className="modal-overlay mobile-cita-modal-overlay" onClick={() => setShowMobileCitaModal(false)}>
           <div className="modal-content mobile-cita-modal" onClick={e => e.stopPropagation()}>
@@ -1181,6 +1241,18 @@ const CitasAdmin: React.FC = () => {
                 </button>
               )}
               
+              {/* Botón de cancelar cita */}
+              <button 
+                className="mobile-cita-cancel-btn"
+                onClick={() => {
+                  setShowMobileCitaModal(false);
+                  showCancelConfirmation(selectedMobileCita);
+                }}
+              >
+                <span className="cancel-icon">❌</span>
+                Cancelar Cita
+              </button>
+              
               <button 
                 className="mobile-cita-close-btn"
                 onClick={() => setShowMobileCitaModal(false)}
@@ -1297,6 +1369,83 @@ const CitasAdmin: React.FC = () => {
                 </div>
               )}
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación de cancelación */}
+      {showCancelConfirmModal && citaToCancel && (
+        <div className="modal-overlay cancel-confirm-overlay" onClick={() => setShowCancelConfirmModal(false)}>
+          <div className="modal-content cancel-confirm-modal" onClick={e => e.stopPropagation()}>
+            <div className="cancel-confirm-header">
+              <div className="cancel-confirm-icon">⚠️</div>
+              <div className="cancel-confirm-title">
+                <h3>Confirmar Cancelación</h3>
+                <p>¿Estás seguro de que quieres cancelar esta cita?</p>
+              </div>
+            </div>
+            
+            <div className="cancel-confirm-info">
+              <div className="cita-summary">
+                <div className="cita-summary-item">
+                  <span className="summary-label">Cliente:</span>
+                  <span className="summary-value">{citaToCancel.usuario?.nombre}</span>
+                </div>
+                <div className="cita-summary-item">
+                  <span className="summary-label">Servicio:</span>
+                  <span className="summary-value">{citaToCancel.servicio?.nombre}</span>
+                </div>
+                <div className="cita-summary-item">
+                  <span className="summary-label">Fecha:</span>
+                  <span className="summary-value">
+                    {moment(citaToCancel.start).format('dddd, D [de] MMMM [de] YYYY')}
+                  </span>
+                </div>
+                <div className="cita-summary-item">
+                  <span className="summary-label">Hora:</span>
+                  <span className="summary-value">
+                    {moment(citaToCancel.start).format('HH:mm')} - {moment(citaToCancel.end).format('HH:mm')}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="cancel-warning">
+                <p><strong>⚠️ Importante:</strong></p>
+                <ul>
+                  <li>La cita se cancelará permanentemente</li>
+                  <li>Se enviará un correo de confirmación al cliente</li>
+                  <li>Si es una cita periódica, se cancelarán todas las citas futuras</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="cancel-confirm-actions">
+              <button 
+                className="cancel-confirm-btn cancel-btn"
+                onClick={() => handleCancelCita(citaToCancel)}
+                disabled={cancelingCita === citaToCancel.id}
+              >
+                {cancelingCita === citaToCancel.id ? (
+                  <>
+                    <span className="loading-spinner"></span>
+                    Cancelando...
+                  </>
+                ) : (
+                  <>
+                    <span className="cancel-icon">❌</span>
+                    Sí, Cancelar Cita
+                  </>
+                )}
+              </button>
+              
+              <button 
+                className="cancel-confirm-btn cancel-cancel-btn"
+                onClick={() => setShowCancelConfirmModal(false)}
+                disabled={cancelingCita === citaToCancel.id}
+              >
+                No, Mantener Cita
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1772,6 +1921,27 @@ const CitasAdmin: React.FC = () => {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Botones de acción */}
+            <div className="event-actions">
+              <button 
+                className="event-cancel-btn"
+                onClick={() => showCancelConfirmation(selectedEvent)}
+                disabled={cancelingCita === selectedEvent.id}
+              >
+                {cancelingCita === selectedEvent.id ? (
+                  <>
+                    <span className="loading-spinner"></span>
+                    Cancelando...
+                  </>
+                ) : (
+                  <>
+                    <span className="cancel-icon">❌</span>
+                    Cancelar Cita
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
