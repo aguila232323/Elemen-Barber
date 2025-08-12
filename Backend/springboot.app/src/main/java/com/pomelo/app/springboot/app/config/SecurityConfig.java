@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.pomelo.app.springboot.app.config.JwtFilter;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -26,6 +27,12 @@ public class SecurityConfig {
     
     @Autowired
     private CorsConfigurationSource corsConfigurationSource;
+    
+    @Autowired
+    private OncePerRequestFilter securityHeadersFilter;
+    
+    @Autowired
+    private OncePerRequestFilter rateLimitFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -42,6 +49,8 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
+            .addFilterBefore(securityHeadersFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Permitir preflight CORS
                 .requestMatchers("/api/auth/**").permitAll()

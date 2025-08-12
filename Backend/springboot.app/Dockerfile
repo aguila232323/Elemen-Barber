@@ -40,7 +40,13 @@ EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8080/api/servicios || exit 1
+  CMD curl -f http://localhost:8080/health || exit 1
+
+# Crear directorio de logs
+RUN mkdir -p /app/logs && chown javauser:javauser /app/logs
+
+# Configurar JVM para producción
+ENV JAVA_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+OptimizeStringConcat -XX:+UseCompressedOops -XX:+UseCompressedClassPointers -XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:+UnlockDiagnosticVMOptions -XX:+LogVMOutput -XX:LogFile=/app/logs/jvm.log"
 
 # Comando de inicio
 ENTRYPOINT ["java", "-jar", "app.jar"]
