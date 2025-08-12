@@ -78,16 +78,32 @@ interface Cita {
       setCurrentWeek(days);
     };
 
-    const goToPreviousWeek = () => {
+    const goToPrevious = () => {
       if (onDateSelect && selectedDate) {
-        const newDate = moment(selectedDate).subtract(1, 'week').toDate();
+        let newDate;
+        if (currentView === 'month') {
+          newDate = moment(selectedDate).subtract(1, 'month').toDate();
+        } else if (currentView === 'week' || currentView === 'agenda') {
+          // Para agenda y semana, cambiar por semanas
+          newDate = moment(selectedDate).subtract(1, 'week').toDate();
+        } else { // day view
+          newDate = moment(selectedDate).subtract(1, 'day').toDate();
+        }
         onDateSelect(newDate);
       }
     };
 
-    const goToNextWeek = () => {
+    const goToNext = () => {
       if (onDateSelect && selectedDate) {
-        const newDate = moment(selectedDate).add(1, 'week').toDate();
+        let newDate;
+        if (currentView === 'month') {
+          newDate = moment(selectedDate).add(1, 'month').toDate();
+        } else if (currentView === 'week' || currentView === 'agenda') {
+          // Para agenda y semana, cambiar por semanas
+          newDate = moment(selectedDate).add(1, 'week').toDate();
+        } else { // day view
+          newDate = moment(selectedDate).add(1, 'day').toDate();
+        }
         onDateSelect(newDate);
       }
     };
@@ -149,7 +165,7 @@ interface Cita {
     }
   };
 
-  const goToBack = () => {
+  const goToBackCalendar = () => {
     if (onNavigate) {
       onNavigate(date, currentView, 'PREV');
     } else if (calendarNavigate) {
@@ -157,7 +173,7 @@ interface Cita {
     }
   };
 
-  const goToNext = () => {
+  const goToNextCalendar = () => {
     if (onNavigate) {
       onNavigate(date, currentView, 'NEXT');
     } else if (calendarNavigate) {
@@ -181,8 +197,7 @@ interface Cita {
   };
 
   return (
-          <div className="mobile-calendar-toolbar" style={{ paddingBottom: '0px', paddingLeft: '0px', paddingRight: '0px', paddingTop: '0px' }}>
-
+    <div className="mobile-calendar-toolbar" style={{ paddingBottom: '0px', paddingLeft: '0px', paddingRight: '0px', paddingTop: '0px' }}>
 
       {/* Calendario horizontal integrado */}
       <div className="mobile-horizontal-calendar">
@@ -190,21 +205,21 @@ interface Cita {
           <div className="mobile-horizontal-nav">
             <button
               className="mobile-horizontal-nav-button"
-              onClick={goToPreviousWeek}
+              onClick={goToPrevious}
               disabled={!canGoPrevious()}
             >
               <FaChevronLeft size={14} />
             </button>
             <span className="mobile-horizontal-nav-text">
-              {currentWeek.length > 0 && (
-                <>
-                  {moment(currentWeek[0]).locale('es').format('MMM D')} - {moment(currentWeek[6]).locale('es').format('MMM D, YYYY')}
-                </>
-              )}
+              {currentView === 'day' && moment(date || selectedDate || new Date()).locale('es').format('dddd, D [de] MMMM [de] YYYY')}
+              {currentView === 'week' && `${moment(date || selectedDate || new Date()).startOf('week').locale('es').format('MMM D')} - ${moment(date || selectedDate || new Date()).endOf('week').locale('es').format('MMM D, YYYY')}`}
+              {currentView === 'month' && moment(date || selectedDate || new Date()).locale('es').format('MMMM [de] YYYY')}
+              {currentView === 'agenda' && `${moment(date || selectedDate || new Date()).startOf('week').locale('es').format('MMM D')} - ${moment(date || selectedDate || new Date()).endOf('week').locale('es').format('MMM D, YYYY')}`}
+              {!currentView && moment(date || selectedDate || new Date()).locale('es').format('dddd, D [de] MMMM [de] YYYY')}
             </span>
             <button
               className="mobile-horizontal-nav-button"
-              onClick={goToNextWeek}
+              onClick={goToNext}
               disabled={!canGoNext()}
             >
               <FaChevronRight size={14} />
@@ -218,6 +233,7 @@ interface Cita {
               onClick={() => setShowViewSelector(!showViewSelector)}
             >
               <span className="view-icon">{viewOptions.find(option => option.value === currentView)?.icon || '📅'}</span>
+              <span className="current-view-indicator">{viewOptions.find(option => option.value === currentView)?.label || 'Semana'}</span>
               <FaChevronDown size={12} className={`chevron ${showViewSelector ? 'rotated' : ''}`} />
             </button>
             
@@ -232,16 +248,19 @@ interface Cita {
                     transform: 'translateY(130px)'
                   }}
                 >
-                {viewOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    className={`mobile-view-option ${currentView === option.value ? 'active' : ''}`}
-                    onClick={() => handleViewChange(option.value)}
-                  >
-                    <span className="view-icon">{option.icon}</span>
-                    {option.label}
-                  </button>
-                ))}
+                {viewOptions.map((option) => {
+                  const isActive = currentView === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      className={`mobile-view-option ${isActive ? 'active' : ''}`}
+                      onClick={() => handleViewChange(option.value)}
+                    >
+                      <span className="view-icon">{option.icon}</span>
+                      {option.label}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -267,7 +286,7 @@ interface Cita {
 };
 
 // Componente de calendario horizontal móvil
-const MobileHorizontalCalendar = ({ selectedDate, onDateSelect }: { selectedDate: Date, onDateSelect: (date: Date) => void }) => {
+const MobileHorizontalCalendar = ({ selectedDate, onDateSelect, currentView }: { selectedDate: Date, onDateSelect: (date: Date) => void, currentView: string }) => {
   const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
 
   useEffect(() => {
@@ -326,7 +345,7 @@ const MobileHorizontalCalendar = ({ selectedDate, onDateSelect }: { selectedDate
   return (
     <div className="mobile-horizontal-calendar">
       <div className="mobile-horizontal-header">
-        <p className="mobile-horizontal-hours">Horario: 9:00 - 19:00</p>
+        <p className="mobile-horizontal-hours">Horario: 8:00 - 22:00</p>
       </div>
       <div className="mobile-horizontal-nav">
         <button 
@@ -338,7 +357,10 @@ const MobileHorizontalCalendar = ({ selectedDate, onDateSelect }: { selectedDate
           ←
         </button>
         <span className="mobile-horizontal-nav-text">
-          {moment(currentWeek[0]).format('MMM D')} - {moment(currentWeek[6]).format('MMM D, YYYY')}
+          {currentView === 'day' && moment(currentWeek[0]).format('dddd, D [de] MMMM [de] YYYY')}
+          {currentView === 'week' && `${moment(currentWeek[0]).format('MMM D')} - ${moment(currentWeek[6]).format('MMM D, YYYY')}`}
+          {currentView === 'month' && moment(currentWeek[0]).format('MMMM [de] YYYY')}
+          {currentView === 'agenda' && `${moment(currentWeek[0]).format('MMM D')} - ${moment(currentWeek[6]).format('MMM D, YYYY')}`}
         </span>
         <button 
           className="mobile-horizontal-nav-button"
@@ -388,10 +410,15 @@ const CitasAdmin: React.FC = () => {
   const [periodicLoading, setPeriodicLoading] = useState(false);
   const [periodicMsg, setPeriodicMsg] = useState<string | null>(null);
 
+  // Nuevo estado para modal móvil de citas
+  const [showMobileCitaModal, setShowMobileCitaModal] = useState(false);
+  const [selectedMobileCita, setSelectedMobileCita] = useState<any>(null);
+
   // Verificar si es móvil
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth <= 768;
+      console.log('checkMobile ejecutado - window.innerWidth:', window.innerWidth, 'mobile:', mobile);
       setIsMobile(mobile);
       setShowMobileView(mobile);
     };
@@ -579,7 +606,19 @@ const CitasAdmin: React.FC = () => {
           backgroundColor: event.serviceColor || event.statusBgColor, // color del servicio como fondo
           border: 'none',
           borderLeft: event.serviceBorderColor ? `6px solid ${event.serviceBorderColor}` : undefined, // franja más intensa
-          color: event.serviceTextColor || '#0f172a'
+          color: event.serviceTextColor || '#0f172a',
+          width: '100%',
+          maxWidth: '100%',
+          minWidth: '100%',
+          height: '100%',
+          boxSizing: 'border-box',
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: '4px 8px',
+          fontSize: '0.85rem',
+          lineHeight: '1.2'
         }}
       >
         <div className="event-header">
@@ -602,13 +641,34 @@ const CitasAdmin: React.FC = () => {
     );
   };
 
-  // Estilo de contenedor del evento (por si el tema sobreescribe estilos internos)
-  const eventPropGetter = (_event: any) => {
+  // Estilo de contenedor del evento para posicionamiento correcto
+  const eventPropGetter = (event: any) => {
     const style: React.CSSProperties = {
       backgroundColor: 'transparent',
       border: 'none',
-      boxShadow: 'none'
+      boxShadow: 'none',
+      width: '100%',
+      maxWidth: '100%',
+      minWidth: '100%',
+      left: '0',
+      right: '0',
+      margin: '0',
+      padding: '0',
+      zIndex: 1
     };
+    
+    // Para vistas de tiempo (día/semana), permitir posicionamiento automático basado en hora
+    if (currentView === 'day' || currentView === 'week') {
+      style.position = 'absolute';
+      style.zIndex = 2;
+      // NO forzar top y bottom para permitir posicionamiento automático
+    } else {
+      // Para vista de mes, mantener posicionamiento relativo
+      style.position = 'relative';
+      style.top = '0';
+      style.bottom = '0';
+    }
+    
     return { style } as any;
   };
 
@@ -677,27 +737,92 @@ const CitasAdmin: React.FC = () => {
     });
   };
 
-  // Calcular ocupación del día
+  // Calcular ocupación del día con manejo correcto de citas dobles
   const getDayOccupancy = (date: Date) => {
     const dayEvents = getDayEvents(date);
-    const totalSlots = 10; // Slots disponibles por día (ajustar según horario)
     
-    // Calcular slots ocupados basándose en la duración real de cada cita
-    let occupiedSlots = 0;
+    // Horario de trabajo: 9:00 AM a 7:00 PM (10 horas = 600 minutos)
+    // Excluyendo hora de comida: 2:00 PM a 3:00 PM (1 hora = 60 minutos)
+    const horarioInicio = 9; // 9:00 AM
+    const horarioFin = 19; // 7:00 PM
+    const comidaInicio = 14; // 2:00 PM
+    const comidaFin = 15; // 3:00 PM
+    
+    // Calcular minutos disponibles excluyendo la hora de comida
+    const totalMinutosDisponibles = ((horarioFin - horarioInicio) * 60) - ((comidaFin - comidaInicio) * 60); // 600 - 60 = 540 minutos
+    
+    // Si no hay citas, el día está libre
+    if (dayEvents.length === 0) {
+      return {
+        occupied: 0,
+        total: totalMinutosDisponibles,
+        percentage: 0,
+        events: dayEvents,
+        minutosOcupados: 0
+      };
+    }
+    
+    // Crear timeline de ocupación por minutos (excluyendo hora de comida)
+    const timeline = new Array(totalMinutosDisponibles).fill(0);
+    
+    // Marcar cada minuto ocupado por las citas
     dayEvents.forEach(event => {
-      // Cada slot es de 45 minutos, calcular cuántos slots ocupa cada cita
-      const duracionMinutos = event.servicio?.duracionMinutos || 45;
-      const slotsOcupados = Math.ceil(duracionMinutos / 45);
-      occupiedSlots += slotsOcupados;
+      const startTime = moment(event.start);
+      const endTime = moment(event.end);
+      
+      // Solo procesar citas del día seleccionado
+      if (startTime.isSame(date, 'day')) {
+        const startHour = startTime.hour();
+        const startMinute = startTime.minute();
+        const endHour = endTime.hour();
+        const endMinute = endTime.minute();
+        
+        // Convertir a minutos desde el inicio del horario, excluyendo la hora de comida
+        let startMinutesFromStart = (startHour - horarioInicio) * 60 + startMinute;
+        let endMinutesFromStart = (endHour - horarioInicio) * 60 + endMinute;
+        
+        // Ajustar si la cita pasa por la hora de comida
+        if (startHour < comidaInicio && endHour > comidaInicio) {
+          // La cita cruza la hora de comida, ajustar el final
+          endMinutesFromStart -= 60; // Restar 1 hora (60 minutos)
+        } else if (startHour >= comidaInicio && startHour < comidaFin) {
+          // La cita empieza durante la hora de comida, no se puede programar
+          return; // Salir de esta iteración
+        } else if (endHour > comidaInicio && endHour <= comidaFin) {
+          // La cita termina durante la hora de comida, ajustar el inicio
+          startMinutesFromStart += 60; // Sumar 1 hora (60 minutos)
+        }
+        
+        // Marcar minutos ocupados en el timeline (solo si están en el rango válido)
+        for (let i = Math.max(0, startMinutesFromStart); i < Math.min(totalMinutosDisponibles, endMinutesFromStart); i++) {
+          if (i >= 0 && i < totalMinutosDisponibles) {
+            timeline[i] = Math.min(timeline[i] + 1, 2); // Máximo 2 citas simultáneas
+          }
+        }
+      }
     });
     
-    const percentage = Math.round((occupiedSlots / totalSlots) * 100);
+    // Calcular minutos ocupados (considerando citas dobles)
+    const minutosOcupados = timeline.reduce((total, ocupacion) => {
+      if (ocupacion === 1) return total + 1; // 1 cita = 1 minuto ocupado
+      if (ocupacion === 2) return total + 1; // 2 citas = 1 minuto ocupado (no se duplica)
+      return total; // 0 = libre
+    }, 0);
+    
+    // Calcular porcentaje
+    const percentage = Math.round((minutosOcupados / totalMinutosDisponibles) * 100);
+    
+    // Contar citas únicas (para mostrar en la UI)
+    const citasUnicas = dayEvents.length;
     
     return {
-      occupied: occupiedSlots,
-      total: totalSlots,
+      occupied: citasUnicas,
+      total: totalMinutosDisponibles / 60, // Convertir a horas para mostrar
       percentage: percentage,
-      events: dayEvents
+      events: dayEvents,
+      minutosOcupados: minutosOcupados,
+      citasSimultaneas: Math.max(...timeline), // Máximo número de citas simultáneas
+      horasOcupadas: (minutosOcupados / 60).toFixed(1)
     };
   };
 
@@ -714,12 +839,76 @@ const CitasAdmin: React.FC = () => {
 
   const handleNavigate = (newDate: Date, view: string, action: string) => {
     console.log('Navegación:', { newDate, view, action });
-    setSelectedDate(newDate);
+    
+    // Manejar diferentes acciones de navegación
+    switch (action) {
+      case 'PREV':
+        // Navegar a la fecha anterior según la vista actual
+        if (view === Views.MONTH) {
+          const prevMonth = moment(newDate).subtract(1, 'month').toDate();
+          setSelectedDate(prevMonth);
+        } else if (view === Views.WEEK) {
+          const prevWeek = moment(newDate).subtract(1, 'week').toDate();
+          setSelectedDate(prevWeek);
+        } else if (view === Views.DAY) {
+          const prevDay = moment(newDate).subtract(1, 'day').toDate();
+          setSelectedDate(prevDay);
+        } else if (view === Views.AGENDA) {
+          // Para agenda, cambiar por semanas en lugar de meses
+          const prevWeek = moment(newDate).subtract(1, 'week').toDate();
+          setSelectedDate(prevWeek);
+        } else {
+          setSelectedDate(newDate);
+        }
+        break;
+        
+      case 'NEXT':
+        // Navegar a la fecha siguiente según la vista actual
+        if (view === Views.MONTH) {
+          const nextMonth = moment(newDate).add(1, 'month').toDate();
+          setSelectedDate(nextMonth);
+        } else if (view === Views.WEEK) {
+          const nextWeek = moment(newDate).add(1, 'week').toDate();
+          setSelectedDate(nextWeek);
+        } else if (view === Views.DAY) {
+          const nextDay = moment(newDate).add(1, 'day').toDate();
+          setSelectedDate(nextDay);
+        } else if (view === Views.AGENDA) {
+          // Para agenda, cambiar por semanas en lugar de meses
+          const nextWeek = moment(newDate).add(1, 'week').toDate();
+          setSelectedDate(nextWeek);
+        } else {
+          setSelectedDate(newDate);
+        }
+        break;
+        
+      case 'TODAY':
+        // Ir a hoy
+        setSelectedDate(new Date());
+        break;
+        
+      default:
+        // Para otras acciones, usar la fecha proporcionada
+        setSelectedDate(newDate);
+        break;
+    }
   };
 
   const handleSelectEvent = (event: any) => {
     console.log('Evento seleccionado:', event);
-    setSelectedEvent(event);
+    console.log('isMobile:', isMobile);
+    console.log('showMobileView:', showMobileView);
+    
+    // En móvil, mostrar el modal móvil; en desktop, mostrar el modal normal
+    if (isMobile || showMobileView) {
+      console.log('Abriendo modal móvil');
+      setSelectedMobileCita(event);
+      setShowMobileCitaModal(true);
+      console.log('Estado actualizado - selectedMobileCita:', event, 'showMobileCitaModal: true');
+    } else {
+      console.log('Abriendo modal desktop');
+      setSelectedEvent(event);
+    }
   };
 
   const handleAddEvent = () => { /* reservado para futura creación rápida */ };
@@ -838,52 +1027,335 @@ const CitasAdmin: React.FC = () => {
     return <div className="error-message">{error}</div>;
   }
 
+  // Modales globales (disponibles para ambas vistas)
+  const renderModals = () => (
+    <>
+      {/* Modal móvil de detalles de cita */}
+      {console.log('Renderizando modal móvil - showMobileCitaModal:', showMobileCitaModal, 'selectedMobileCita:', selectedMobileCita)}
+      {showMobileCitaModal && selectedMobileCita && (
+        <div className="modal-overlay mobile-cita-modal-overlay" onClick={() => setShowMobileCitaModal(false)}>
+          <div className="modal-content mobile-cita-modal" onClick={e => e.stopPropagation()}>
+            
+            {/* Header del modal con diseño móvil */}
+            <div className="mobile-cita-modal-header">
+              <div className="mobile-cita-modal-icon">
+                📅
+              </div>
+              <div className="mobile-cita-modal-title">
+                <h3>Detalles de la Cita</h3>
+                <p>Información completa de la cita seleccionada</p>
+              </div>
+              <button 
+                onClick={() => setShowMobileCitaModal(false)} 
+                className="mobile-cita-modal-close"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Información de la cita */}
+            <div className="mobile-cita-info">
+              <div className="cita-info-section">
+                <div className="cita-info-header">
+                  <span className="cita-service-emoji">
+                    {selectedMobileCita.servicio?.emoji || '✂️'}
+                  </span>
+                  <span className="cita-service-name">
+                    {selectedMobileCita.servicio?.nombre || 'Servicio'}
+                  </span>
+                </div>
+                
+                <div className="cita-status-badge">
+                  <span className={`status-dot status-${selectedMobileCita.status}`}></span>
+                  {selectedMobileCita.statusLabel || 'Pendiente'}
+                </div>
+              </div>
+
+              <div className="cita-details-grid">
+                <div className="cita-detail-item">
+                  <div className="detail-icon">👤</div>
+                  <div className="detail-content">
+                    <div className="detail-label">Cliente</div>
+                    <div className="detail-value">{selectedMobileCita.usuario?.nombre || 'Sin nombre'}</div>
+                  </div>
+                </div>
+
+                <div className="cita-detail-item">
+                  <div className="detail-icon">📧</div>
+                  <div className="detail-content">
+                    <div className="detail-label">Email</div>
+                    <div className="detail-value">{selectedMobileCita.usuario?.email || 'Sin email'}</div>
+                  </div>
+                </div>
+
+                <div className="cita-detail-item">
+                  <div className="detail-icon">📱</div>
+                  <div className="detail-content">
+                    <div className="detail-label">Teléfono</div>
+                    <div className="detail-value">{selectedMobileCita.usuario?.telefono || 'Sin teléfono'}</div>
+                  </div>
+                </div>
+
+                <div className="cita-detail-item">
+                  <div className="detail-icon">🕐</div>
+                  <div className="detail-content">
+                    <div className="detail-label">Hora</div>
+                    <div className="detail-value">
+                      {moment(selectedMobileCita.start).format('HH:mm')} - {moment(selectedMobileCita.end).format('HH:mm')}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="cita-detail-item">
+                  <div className="detail-icon">📅</div>
+                  <div className="detail-content">
+                    <div className="detail-label">Fecha</div>
+                    <div className="detail-value">
+                      {moment(selectedMobileCita.start).format('dddd, D [de] MMMM [de] YYYY')}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="cita-detail-item">
+                  <div className="detail-icon">💰</div>
+                  <div className="detail-content">
+                    <div className="detail-label">Precio</div>
+                    <div className="detail-value price-value">
+                      {selectedMobileCita.servicio?.precio?.toFixed(2) || '0.00'} €
+                    </div>
+                  </div>
+                </div>
+
+                <div className="cita-detail-item">
+                  <div className="detail-icon">⏱️</div>
+                  <div className="detail-content">
+                    <div className="detail-label">Duración</div>
+                    <div className="detail-value">
+                      {selectedMobileCita.servicio?.duracionMinutos || 45} min
+                    </div>
+                  </div>
+                </div>
+
+                {selectedMobileCita.comentario && (
+                  <div className="cita-detail-item full-width">
+                    <div className="detail-icon">💬</div>
+                    <div className="detail-content">
+                      <div className="detail-label">Comentario</div>
+                      <div className="detail-value comment-value">
+                        "{selectedMobileCita.comentario}"
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Indicador de cita periódica si ya lo es */}
+              {selectedMobileCita.fija && (selectedMobileCita.periodicidadDias || 0) > 0 && (
+                <div className="cita-periodic-indicator">
+                  <div className="periodic-icon">
+                    <FaCalendarAlt />
+                  </div>
+                  <div className="periodic-text">
+                    <div className="periodic-title">Cita Periódica</div>
+                    <div className="periodic-subtitle">
+                      Se repite cada {selectedMobileCita.periodicidadDias} días
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Botones de acción */}
+            <div className="mobile-cita-actions">
+              {/* Botón de cita periódica solo si no es ya periódica */}
+              {!(selectedMobileCita.fija && (selectedMobileCita.periodicidadDias || 0) > 0) && (
+                <button 
+                  className="mobile-cita-periodic-btn"
+                  onClick={() => {
+                    setShowMobileCitaModal(false);
+                    handleCreatePeriodicAppointment(selectedMobileCita);
+                  }}
+                >
+                  <FaCalendarAlt />
+                  Hacer Periódica
+                </button>
+              )}
+              
+              <button 
+                className="mobile-cita-close-btn"
+                onClick={() => setShowMobileCitaModal(false)}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de periodicidad */}
+      {showPeriodicModal && (
+        <div className="modal-overlay periodic-modal-overlay" onClick={() => setShowPeriodicModal(false)}>
+          <div className="modal-content periodic-modal" onClick={e => e.stopPropagation()}>
+            
+            {/* Header del modal con diseño mejorado */}
+            <div className="periodic-modal-header">
+              <div className="periodic-modal-icon">
+                <FaCalendarAlt />
+              </div>
+              <div className="periodic-modal-title">
+                <h3>Crear Cita Periódica</h3>
+                <p>Configura la periodicidad de la cita</p>
+              </div>
+            </div>
+
+            <form onSubmit={handlePeriodicSubmit} className="periodic-form">
+              
+              {/* Información de la cita original con diseño mejorado */}
+              <div className="original-cita-info">
+                <div className="info-header">
+                  📅 Cita Original
+                </div>
+                <div className="info-details">
+                  <div className="info-row">
+                    <span className="info-label">Cliente:</span>
+                    <span className="info-value">{selectedCitaForPeriodic?.usuario?.nombre}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="info-label">Servicio:</span>
+                    <span className="info-value">{selectedCitaForPeriodic?.servicio?.nombre}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="info-label">Hora:</span>
+                    <span className="info-value">{moment(selectedCitaForPeriodic?.start).format('HH:mm')}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Periodicidad con diseño mejorado */}
+              <div className="form-group">
+                <label className="form-label">
+                  🔄 Periodicidad (días)
+                </label>
+                <input
+                  type="number"
+                  name="periodicidadDias"
+                  value={periodicForm.periodicidadDias}
+                  onChange={handlePeriodicFormChange}
+                  min="1"
+                  max="365"
+                  className="form-input"
+                  required
+                />
+                <div className="form-help">
+                  Ejemplo: 7 días = cada semana, 30 días = cada mes
+                </div>
+              </div>
+
+              {/* Fecha de inicio con diseño mejorado */}
+              <div className="form-group">
+                <label className="form-label">
+                  📅 Fecha de inicio
+                </label>
+                <input
+                  type="date"
+                  name="fechaInicio"
+                  value={periodicForm.fechaInicio}
+                  onChange={handlePeriodicFormChange}
+                  className="form-input"
+                  required
+                />
+                <div className="form-help">
+                  La primera cita se creará a partir de esta fecha
+                </div>
+              </div>
+
+              {/* Botones con diseño mejorado */}
+              <div className="form-buttons">
+                <button
+                  type="button"
+                  onClick={() => setShowPeriodicModal(false)}
+                  disabled={periodicLoading}
+                  className="btn btn-cancel"
+                >
+                  <FaTimes />
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={periodicLoading}
+                  className="btn btn-submit"
+                >
+                  <FaSave />
+                  {periodicLoading ? 'Creando...' : 'Crear Periódica'}
+                </button>
+              </div>
+
+              {/* Mensaje de estado con diseño mejorado */}
+              {periodicMsg && (
+                <div className={`status-message ${periodicMsg.startsWith('¡') ? 'success' : 'error'}`}>
+                  {periodicMsg}
+                </div>
+              )}
+            </form>
+          </div>
+        </div>
+      )}
+    </>
+  );
+
   // Vista móvil: usar react-big-calendar directamente para evitar solapados
   if (showMobileView) {
     return (
-      <div className="mobile-admin-container" style={{ height: '200vh' }}>
-        {/* Calendario principal */}
-        <Calendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          messages={calendarMessagesEs}
-          formats={calendarFormatsEs}
-          components={{ 
-            toolbar: (props: any) => (
-              <MobileCalendarToolbar
-                {...props}
-                selectedDate={selectedDate}
-                onDateSelect={(date: Date) => setSelectedDate(date)}
-              />
-            ), 
-            event: EventComponent 
-          }}
+              <>
+          {renderModals()}
+          <div className="mobile-admin-container" style={{ height: '200vh' }}>
+            {/* Calendario principal */}
+            <Calendar
+            localizer={localizer}
+            events={events}
+            startAccessor="start"
+            endAccessor="end"
+            messages={calendarMessagesEs}
+            formats={calendarFormatsEs}
+            components={{ 
+              toolbar: (props: any) => (
+                <MobileCalendarToolbar
+                  {...props}
+                  currentView={currentView}
+                  onViewChange={setCurrentView}
+                  selectedDate={selectedDate}
+                  onDateSelect={(date: Date) => setSelectedDate(date)}
+                />
+              ), 
+              event: EventComponent 
+            }}
             eventPropGetter={eventPropGetter}
-          popup
-          selectable
-          views={['day', 'week', 'month', 'agenda']}
-          defaultView={Views.DAY}
-          view={currentView}
-          onView={(v) => setCurrentView(v)}
-          onSelectEvent={handleSelectEvent}
-          onSelectSlot={handleSelectSlot}
-          onNavigate={(date) => setSelectedDate(date)}
-          date={selectedDate}
-          step={15}
-          timeslots={4}
-          min={moment().hour(9).minute(0).toDate()}
-          max={moment().hour(21).minute(15).toDate()}
-          style={{ height: 'calc(100% - 120px)' }}
-        />
-      </div>
+            popup
+            selectable
+            views={['day', 'week', 'month', 'agenda']}
+            defaultView={Views.DAY}
+            view={currentView}
+            onView={(v) => setCurrentView(v)}
+            onSelectEvent={handleSelectEvent}
+            onSelectSlot={handleSelectSlot}
+            onNavigate={(date) => setSelectedDate(date)}
+            date={selectedDate}
+            step={15}
+            timeslots={4}
+            min={moment().hour(8).minute(0).toDate()}
+            max={moment().hour(22).minute(0).toDate()}
+            style={{ height: 'calc(100% - 120px)' }}
+          />
+        </div>
+      </>
     );
   }
 
   // Vista desktop
   return (
-    <div className="citas-admin-container">
+    <>
+      {renderModals()}
+      <div className="citas-admin-container">
       <div className="citas-admin-header">
         <h1 className="citas-admin-title">Gestión de Citas</h1>
         <button 
@@ -925,10 +1397,13 @@ const CitasAdmin: React.FC = () => {
                         
                         <div className="occupancy-slots">
                           <div className="slots-number">
-                            {occupancy.occupied}/{occupancy.total}
+                            {occupancy.occupied} citas
                           </div>
                           <div className="slots-label">
-                            Citas ocupadas
+                            {occupancy.citasSimultaneas && occupancy.citasSimultaneas > 1 ? `Máx: ${occupancy.citasSimultaneas} simultáneas` : 'Sin solapamientos'}
+                          </div>
+                          <div className="lunch-note">
+                            🍽️ Excluye hora de comida (14:00-15:00)
                           </div>
                         </div>
                       </div>
@@ -942,6 +1417,11 @@ const CitasAdmin: React.FC = () => {
                            occupancy.percentage > 50 ? '🟡 Ocupación media' : 
                            occupancy.percentage > 0 ? '🟢 Ocupación baja' : '⚪ Sin citas'}
                         </div>
+                        {occupancy.horasOcupadas && parseFloat(occupancy.horasOcupadas) > 0 && (
+                          <div className="hours-occupied">
+                            ⏱️ {occupancy.horasOcupadas} horas ocupadas
+                          </div>
+                        )}
                       </div>
                       
                       {/* Barra de progreso */}
@@ -1067,6 +1547,8 @@ const CitasAdmin: React.FC = () => {
                   onViewChange={setCurrentView}
                   onNavigate={handleNavigate}
                   date={selectedDate}
+                  selectedDate={selectedDate}
+                  onDateSelect={(date: Date) => setSelectedDate(date)}
                 />
               ),
               event: EventComponent
@@ -1083,10 +1565,27 @@ const CitasAdmin: React.FC = () => {
             onView={(v) => setCurrentView(v)}
             step={15}
             timeslots={4}
-            min={moment().hour(9).minute(0).toDate()}
-            max={moment().hour(21).minute(15).toDate()}
+            min={moment().hour(8).minute(0).toDate()}
+            max={moment().hour(22).minute(0).toDate()}
             date={selectedDate}
             onDrillDown={(date) => { setSelectedDate(date); setCurrentView(Views.DAY); }}
+            slotPropGetter={(date: Date) => ({
+              style: {
+                backgroundColor: '#f8f9fa',
+                border: '1px solid #e9ecef'
+              }
+            })}
+            dayPropGetter={(date: Date) => ({
+              style: {
+                backgroundColor: moment(date).isSame(moment(), 'day') ? '#e3f2fd' : '#ffffff'
+              }
+            })}
+            slotGroupPropGetter={() => ({
+              style: {
+                minHeight: '60px'
+              }
+            })}
+
           />
         </div>
       </div>
@@ -1160,53 +1659,281 @@ const CitasAdmin: React.FC = () => {
       {selectedEvent && (
         <div className="modal-overlay" onClick={() => setSelectedEvent(null)}>
           <div className="modal-content event-details-modal" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setSelectedEvent(null)} className="modal-close-btn">×</button>
+            {/* Header del modal con diseño mejorado */}
+            <div className="event-modal-header">
+              <div className="event-modal-icon">
+                {selectedEvent.servicio?.emoji || '📅'}
+              </div>
+              <div className="event-modal-title">
+                <h3>Detalles de la Cita</h3>
+                <p>Información completa de la cita seleccionada</p>
+              </div>
+              <button onClick={() => setSelectedEvent(null)} className="event-modal-close-btn">×</button>
+            </div>
             
-            <h3 className="modal-title">Detalles de la cita</h3>
+            {/* Información principal de la cita */}
+            <div className="event-main-info">
+              <div className="event-service-card">
+                <div className="service-header">
+                  <span className="service-emoji">{selectedEvent.servicio?.emoji || '✂️'}</span>
+                  <span className="service-name">{selectedEvent.servicio?.nombre}</span>
+                </div>
+                <div className="service-description">{selectedEvent.servicio?.descripcion}</div>
+              </div>
+              
+              <div className="event-price-duration">
+                <div className="price-badge">
+                  <span className="price-label">Precio</span>
+                  <span className="price-value">{selectedEvent.servicio?.precio?.toFixed(2)} €</span>
+                </div>
+                <div className="duration-badge">
+                  <span className="duration-label">Duración</span>
+                  <span className="duration-value">{selectedEvent.servicio?.duracionMinutos} min</span>
+                </div>
+              </div>
+            </div>
             
-            <div className="event-details-list">
-              <div className="event-detail-item">
-                <b>Servicio:</b> <span className="detail-value">{selectedEvent.servicio?.nombre}</span>
+            {/* Detalles organizados en secciones */}
+            <div className="event-details-sections">
+              {/* Sección de cliente */}
+              <div className="detail-section">
+                <div className="section-header">
+                  <span className="section-icon">👤</span>
+                  <span className="section-title">Información del Cliente</span>
+                </div>
+                <div className="section-content">
+                  <div className="detail-row">
+                    <span className="detail-label">Nombre:</span>
+                    <span className="detail-value">{selectedEvent.usuario?.nombre}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Email:</span>
+                    <span className="detail-value">{selectedEvent.usuario?.email}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Teléfono:</span>
+                    <span className="detail-value">{selectedEvent.usuario?.telefono || 'No registrado'}</span>
+                  </div>
+                </div>
               </div>
-              <div className="event-detail-item">
-                <b>Descripción:</b> <span className="detail-value">{selectedEvent.servicio?.descripcion}</span>
+              
+              {/* Sección de fecha y hora */}
+              <div className="detail-section">
+                <div className="section-header">
+                  <span className="section-icon">🕐</span>
+                  <span className="section-title">Fecha y Hora</span>
+                </div>
+                <div className="section-content">
+                  <div className="detail-row">
+                    <span className="detail-label">Fecha:</span>
+                    <span className="detail-value">{moment(selectedEvent.start).format('dddd, D [de] MMMM [de] YYYY')}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Hora:</span>
+                    <span className="detail-value">{moment(selectedEvent.start).format('HH:mm')} - {moment(selectedEvent.end).format('HH:mm')}</span>
+                  </div>
+                </div>
               </div>
-              <div className="event-detail-item">
-                <b>Precio:</b> <span className="detail-price">{selectedEvent.servicio?.precio?.toFixed(2)} €</span>
-              </div>
-              <div className="event-detail-item">
-                <b>Duración:</b> <span>{selectedEvent.servicio?.duracionMinutos} min</span>
-              </div>
-              <div className="event-detail-item">
-                <b>Cliente:</b> <span className="detail-value">{selectedEvent.usuario?.nombre} ({selectedEvent.usuario?.email})</span>
-              </div>
-              <div className="event-detail-item">
-                <b>Fecha:</b> <span>{moment(selectedEvent.start).format('DD/MM/YYYY')}</span>
-              </div>
-              <div className="event-detail-item">
-                <b>Hora:</b> <span>{moment(selectedEvent.start).format('HH:mm')} - {moment(selectedEvent.end).format('HH:mm')}</span>
-              </div>
+              
+
+              
+              {/* Comentario si existe */}
               {selectedEvent.comentario && (
-                <div className="event-detail-item">
-                  <b>Comentario:</b> <span className="detail-value">{selectedEvent.comentario}</span>
+                <div className="detail-section">
+                  <div className="section-header">
+                    <span className="section-icon">💬</span>
+                    <span className="section-title">Comentario</span>
+                  </div>
+                  <div className="section-content">
+                    <div className="comment-content">
+                      "{selectedEvent.comentario}"
+                    </div>
+                  </div>
                 </div>
               )}
-              <div className="event-detail-item">
-                <b>Confirmada:</b> <span className={`confirmation-status ${selectedEvent.confirmada ? 'confirmed' : 'not-confirmed'}`}>
-                  {selectedEvent.confirmada ? 'Sí' : 'No'}
-                </span>
-              </div>
+              
+              {/* Información de cita periódica si existe */}
               {selectedEvent.fija && selectedEvent.periodicidadDias > 0 && (
-                <div className="periodic-info">
-                  <div className="periodic-header">
-                    <FaCalendarAlt />
-                    Cita Periódica
+                <div className="detail-section periodic-section">
+                  <div className="section-header">
+                    <span className="section-icon">🔄</span>
+                    <span className="section-title">Cita Periódica</span>
                   </div>
-                  <div className="periodic-details">
-                    Se repite cada <strong>{selectedEvent.periodicidadDias} días</strong>
+                  <div className="section-content">
+                    <div className="periodic-info">
+                      <div className="periodic-icon">
+                        <FaCalendarAlt />
+                      </div>
+                      <div className="periodic-text">
+                        <div className="periodic-title">Se repite cada {selectedEvent.periodicidadDias} días</div>
+                        <div className="periodic-subtitle">Esta cita se programa automáticamente</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal móvil de detalles de cita */}
+      {console.log('Renderizando modal móvil - showMobileCitaModal:', showMobileCitaModal, 'selectedMobileCita:', selectedMobileCita)}
+      {showMobileCitaModal && selectedMobileCita && (
+        <div className="modal-overlay mobile-cita-modal-overlay" onClick={() => setShowMobileCitaModal(false)}>
+          <div className="modal-content mobile-cita-modal" onClick={e => e.stopPropagation()}>
+            
+            {/* Header del modal con diseño móvil */}
+            <div className="mobile-cita-modal-header">
+              <div className="mobile-cita-modal-icon">
+                📅
+              </div>
+              <div className="mobile-cita-modal-title">
+                <h3>Detalles de la Cita</h3>
+                <p>Información completa de la cita seleccionada</p>
+              </div>
+              <button 
+                onClick={() => setShowMobileCitaModal(false)} 
+                className="mobile-cita-modal-close"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Información de la cita */}
+            <div className="mobile-cita-info">
+              <div className="cita-info-section">
+                <div className="cita-info-header">
+                  <span className="cita-service-emoji">
+                    {selectedMobileCita.servicio?.emoji || '✂️'}
+                  </span>
+                  <span className="cita-service-name">
+                    {selectedMobileCita.servicio?.nombre || 'Servicio'}
+                  </span>
+                </div>
+                
+                <div className="cita-status-badge">
+                  <span className={`status-dot status-${selectedMobileCita.status}`}></span>
+                  {selectedMobileCita.statusLabel || 'Pendiente'}
+                </div>
+              </div>
+
+              <div className="cita-details-grid">
+                <div className="cita-detail-item">
+                  <div className="detail-icon">👤</div>
+                  <div className="detail-content">
+                    <div className="detail-label">Cliente</div>
+                    <div className="detail-value">{selectedMobileCita.usuario?.nombre || 'Sin nombre'}</div>
+                  </div>
+                </div>
+
+                <div className="cita-detail-item">
+                  <div className="detail-icon">📧</div>
+                  <div className="detail-content">
+                    <div className="detail-label">Email</div>
+                    <div className="detail-value">{selectedMobileCita.usuario?.email || 'Sin email'}</div>
+                  </div>
+                </div>
+
+                <div className="cita-detail-item">
+                  <div className="detail-icon">📱</div>
+                  <div className="detail-content">
+                    <div className="detail-label">Teléfono</div>
+                    <div className="detail-value">{selectedMobileCita.usuario?.telefono || 'Sin teléfono'}</div>
+                  </div>
+                </div>
+
+                <div className="cita-detail-item">
+                  <div className="detail-icon">🕐</div>
+                  <div className="detail-content">
+                    <div className="detail-label">Hora</div>
+                    <div className="detail-value">
+                      {moment(selectedMobileCita.start).format('HH:mm')} - {moment(selectedMobileCita.end).format('HH:mm')}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="cita-detail-item">
+                  <div className="detail-icon">📅</div>
+                  <div className="detail-content">
+                    <div className="detail-label">Fecha</div>
+                    <div className="detail-value">
+                      {moment(selectedMobileCita.start).format('dddd, D [de] MMMM [de] YYYY')}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="cita-detail-item">
+                  <div className="detail-icon">💰</div>
+                  <div className="detail-content">
+                    <div className="detail-label">Precio</div>
+                    <div className="detail-value price-value">
+                      {selectedMobileCita.servicio?.precio?.toFixed(2) || '0.00'} €
+                    </div>
+                  </div>
+                </div>
+
+                <div className="cita-detail-item">
+                  <div className="detail-icon">⏱️</div>
+                  <div className="detail-content">
+                    <div className="detail-label">Duración</div>
+                    <div className="detail-value">
+                      {selectedMobileCita.servicio?.duracionMinutos || 45} min
+                    </div>
+                  </div>
+                </div>
+
+                {selectedMobileCita.comentario && (
+                  <div className="cita-detail-item full-width">
+                    <div className="detail-icon">💬</div>
+                    <div className="detail-content">
+                      <div className="detail-label">Comentario</div>
+                      <div className="detail-value comment-value">
+                        "{selectedMobileCita.comentario}"
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Indicador de cita periódica si ya lo es */}
+              {selectedMobileCita.fija && (selectedMobileCita.periodicidadDias || 0) > 0 && (
+                <div className="cita-periodic-indicator">
+                  <div className="periodic-icon">
+                    <FaCalendarAlt />
+                  </div>
+                  <div className="periodic-text">
+                    <div className="periodic-title">Cita Periódica</div>
+                    <div className="periodic-subtitle">
+                      Se repite cada {selectedMobileCita.periodicidadDias} días
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Botones de acción */}
+            <div className="mobile-cita-actions">
+              {/* Botón de cita periódica solo si no es ya periódica */}
+              {!(selectedMobileCita.fija && (selectedMobileCita.periodicidadDias || 0) > 0) && (
+                <button 
+                  className="mobile-cita-periodic-btn"
+                  onClick={() => {
+                    setShowMobileCitaModal(false);
+                    handleCreatePeriodicAppointment(selectedMobileCita);
+                  }}
+                >
+                  <FaCalendarAlt />
+                  Hacer Periódica
+                </button>
+              )}
+              
+              <button 
+                className="mobile-cita-close-btn"
+                onClick={() => setShowMobileCitaModal(false)}
+              >
+                Cerrar
+              </button>
             </div>
           </div>
         </div>
@@ -1320,7 +2047,8 @@ const CitasAdmin: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 

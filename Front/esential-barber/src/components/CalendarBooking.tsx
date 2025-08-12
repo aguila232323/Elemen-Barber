@@ -114,7 +114,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('.user-dropdown')) {
+      if (!target.closest('.user-dropdown-confirm')) {
         setMostrarDropdown(false);
       }
     };
@@ -206,38 +206,153 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
             {user?.rol === 'ADMIN' && (
               <div style={{marginBottom:10}}>
                 <b>Cliente:</b>
-                <div style={{position: 'relative', marginTop: 6}} className="user-dropdown">
-                  <input
-                    type="text"
-                    value={busquedaUsuario}
-                    onChange={(e) => {
-                      setBusquedaUsuario(e.target.value);
-                      setMostrarDropdown(true);
-                    }}
-                    onFocus={() => setMostrarDropdown(true)}
-                    placeholder="Buscar cliente..."
-                    style={{
-                      width: '100%',
-                      padding: '8px 12px',
-                      borderRadius: 6,
-                      border: '1px solid #ccc',
-                      fontSize: '1rem',
-                      outline: 'none'
-                    }}
-                  />
+                {usuarioSeleccionado && (
+                  <div style={{
+                    background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                    border: '2px solid #0d47a1',
+                    borderRadius: 10,
+                    padding: '12px 16px',
+                    marginTop: 8,
+                    marginBottom: 8,
+                    fontSize: '1rem',
+                    color: '#ffffff',
+                    fontWeight: 700,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+                    textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
+                  }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '1.2rem' }}>✅</span>
+                      <span>Cliente seleccionado: <strong>{busquedaUsuario}</strong></span>
+                    </span>
+                    <button
+                      onClick={() => {
+                        setUsuarioSeleccionado('');
+                        setBusquedaUsuario('');
+                        console.log('Usuario deseleccionado');
+                      }}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.2)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        color: '#ffffff',
+                        cursor: 'pointer',
+                        fontSize: '1.1rem',
+                        padding: '4px 8px',
+                        borderRadius: '6px',
+                        transition: 'all 0.2s ease',
+                        fontWeight: 'bold'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+                        e.currentTarget.style.transform = 'scale(1.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+                <div style={{position: 'relative', marginTop: 6}} className="user-dropdown-confirm">
+                  <div style={{
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
+                    <div style={{
+                      position: 'absolute',
+                      left: '12px',
+                      zIndex: 1,
+                      color: 'rgba(25,118,210,0.6)',
+                      fontSize: '1rem'
+                    }}>
+                      👤
+                    </div>
+                    <input
+                      type="text"
+                      value={busquedaUsuario}
+                      onChange={(e) => {
+                        setBusquedaUsuario(e.target.value);
+                        setMostrarDropdown(true);
+                        // Si el usuario empieza a escribir, limpiar la selección
+                        if (usuarioSeleccionado) {
+                          setUsuarioSeleccionado('');
+                        }
+                      }}
+                      onFocus={(e) => {
+                        setMostrarDropdown(true);
+                        (e.target as HTMLInputElement).style.border = '1px solid rgba(25, 118, 210, 0.5)';
+                        (e.target as HTMLInputElement).style.boxShadow = '0 0 0 2px rgba(25, 118, 210, 0.1)';
+                        // Cambiar color del placeholder al hacer focus
+                        (e.target as HTMLInputElement).style.setProperty('--placeholder-color', '#374151');
+                      }}
+                      onBlur={(e) => {
+                        (e.target as HTMLInputElement).style.border = '1px solid rgba(25, 118, 210, 0.2)';
+                        (e.target as HTMLInputElement).style.boxShadow = 'none';
+                        // Restaurar color del placeholder
+                        (e.target as HTMLInputElement).style.setProperty('--placeholder-color', '#6b7280');
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.target as HTMLInputElement).style.border = '1px solid rgba(25, 118, 210, 0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        if (document.activeElement !== e.target) {
+                          (e.target as HTMLInputElement).style.border = '1px solid rgba(25, 118, 210, 0.2)';
+                        }
+                      }}
+                      placeholder="Buscar cliente por nombre o email..."
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px 8px 40px',
+                        borderRadius: 8,
+                        border: '1px solid rgba(25, 118, 210, 0.2)',
+                        fontSize: '1rem',
+                        outline: 'none',
+                        background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                        color: '#1a202c',
+                        fontWeight: '500',
+                        transition: 'all 0.3s ease'
+                      }}
+                    />
+                    
+                    {/* Estilos CSS para el placeholder */}
+                    <style>
+                      {`
+                        .user-dropdown-confirm input::placeholder {
+                          color: #6b7280 !important;
+                          font-weight: 500 !important;
+                          opacity: 0.9 !important;
+                        }
+                        
+                        .user-dropdown-confirm input:focus::placeholder {
+                          color: #374151 !important;
+                          opacity: 1 !important;
+                        }
+                      `}
+                    </style>
+                  </div>
                   {mostrarDropdown && (
                     <div style={{
                       position: 'absolute',
                       top: '100%',
                       left: 0,
                       right: 0,
-                      background: '#fff',
-                      border: '1px solid #ccc',
-                      borderRadius: 6,
-                      maxHeight: 200,
+                      background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                      border: '1px solid rgba(25, 118, 210, 0.3)',
+                      borderRadius: 12,
+                      maxHeight: 300,
                       overflowY: 'auto',
                       zIndex: 1000,
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.15), 0 4px 16px rgba(25, 118, 210, 0.1)',
+                      backdropFilter: 'blur(10px)',
+                      marginTop: '4px',
+                      borderTop: 'none',
+                      borderTopLeftRadius: '0',
+                      borderTopRightRadius: '0'
                     }}>
                       {usuarios
                         .filter(usuario => 
@@ -248,25 +363,77 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
                           <div
                             key={usuario.id}
                             onClick={() => {
+                              console.log('Usuario seleccionado:', usuario);
                               setUsuarioSeleccionado(usuario.id);
                               setBusquedaUsuario(`${usuario.nombre} (${usuario.email})`);
                               setMostrarDropdown(false);
+                              console.log('Estado actualizado - usuarioSeleccionado:', usuario.id);
+                              console.log('Estado actualizado - busquedaUsuario:', `${usuario.nombre} (${usuario.email})`);
                             }}
                             style={{
-                              padding: '8px 12px',
+                              padding: '12px 16px',
                               cursor: 'pointer',
-                              borderBottom: '1px solid #eee',
-                              fontSize: '0.9rem'
+                              borderBottom: '1px solid rgba(25, 118, 210, 0.1)',
+                              fontSize: '0.9rem',
+                              transition: 'all 0.2s ease',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px'
                             }}
                             onMouseOver={(e) => {
-                              e.currentTarget.style.background = '#f5f5f5';
+                              e.currentTarget.style.background = 'linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(25, 118, 210, 0.05) 100%)';
+                              e.currentTarget.style.transform = 'translateX(4px)';
+                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(25, 118, 210, 0.15)';
                             }}
                             onMouseOut={(e) => {
-                              e.currentTarget.style.background = '#fff';
+                              e.currentTarget.style.background = 'transparent';
+                              e.currentTarget.style.transform = 'translateX(0)';
+                              e.currentTarget.style.boxShadow = 'none';
                             }}
                           >
-                            <div style={{fontWeight: 600}}>{usuario.nombre}</div>
-                            <div style={{color: '#666', fontSize: '0.8rem'}}>{usuario.email}</div>
+                            {/* Avatar/Icono del usuario */}
+                            <div style={{
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '50%',
+                              background: 'linear-gradient(135deg, #64b5f6 0%, #1976d2 100%)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#fff',
+                              fontSize: '0.9rem',
+                              fontWeight: 'bold',
+                              flexShrink: 0,
+                              boxShadow: '0 2px 8px rgba(25, 118, 210, 0.3)',
+                              border: '2px solid rgba(255,255,255,0.1)'
+                            }}>
+                              {usuario.nombre.charAt(0).toUpperCase()}
+                            </div>
+                            
+                            {/* Información del usuario */}
+                            <div style={{ flex: 1 }}>
+                              <div style={{
+                                fontWeight: '600',
+                                color: '#1976d2',
+                                marginBottom: '4px',
+                                fontSize: '1rem',
+                                textAlign: 'left',
+                                letterSpacing: '0.5px'
+                              }}>
+                                {usuario.nombre}
+                              </div>
+                              <div style={{
+                                color: 'rgba(25, 118, 210, 0.8)',
+                                fontSize: '0.85rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                textAlign: 'left'
+                              }}>
+                                <span style={{ fontSize: '0.75rem', opacity: '0.8' }}>📧</span>
+                                {usuario.email}
+                              </div>
+                            </div>
                           </div>
                         ))}
                     </div>
@@ -285,26 +452,43 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
               />
             </div>
           </div>
-          {confirmError && <div style={{color:'#e74c3c',marginBottom:10}}>{confirmError}</div>}
+          {confirmError && <div style={{color:'#e74c3c',marginBottom:10,fontWeight:600,textAlign:'center',padding:'8px',background:'rgba(231,76,60,0.1)',borderRadius:6}}>{confirmError}</div>}
+          
+          {/* Mensaje de error para admin sin cliente seleccionado */}
+          {user?.rol === 'ADMIN' && !usuarioSeleccionado && (
+            <div style={{
+              color: '#f39c12',
+              marginBottom: 10,
+              fontWeight: 600,
+              textAlign: 'center',
+              padding: '8px',
+              background: 'rgba(243,156,18,0.1)',
+              borderRadius: 6,
+              border: '1px solid rgba(243,156,18,0.3)'
+            }}>
+              ⚠️ Debes seleccionar un cliente para continuar
+            </div>
+          )}
           {confirmSuccess ? (
             <div style={{color:'#43b94a',fontWeight:700,fontSize:'1.1rem',marginBottom:16}}>¡Cita confirmada correctamente!</div>
           ) : (
             <button
               style={{
                 width: '100%',
-                background: '#1976d2',
+                background: user?.rol === 'ADMIN' && !usuarioSeleccionado ? '#ccc' : '#1976d2',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 8,
                 padding: '0.9rem 0',
                 fontSize: '1.15rem',
                 fontWeight: 800,
-                cursor: confirmLoading ? 'not-allowed' : 'pointer',
+                cursor: (confirmLoading || (user?.rol === 'ADMIN' && !usuarioSeleccionado)) ? 'not-allowed' : 'pointer',
                 marginBottom: 12,
-                boxShadow: '0 2px 8px rgba(25,118,210,0.08)',
-                letterSpacing: 1
+                boxShadow: user?.rol === 'ADMIN' && !usuarioSeleccionado ? 'none' : '0 2px 8px rgba(25,118,210,0.08)',
+                letterSpacing: 1,
+                transition: 'all 0.3s ease'
               }}
-              disabled={confirmLoading}
+              disabled={confirmLoading || (user?.rol === 'ADMIN' && !usuarioSeleccionado)}
               onClick={async () => {
                 // Validar que admin haya seleccionado un cliente
                 if (user?.rol === 'ADMIN' && !usuarioSeleccionado) {

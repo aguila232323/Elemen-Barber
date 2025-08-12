@@ -44,6 +44,25 @@
   gap: 4px;
   color: white;
   box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+  position: relative;
+  min-width: 120px;
+  justify-content: space-between;
+}
+
+.mobile-view-selector-button::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background: #ffffff;
+  transition: width 0.3s ease;
+}
+
+.mobile-view-selector-button:hover::after {
+  width: 80%;
 }
 
 .mobile-view-selector-button:hover {
@@ -63,6 +82,19 @@
   z-index: 99999;
   min-width: 120px;
   overflow: hidden;
+  animation: dropdownSlideIn 0.2s ease-out;
+  transform-origin: top right;
+}
+
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .mobile-view-option {
@@ -85,12 +117,35 @@
 }
 
 .mobile-view-option.active {
-  background-color: #e3f2fd;
-  color: #1976d2;
+  background-color: #1976d2 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  border-left: 4px solid #0d47a1 !important;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3) !important;
+  position: relative !important;
+}
+
+.mobile-view-option.active::before {
+  content: "✓" !important;
+  position: absolute !important;
+  right: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  font-weight: bold !important;
+  font-size: 16px !important;
+  color: #ffffff !important;
 }
 
 .mobile-view-option .view-icon {
   font-size: 16px;
+}
+
+.current-view-indicator {
+  font-size: 12px;
+  opacity: 0.9;
+  font-weight: 500;
+  margin-left: auto;
+  margin-right: 8px;
 }
 
 .mobile-horizontal-hours {
@@ -102,6 +157,138 @@
   letter-spacing: 0.5px;
 }
 
+/* Ocultar mobile-horizontal-hours y mobile-horizontal-days en vistas de mes y agenda */
+.rbc-month-view .mobile-horizontal-hours,
+.rbc-agenda-view .mobile-horizontal-hours,
+.rbc-month-view .mobile-horizontal-days,
+.rbc-agenda-view .mobile-horizontal-days {
+  display: none !important;
+}
+
+/* También ocultar en contenedores que contengan estas vistas */
+.rbc-month-view ~ .mobile-horizontal-hours,
+.rbc-agenda-view ~ .mobile-horizontal-hours,
+.rbc-month-view + .mobile-horizontal-hours,
+.rbc-agenda-view + .mobile-horizontal-hours,
+.rbc-month-view ~ .mobile-horizontal-days,
+.rbc-agenda-view ~ .mobile-horizontal-days,
+.rbc-month-view + .mobile-horizontal-days,
+.rbc-agenda-view + .mobile-horizontal-days {
+  display: none !important;
+}
+
+/* Ocultar cuando el calendario esté en modo mes o agenda */
+.rbc-calendar[data-view="month"] .mobile-horizontal-hours,
+.rbc-calendar[data-view="agenda"] .mobile-horizontal-hours,
+.rbc-calendar[data-view="month"] .mobile-horizontal-days,
+.rbc-calendar[data-view="agenda"] .mobile-horizontal-days {
+  display: none !important;
+}
+
+/* Ocultar en contenedores padre que tengan estas vistas */
+.citas-admin-container:has(.rbc-month-view) .mobile-horizontal-hours,
+.citas-admin-container:has(.rbc-agenda-view) .mobile-horizontal-hours,
+.citas-admin-container:has(.rbc-month-view) .mobile-horizontal-days,
+.citas-admin-container:has(.rbc-agenda-view) .mobile-horizontal-days {
+  display: none !important;
+}
+
+/* Fallback para navegadores que no soporten :has() */
+.rbc-month-view ~ * .mobile-horizontal-hours,
+.rbc-agenda-view ~ * .mobile-horizontal-hours,
+.rbc-month-view ~ * .mobile-horizontal-days,
+.rbc-agenda-view ~ * .mobile-horizontal-days {
+  display: none !important;
+}
+
+/* Ocultar cuando se detecte la vista actual */
+.view-month .mobile-horizontal-hours,
+.view-agenda .mobile-horizontal-hours,
+.view-month .mobile-horizontal-days,
+.view-agenda .mobile-horizontal-days {
+  display: none !important;
+}
+
+/* Ocultar en el contenedor principal cuando esté en estas vistas */
+.citas-admin-container.view-month .mobile-horizontal-hours,
+.citas-admin-container.view-agenda .mobile-horizontal-hours,
+.citas-admin-container.view-month .mobile-horizontal-days,
+.citas-admin-container.view-agenda .mobile-horizontal-days {
+  display: none !important;
+}
+
+/* Ocultar en la barra de herramientas cuando esté en estas vistas */
+.rbc-toolbar:has(.rbc-btn-group button[data-view="month"]) .mobile-horizontal-hours,
+.rbc-toolbar:has(.rbc-btn-group button[data-view="agenda"]) .mobile-horizontal-hours,
+.rbc-toolbar:has(.rbc-btn-group button[data-view="month"]) .mobile-horizontal-days,
+.rbc-toolbar:has(.rbc-btn-group button[data-view="agenda"]) .mobile-horizontal-days {
+  display: none !important;
+}
+
+/* Ocultar cuando se detecte que el botón de mes o agenda esté activo */
+.rbc-btn-group button[data-view="month"].rbc-active ~ .mobile-horizontal-hours,
+.rbc-btn-group button[data-view="agenda"].rbc-active ~ .mobile-horizontal-hours,
+.rbc-btn-group button[data-view="month"].rbc-active ~ .mobile-horizontal-days,
+.rbc-btn-group button[data-view="agenda"].rbc-active ~ .mobile-horizontal-days {
+  display: none !important;
+}
+
+/* Ocultar en el contenedor del calendario cuando esté en estas vistas */
+.calendar-container:has(.rbc-month-view) .mobile-horizontal-hours,
+.calendar-container:has(.rbc-agenda-view) .mobile-horizontal-hours,
+.calendar-container:has(.rbc-month-view) .mobile-horizontal-days,
+.calendar-container:has(.rbc-agenda-view) .mobile-horizontal-days {
+  display: none !important;
+}
+
+/* Ocultar cuando se detecte la vista actual usando clases CSS */
+.citas-admin-container.view-month .mobile-horizontal-hours,
+.citas-admin-container.view-month .mobile-horizontal-days,
+.citas-admin-container.view-agenda .mobile-horizontal-hours,
+.citas-admin-container.view-agenda .mobile-horizontal-days {
+  display: none !important;
+}
+
+/* Ocultar en el contenedor móvil cuando esté en estas vistas */
+.mobile-admin-container:has(.rbc-month-view) .mobile-horizontal-hours,
+.mobile-admin-container:has(.rbc-agenda-view) .mobile-horizontal-hours,
+.mobile-admin-container:has(.rbc-month-view) .mobile-horizontal-days,
+.mobile-admin-container:has(.rbc-agenda-view) .mobile-horizontal-days {
+  display: none !important;
+}
+
+/* Ocultar en la barra de herramientas móvil cuando esté en estas vistas */
+.mobile-calendar-toolbar:has(.rbc-month-view) .mobile-horizontal-hours,
+.mobile-calendar-toolbar:has(.rbc-agenda-view) .mobile-horizontal-hours,
+.mobile-calendar-toolbar:has(.rbc-month-view) .mobile-horizontal-days,
+.mobile-calendar-toolbar:has(.rbc-agenda-view) .mobile-horizontal-days {
+  display: none !important;
+}
+
+/* Fallbacks para navegadores que no soporten :has() */
+.rbc-month-view ~ .mobile-horizontal-hours,
+.rbc-agenda-view ~ .mobile-horizontal-hours,
+.rbc-month-view ~ .mobile-horizontal-days,
+.rbc-agenda-view ~ .mobile-horizontal-days {
+  display: none !important;
+}
+
+/* Ocultar cuando se detecte que estamos en vista de mes o agenda */
+.rbc-month-view ~ * .mobile-horizontal-hours,
+.rbc-agenda-view ~ * .mobile-horizontal-hours,
+.rbc-month-view ~ * .mobile-horizontal-days,
+.rbc-agenda-view ~ * .mobile-horizontal-days {
+  display: none !important;
+}
+
+/* Ocultar en el contenedor principal cuando se detecte la vista */
+.citas-admin-container .rbc-month-view ~ .mobile-horizontal-hours,
+.citas-admin-container .rbc-agenda-view ~ .mobile-horizontal-hours,
+.citas-admin-container .rbc-month-view ~ .mobile-horizontal-days,
+.citas-admin-container .rbc-agenda-view ~ .mobile-horizontal-days {
+  display: none !important;
+}
+
 .mobile-horizontal-days {
   display: flex;
   overflow-x: auto;
@@ -110,6 +297,11 @@
   background: #fff;
   border-bottom: 1px solid #e9ecef;
   scroll-behavior: smooth;
+  padding: 0 5px;
+  user-select: none;
+  touch-action: pan-x;
+  cursor: grab;
+  position: relative;
 }
 
 .mobile-horizontal-days::-webkit-scrollbar {
@@ -129,6 +321,8 @@
   flex: 1;
   animation: fadeInUp 0.3s ease-out;
   font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  user-select: none;
+  pointer-events: auto;
 }
 
 .mobile-horizontal-day:last-child {
@@ -166,6 +360,75 @@
   background: #f8f9fa;
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estados de swipe */
+.mobile-horizontal-days:active {
+  cursor: grabbing;
+}
+
+.mobile-horizontal-days.swiping {
+  cursor: grabbing;
+  transition: none;
+}
+
+.mobile-horizontal-days.swiping .mobile-horizontal-day {
+  transition: none;
+  pointer-events: none;
+}
+
+/* Indicador visual de swipe */
+.mobile-horizontal-days::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #1976d2, transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.mobile-horizontal-days.swiping::before {
+  opacity: 1;
+}
+
+/* Mejoras visuales para swipe */
+.mobile-horizontal-days.swiping {
+  box-shadow: inset 0 0 0 2px rgba(25, 118, 210, 0.1);
+}
+
+.mobile-horizontal-days.swiping .mobile-horizontal-day {
+  filter: brightness(0.95);
+}
+
+/* Indicador de dirección de swipe */
+.mobile-horizontal-days.swipe-left::after {
+  content: '←';
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #1976d2;
+  font-size: 18px;
+  font-weight: bold;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.mobile-horizontal-days.swipe-right::after {
+  content: '→';
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #1976d2;
+  font-size: 18px;
+  font-weight: bold;
+  opacity: 0.7;
+  pointer-events: none;
 }
 
 /* Indicador de día seleccionado */
@@ -242,6 +505,11 @@
     min-width: 50px;
     padding: 8px 12px;
   }
+  
+  .mobile-horizontal-days {
+    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 /* Mejoras para dispositivos táctiles */
@@ -263,6 +531,16 @@
   .mobile-horizontal-nav-button:active {
     background: #e3f2fd;
     transform: scale(0.95);
+  }
+  
+  .mobile-horizontal-days {
+    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+  }
+  
+  .mobile-horizontal-day {
+    scroll-snap-align: start;
   }
 }
 
@@ -472,7 +750,7 @@
   display: flex;
   width: 100%;
   height: 100%;
-  min-height: 300px; /* 10 horas * 30px */
+  min-height: 420px; /* 14 horas * 30px (8:00 - 22:00) */
   padding: 0; /* Eliminar padding */
   margin: 0; /* Eliminar márgenes */
 }
@@ -483,15 +761,64 @@
   height: 100%;
   overflow-y: auto; /* Restaurar overflow auto */
   overflow-x: hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  -ms-overflow-style: auto;
   padding: 0; /* Eliminar padding */
   margin: 0; /* Eliminar márgenes */
   gap: 0; /* Eliminar gap entre elementos */
+  position: relative; /* Para posicionamiento absoluto de eventos */
+  min-height: 420px; /* 14 horas * 30px (8:00 - 22:00) */
+  scroll-behavior: smooth;
 }
 
 .mobile-timeline-unified::-webkit-scrollbar {
-  display: none;
+  width: 6px;
+}
+
+.mobile-timeline-unified::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.mobile-timeline-unified::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.mobile-timeline-unified::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Indicador de scroll para el timeline móvil */
+.mobile-timeline::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px;
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 15;
+}
+
+/* Indicador adicional en la parte superior para mostrar que hay más contenido arriba */
+.mobile-timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 2px;
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 15;
 }
 
 .mobile-timeline-axis {
@@ -525,9 +852,39 @@
   border-bottom: 2px solid #e9ecef;
 }
 
+/* Destacar las últimas horas (20:00, 21:00, 22:00) */
+.mobile-timeline-slot.hour-slot:last-child,
+.mobile-timeline-slot.hour-slot:nth-last-child(2),
+.mobile-timeline-slot.hour-slot:nth-last-child(3) {
+  background: rgba(102, 126, 234, 0.08);
+  border-bottom: 2px solid #667eea;
+}
+
+/* Destacar las primeras horas (8:00, 9:00) para citas tempranas */
+.mobile-timeline-slot.hour-slot:first-child,
+.mobile-timeline-slot.hour-slot:nth-child(2) {
+  background: rgba(16, 185, 129, 0.08);
+  border-bottom: 2px solid #10b981;
+}
+
 .mobile-timeline-slot.quarter-slot {
   background: rgba(108, 117, 125, 0.02);
   border-bottom: 1px solid #f8f9fa;
+}
+
+/* Destacar los slots de 8:15, 8:30 y 8:45 para citas tempranas */
+.mobile-timeline-slot.quarter-slot:nth-child(2),
+.mobile-timeline-slot.quarter-slot:nth-child(3),
+.mobile-timeline-slot.quarter-slot:nth-child(4) {
+  background: rgba(16, 185, 129, 0.03);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* Destacar especialmente el slot de 8:00 para citas muy tempranas */
+.mobile-timeline-slot.hour-slot:first-child {
+  background: rgba(16, 185, 129, 0.1);
+  border-bottom: 2px solid #10b981;
+  border-left: 3px solid #10b981;
 }
 
 .mobile-timeline-time {
@@ -565,9 +922,10 @@
   flex: 1;
   position: relative;
   height: fit-content; /* Restaurar height fit-content */
-  min-height: 300px; /* 10 horas * 30px */
+  min-height: 420px; /* 14 horas * 30px (8:00 - 22:00) */
   padding: 0; /* Eliminar padding */
   margin: 0; /* Eliminar márgenes */
+  overflow: hidden; /* Evitar desbordamiento del contenedor */
   /* Debug temporal */
   border: 2px solid blue !important;
 }
@@ -610,6 +968,9 @@
   margin: 0; /* Eliminar márgenes */
   box-sizing: border-box;
   z-index: 10; /* Asegurar que esté por encima de otros elementos */
+  overflow: hidden; /* Evitar desbordamiento */
+  max-width: calc(100% - 2px); /* Asegurar que no se desborde */
+  max-height: 100%; /* Evitar desbordamiento vertical */
 }
 
 .mobile-event-card:hover {
@@ -817,11 +1178,11 @@
   }
   
   .mobile-timeline {
-    min-height: 300px; /* 10 horas * 30px */
+    min-height: 420px; /* 14 horas * 30px (8:00 - 22:00) */
   }
   
   .mobile-events-container {
-    min-height: 300px; /* 10 horas * 30px */
+    min-height: 420px; /* 14 horas * 30px (8:00 - 22:00) */
   }
   
   .mobile-timeline-slot.hour-slot .mobile-timeline-time {
@@ -896,10 +1257,10 @@
     height: 30px; /* Mantener altura fija */
   }
   .mobile-timeline {
-    min-height: 300px; /* 10 horas * 30px */
+    min-height: 420px; /* 14 horas * 30px (8:00 - 22:00) */
   }
   .mobile-events-container {
-    min-height: 300px; /* 10 horas * 30px */
+    min-height: 420px; /* 14 horas * 30px (8:00 - 22:00) */
   }
   .mobile-timeline-slot.hour-slot .mobile-timeline-time {
     font-size: 0.7rem;
@@ -942,10 +1303,10 @@
     height: 30px; /* Mantener altura fija */
   }
   .mobile-timeline {
-    min-height: 300px; /* 10 horas * 30px */
+    min-height: 420px; /* 14 horas * 30px (8:00 - 22:00) */
   }
   .mobile-events-container {
-    min-height: 300px; /* 10 horas * 30px */
+    min-height: 420px; /* 14 horas * 30px (8:00 - 22:00) */
   }
   .mobile-timeline-slot.hour-slot .mobile-timeline-time {
     font-size: 0.85rem;
@@ -979,10 +1340,10 @@
     height: 30px; /* Mantener altura fija */
   }
   .mobile-timeline {
-    min-height: 300px; /* 10 horas * 30px */
+    min-height: 420px; /* 14 horas * 30px (8:00 - 22:00) */
   }
   .mobile-events-container {
-    min-height: 300px; /* 10 horas * 30px */
+    min-height: 420px; /* 14 horas * 30px (8:00 - 22:00) */
   }
   .mobile-timeline-slot.hour-slot .mobile-timeline-time {
     font-size: 0.9rem;
@@ -1191,6 +1552,7 @@
   flex: 1;
   position: relative;
   border: 1px solid rgba(255,255,255,0.1);
+  z-index: 1 !important; /* Z-index bajo para no superponerse con la navbar */
 }
 
 /* ===== OCCUPANCY SECTION - MÁS COMPACTO ===== */
@@ -1206,9 +1568,10 @@
 .section-title {
   font-weight: 700;
   margin-bottom: 0.8rem;
-  color: #fff;
+  color: #ffffff !important;
   font-size: 1rem;
   text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .occupancy-content {
@@ -1343,6 +1706,66 @@
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
+}
+
+/* ===== TÍTULOS DE SECCIONES EN BLANCO ===== */
+.occupancy-section .section-title,
+.day-events-section .section-title {
+  color: #ffffff !important;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Asegurar que los títulos de ocupación y citas sean blancos */
+.occupancy-section h3,
+.day-events-section h3,
+.occupancy-section .section-title,
+.day-events-section .section-title {
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+/* Estilos específicos para los títulos con emojis */
+.occupancy-section .section-title,
+.day-events-section .section-title {
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
+}
+
+/* Asegurar que cualquier texto en estas secciones sea blanco */
+.occupancy-section,
+.day-events-section {
+  color: #ffffff;
+}
+
+.occupancy-section *,
+.day-events-section * {
+  color: inherit;
+}
+
+/* Estilos específicos para los títulos con emojis en las secciones */
+.occupancy-section h3,
+.day-events-section h3,
+.occupancy-section .section-title,
+.day-events-section .section-title,
+.occupancy-section span,
+.day-events-section span {
+  color: #ffffff !important;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Asegurar que los emojis y títulos sean blancos */
+.occupancy-section .section-title,
+.day-events-section .section-title {
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
 }
 
 .events-list {
@@ -1523,7 +1946,7 @@
   font-weight: 600;
   border-left: 6px solid transparent; /* el borde real se inyecta inline */
   position: relative;
-  overflow: hidden;
+  overflow: hidden; /* Evitar desbordamiento */
   cursor: pointer;
   transition: all 0.3s ease;
   height: 100%; /* Ocupar todo el espacio del slot */
@@ -1532,6 +1955,9 @@
   flex-direction: column;
   justify-content: space-between; /* Para distribuir contenido */
   min-height: 60px; /* Aumentado significativamente para eventos cortos */
+  box-sizing: border-box; /* Incluir padding y border en el tamaño total */
+  max-width: 100%; /* Evitar que se desborde horizontalmente */
+  max-height: 100%; /* Evitar que se desborde verticalmente */
 }
 
 /* Asegurar que el contenedor de RBC no tenga fondo ni padding */
@@ -2233,8 +2659,602 @@
 }
 
 .event-details-modal {
-  min-width: 320px;
-  max-width: 420px;
+  min-width: 500px;
+  max-width: 600px;
+  max-height: 90vh;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 24px;
+  padding: 0;
+  border: none;
+  box-shadow: 
+    0 32px 64px rgba(0, 0, 0, 0.2),
+    0 16px 32px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  backdrop-filter: blur(20px);
+}
+
+/* ===== HEADER DEL MODAL DE DETALLES ===== */
+.event-modal-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 28px 28px 24px 28px;
+  border-radius: 24px 24px 0 0;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  box-shadow: 
+    0 8px 32px rgba(102, 126, 234, 0.3),
+    0 4px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.event-modal-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  pointer-events: none;
+}
+
+.event-modal-icon {
+  font-size: 30px;
+  background: rgba(255, 255, 255, 0.2);
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.event-modal-icon:hover {
+  transform: scale(1.05) rotate(5deg);
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.event-modal-title h3 {
+  margin: 0 0 6px 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.event-modal-title p {
+  margin: 0;
+  font-size: 16px;
+  opacity: 0.95;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.event-modal-close-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  font-size: 26px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-left: auto;
+  position: relative;
+  z-index: 1;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.event-modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.event-modal-close-btn:active {
+  transform: scale(0.95);
+}
+
+/* ===== INFORMACIÓN PRINCIPAL DE LA CITA ===== */
+.event-main-info {
+  padding: 24px 24px 20px 24px;
+  background: #ffffff;
+}
+
+.event-service-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.event-service-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+.event-service-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 12px 40px rgba(102, 126, 234, 0.15),
+    0 6px 20px rgba(0, 0, 0, 0.1);
+  border-color: #667eea;
+}
+
+.event-service-card:hover::before {
+  opacity: 0.03;
+}
+
+.service-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.service-emoji {
+  font-size: 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+  border: 1px solid #667eea;
+}
+
+.service-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a !important;
+  line-height: 1.3;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.service-description {
+  color: #374151 !important;
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.event-price-duration {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.price-badge,
+.duration-badge {
+  flex: 1;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.price-badge::before,
+.duration-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+.price-badge::before {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.duration-badge::before {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+}
+
+.price-badge:hover,
+.duration-badge:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.12),
+    0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.price-badge:hover::before,
+.duration-badge:hover::before {
+  opacity: 0.05;
+}
+
+.price-label,
+.duration-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.price-value {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: #047857 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.duration-value {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1d4ed8 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== SECCIONES DE DETALLES ===== */
+.event-details-sections {
+  padding: 0 24px 32px 24px;
+  background: #ffffff;
+}
+
+.detail-section {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.detail-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+.detail-section:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 8px 30px rgba(102, 126, 234, 0.12),
+    0 4px 16px rgba(0, 0, 0, 0.08);
+  border-color: #667eea;
+}
+
+.detail-section:hover::before {
+  opacity: 0.02;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 16px 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #667eea;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 12px 12px 0 0;
+  border-left: 4px solid #667eea;
+}
+
+.section-icon {
+  font-size: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  border: 1px solid #667eea;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b !important;
+  line-height: 1.3;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.detail-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 0;
+}
+
+.detail-row:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.08);
+  border-color: #cbd5e1;
+}
+
+.detail-row:hover::before {
+  opacity: 0.02;
+}
+
+.detail-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a !important;
+  text-align: right;
+  max-width: 200px;
+  word-break: break-word;
+}
+
+/* Estilos específicos para comentarios */
+.comment-content {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 16px;
+  font-style: italic;
+  color: #374151 !important;
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+/* Estilos para cita periódica */
+.periodic-section {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-color: #0ea5e9;
+}
+
+.periodic-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e0f2fe;
+}
+
+.periodic-icon {
+  font-size: 24px;
+  background: #0ea5e9;
+  color: white;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.periodic-text {
+  flex: 1;
+}
+
+.periodic-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0ea5e9;
+  margin-bottom: 4px;
+}
+
+.periodic-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+/* ===== SCROLLBAR PERSONALIZADO PARA MODAL DE PC ===== */
+.event-details-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.event-details-modal::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.event-details-modal::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+  border: 2px solid #f1f5f9;
+}
+
+.event-details-modal::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ===== RESPONSIVE PARA MODAL DE PC ===== */
+@media (max-width: 768px) {
+  .event-details-modal {
+    min-width: 90vw;
+    max-width: 95vw;
+    max-height: 85vh;
+    margin: 20px;
+  }
+  
+  .event-modal-header {
+    padding: 20px 20px 16px 20px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+  }
+  
+  .event-modal-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    margin-left: 0;
+  }
+  
+  .event-main-info {
+    padding: 20px 20px 16px 20px;
+  }
+  
+  .event-details-sections {
+    padding: 0 20px 28px 20px;
+  }
+  
+  .event-price-duration {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .service-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+  
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    text-align: left;
+  }
+  
+  .detail-value {
+    text-align: left;
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .event-details-modal {
+    min-width: 95vw;
+    max-width: 95vw;
+    max-height: 80vh;
+    margin: 10px;
+  }
+  
+  .event-modal-header {
+    padding: 16px 16px 12px 16px;
+  }
+  
+  .event-main-info {
+    padding: 16px 16px 12px 16px;
+  }
+  
+  .event-details-sections {
+    padding: 0 16px 24px 16px;
+  }
+  
+  .event-service-card {
+    padding: 16px;
+  }
+  
+  .detail-section {
+    padding: 16px;
+  }
 }
 
 .periodic-modal {
@@ -2619,13 +3639,20 @@
 
 /* ===== ANIMATIONS ===== */
 @keyframes modalSlideIn {
-  from {
+  0% {
     opacity: 0;
-    transform: translateY(-50px) scale(0.9);
+    transform: translateY(40px) scale(0.85);
+    filter: blur(10px);
   }
-  to {
+  50% {
+    opacity: 0.8;
+    transform: translateY(20px) scale(0.95);
+    filter: blur(5px);
+  }
+  100% {
     opacity: 1;
     transform: translateY(0) scale(1);
+    filter: blur(0);
   }
 }
 
@@ -2659,6 +3686,106 @@
   overflow: hidden;
   background: #fff;
   box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  z-index: 1 !important; /* Z-index bajo para no superponerse con la navbar */
+  position: relative;
+}
+
+/* Evitar desbordamiento en todas las vistas del calendario */
+.rbc-time-view,
+.rbc-month-view {
+  overflow: hidden !important;
+  z-index: 1 !important; /* Z-index bajo para no superponerse con la navbar */
+  position: relative;
+}
+
+/* Habilitar scroll en la vista de agenda */
+.rbc-agenda-view {
+  overflow: visible !important;
+  z-index: 1 !important; /* Z-index bajo para no superponerse con la navbar */
+  position: relative;
+}
+
+.rbc-time-content,
+.rbc-month-row {
+  overflow: hidden !important;
+  z-index: 1 !important; /* Z-index bajo para no superponerse con la navbar */
+  position: relative;
+}
+
+.rbc-agenda-content {
+  overflow: auto !important;
+  z-index: 1 !important; /* Z-index bajo para no superponerse con la navbar */
+  position: relative;
+  max-height: 70vh !important;
+}
+
+/* Estilos específicos para la vista de agenda */
+.rbc-agenda-view {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin: 20px 0;
+}
+
+.rbc-agenda-view .rbc-agenda-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+}
+
+.rbc-agenda-view .rbc-agenda-table thead > tr > th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  padding: 16px 20px;
+  font-weight: 700;
+  font-size: 14px;
+  text-align: left;
+  border: none;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.rbc-agenda-view .rbc-agenda-table tbody > tr > td {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e9ecef;
+  vertical-align: top;
+}
+
+.rbc-agenda-view .rbc-agenda-table tbody > tr:nth-child(even) {
+  background: #f8f9fa;
+}
+
+.rbc-agenda-view .rbc-agenda-table tbody > tr:hover {
+  background: #e3f2fd;
+}
+
+/* Scrollbar personalizado para la agenda */
+.rbc-agenda-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.rbc-agenda-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.rbc-agenda-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+  border: 2px solid #f1f5f9;
+}
+
+.rbc-agenda-content::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Asegurar que los eventos no se desborden en las celdas */
+.rbc-event-content {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  max-width: 100% !important;
 }
 
 .rbc-toolbar {
@@ -2667,6 +3794,8 @@
   border-radius: 12px 12px 0 0;
   padding: 1rem 1.2rem;
   font-size: 1.1rem;
+  z-index: 1 !important; /* Z-index bajo para no superponerse con la navbar */
+  position: relative;
 }
 
 .rbc-btn-group button {
@@ -2698,11 +3827,15 @@
   display: flex;
   align-items: stretch;
   min-height: 40px; /* eventos más altos */
-  overflow: visible;
+  overflow: hidden !important; /* Evitar desbordamiento */
   margin-bottom: 2px;
   cursor: pointer;
   transition: box-shadow 0.18s;
   position: relative;
+  box-sizing: border-box !important; /* Incluir padding y border en el tamaño total */
+  max-width: 100% !important; /* Evitar desbordamiento horizontal */
+  max-height: 100% !important; /* Evitar desbordamiento vertical */
+  z-index: 2 !important; /* Z-index bajo para eventos, pero por encima del calendario base */
 }
 
 /* Hora que aparece dentro del bloque del evento (parte superior izquierda) */
@@ -2718,11 +3851,32 @@
 
 .rbc-event-content {
   white-space: normal !important;
-  overflow: visible !important;
+  overflow: hidden !important; /* Evitar desbordamiento */
+  text-overflow: ellipsis !important; /* Mostrar ... si el texto es muy largo */
+  max-width: 100% !important; /* Asegurar que no se desborde */
+  max-height: 100% !important; /* Asegurar que no se desborde verticalmente */
 }
 
 .rbc-today {
   background: #e3f2fd !important;
+}
+
+/* Asegurar que las celdas del calendario no se desborden */
+.rbc-day-slot,
+.rbc-month-cell,
+.rbc-agenda-date-cell,
+.rbc-agenda-time-cell,
+.rbc-agenda-event-cell {
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+/* Asegurar que los eventos se ajusten dentro de las celdas */
+.rbc-event {
+  max-width: calc(100% - 4px) !important; /* Dejar un pequeño margen */
+  max-height: calc(100% - 4px) !important; /* Dejar un pequeño margen */
+  left: 2px !important; /* Centrar el evento */
+  right: 2px !important; /* Centrar el evento */
 }
 
 .rbc-date-cell {
@@ -2755,6 +3909,23 @@
   color: #1976d2 !important;
   font-weight: 700 !important;
   cursor: pointer;
+}
+
+/* Mejorar la visualización de eventos superpuestos */
+.rbc-event.rbc-selected {
+  z-index: 10 !important; /* Asegurar que el evento seleccionado esté por encima */
+}
+
+/* Asegurar que los eventos no se superpongan incorrectamente */
+.rbc-time-slot {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* Ajustar el posicionamiento de eventos en slots de tiempo */
+.rbc-time-slot .rbc-event {
+  position: absolute !important;
+  z-index: 5 !important;
 }
 
 /* ===== AGENDA (Fecha / Hora / Cita) ===== */
@@ -4064,6 +5235,29 @@
   }
 }
 
+@keyframes swipeTransition {
+  from {
+    opacity: 0.8;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes swipeIndicator {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 .mobile-horizontal-day::after {
   content: '';
   position: absolute;
@@ -4140,4 +5334,631 @@
   .mobile-horizontal-nav-text {
     font-size: 0.8rem;
   }
+}
+
+/* Asegurar que los eventos ocupen todo el ancho disponible en la vista de semana */
+.rbc-time-view .rbc-event,
+.rbc-time-view .rbc-event-content {
+  width: 100% !important;
+  max-width: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Asegurar que el contenido del evento también ocupe todo el ancho */
+.rbc-time-view .rbc-event .custom-event-component {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Para la vista de semana específicamente */
+.rbc-time-view .rbc-time-content .rbc-event {
+  position: absolute !important;
+  width: calc(100% - 4px) !important; /* Dejar un pequeño margen */
+  left: 2px !important;
+  right: 2px !important;
+}
+
+/* Asegurar que las columnas de tiempo tengan el ancho correcto */
+.rbc-time-view .rbc-time-gutter,
+.rbc-time-view .rbc-time-content {
+  width: auto !important;
+}
+
+/* Hacer que las columnas de días ocupen el espacio disponible */
+.rbc-time-view .rbc-time-content .rbc-day-slot {
+  width: auto !important;
+  flex: 1 !important;
+}
+
+/* REGLAS MÁS ESPECÍFICAS Y AGRESIVAS PARA SOBRESCRIBIR RBC */
+.rbc-calendar.rbc-time-view .rbc-time-content .rbc-event,
+.rbc-calendar.rbc-time-view .rbc-time-content .rbc-event-content {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: absolute !important;
+}
+
+/* Forzar el ancho completo en todos los eventos de tiempo */
+.rbc-time-view .rbc-time-content .rbc-day-slot .rbc-event {
+  width: calc(100% - 8px) !important;
+  left: 4px !important;
+  right: 4px !important;
+  margin: 0 !important;
+  position: absolute !important;
+}
+
+/* Asegurar que el contenedor del evento ocupe todo el espacio */
+.rbc-time-view .rbc-event .custom-event-component,
+.rbc-time-view .rbc-event-content {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  box-sizing: border-box !important;
+  display: block !important;
+}
+
+/* Forzar el layout de las columnas de días */
+.rbc-time-view .rbc-time-content .rbc-day-slot {
+  width: auto !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+/* Asegurar que el contenido de tiempo se expanda */
+.rbc-time-view .rbc-time-content {
+  width: 100% !important;
+  flex: 1 !important;
+}
+
+/* ===== MODAL MÓVIL DE CITAS ===== */
+.mobile-cita-modal-overlay {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-cita-modal {
+  width: 95%;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 16px;
+  padding: 0;
+  border: none;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+.mobile-cita-modal-header {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 16px 16px 0 0;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.mobile-cita-modal-icon {
+  font-size: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mobile-cita-modal-title {
+  flex: 1;
+}
+
+.mobile-cita-modal-title h3 {
+  margin: 0 0 4px 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.mobile-cita-modal-title p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.9;
+  line-height: 1.3;
+}
+
+.mobile-cita-modal-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.mobile-cita-modal-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.mobile-cita-info {
+  padding: 20px;
+}
+
+.cita-info-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.cita-info-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cita-service-emoji {
+  font-size: 24px;
+  background: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cita-service-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.cita-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+  color: #ffffff !important;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.cita-status-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.status-dot.status-pendiente {
+  background: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.status-dot.status-en_curso {
+  background: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+}
+
+.status-dot.status-completada {
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+}
+
+.status-dot.status-cancelada {
+  background: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
+}
+
+.cita-details-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.cita-detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.cita-detail-item:hover {
+  background: #e9ecef;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cita-detail-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.detail-icon {
+  font-size: 20px;
+  background: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.detail-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.detail-value {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1a202c;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.price-value {
+  color: #059669;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.comment-value {
+  font-style: italic;
+  color: #4b5563;
+}
+
+.cita-periodic-indicator {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+.periodic-icon {
+  color: #d97706;
+  font-size: 24px;
+  background: white;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(245, 158, 11, 0.2);
+}
+
+.periodic-text {
+  flex: 1;
+}
+
+.periodic-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #92400e;
+  margin-bottom: 4px;
+}
+
+.periodic-subtitle {
+  font-size: 14px;
+  color: #a16207;
+  line-height: 1.3;
+}
+
+.mobile-cita-actions {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid #e9ecef;
+}
+
+.mobile-cita-periodic-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.mobile-cita-periodic-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+.mobile-cita-periodic-btn svg {
+  font-size: 18px;
+}
+
+.mobile-cita-close-btn {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobile-cita-close-btn:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+/* Responsive para el modal móvil */
+@media (max-width: 480px) {
+  .mobile-cita-modal {
+    width: 98%;
+    max-height: 95vh;
+  }
+  
+  .mobile-cita-modal-header {
+    padding: 16px;
+  }
+  
+  .mobile-cita-modal-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+  
+  .mobile-cita-modal-title h3 {
+    font-size: 18px;
+  }
+  
+  .mobile-cita-modal-title p {
+    font-size: 13px;
+  }
+  
+  .mobile-cita-info {
+    padding: 16px;
+  }
+  
+  .cita-info-section {
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .cita-service-emoji {
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+  
+  .cita-service-name {
+    font-size: 16px;
+  }
+  
+  .cita-detail-item {
+    padding: 12px;
+    gap: 10px;
+  }
+  
+  .detail-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+  }
+  
+  .detail-value {
+    font-size: 15px;
+  }
+  
+  .mobile-cita-actions {
+    padding: 16px;
+  }
+  
+  .mobile-cita-periodic-btn,
+  .mobile-cita-close-btn {
+    padding: 14px 20px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 360px) {
+  .mobile-cita-modal-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+  }
+  
+  .mobile-cita-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+  }
+  
+  .cita-info-section {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  
+  .cita-details-grid {
+    gap: 12px;
+  }
+  
+  .cita-detail-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+  
+  .detail-icon {
+    align-self: center;
+  }
+}
+
+/* ===== CONFIGURACIÓN PARA HORAS EXTENDIDAS HASTA 22:00 ===== */
+/* Asegurar que el calendario tenga scroll vertical para mostrar todas las horas */
+.rbc-time-view {
+  overflow-y: auto !important;
+  max-height: none !important;
+  z-index: 1 !important; /* Z-index bajo para no superponerse con la navbar */
+  position: relative;
+}
+
+.rbc-time-content {
+  overflow-y: auto !important;
+  max-height: none !important;
+  z-index: 1 !important; /* Z-index bajo para no superponerse con la navbar */
+  position: relative;
+}
+
+/* Asegurar que la barra lateral de horas se vea completamente */
+.rbc-time-view .rbc-time-gutter {
+  overflow: visible !important;
+  max-height: none !important;
+  z-index: 1 !important; /* Z-index bajo para no superponerse con la navbar */
+  position: relative;
+}
+
+/* Asegurar que las horas hasta las 22:00 sean visibles */
+.rbc-time-view .rbc-time-slot {
+  min-height: 30px !important;
+  height: 30px !important;
+}
+
+/* Asegurar que el scroll funcione correctamente en la barra lateral */
+.rbc-time-view .rbc-time-gutter .rbc-timeslot-group {
+  overflow: visible !important;
+}
+
+/* Eliminar cualquier límite de altura que pueda cortar las horas */
+.rbc-time-view .rbc-time-content,
+.rbc-time-view .rbc-time-gutter {
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+}
+
+/* Asegurar que el scroll vertical funcione correctamente */
+.rbc-time-view {
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+}
+
+/* ===== ESTILOS ESPECÍFICOS PARA HORAS HASTA 22:00 ===== */
+/* Asegurar que todas las horas sean visibles en la barra lateral */
+.rbc-time-view .rbc-time-gutter .rbc-time-slot {
+  height: 30px !important;
+  min-height: 30px !important;
+  line-height: 30px !important;
+  padding: 0 8px !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
+  border-bottom: 1px solid #e9ecef !important;
+}
+
+/* Asegurar que el header del gutter tenga el ancho correcto */
+.rbc-time-view .rbc-time-header-gutter {
+  min-width: 80px !important;
+  width: 80px !important;
+  max-width: 80px !important;
+  flex-shrink: 0 !important;
+  background: #f8f9fa !important;
+  border-right: 2px solid #e9ecef !important;
+}
+
+/* Asegurar que las columnas de días tengan el ancho correcto */
+.rbc-time-view .rbc-time-content .rbc-day-slot {
+  min-width: 150px !important;
+  width: auto !important;
+  flex: 1 !important;
+}
+
+/* Asegurar que el scroll horizontal funcione correctamente */
+.rbc-time-view .rbc-time-content {
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+  min-width: 800px !important;
+}
+
+/* Asegurar que el calendario completo tenga scroll vertical */
+.rbc-calendar.rbc-time-view {
+  overflow-y: auto !important;
+  max-height: none !important;
+  z-index: 1 !important; /* Z-index bajo para no superponerse con la navbar */
+  position: relative;
 }
