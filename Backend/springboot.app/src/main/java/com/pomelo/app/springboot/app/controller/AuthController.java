@@ -14,6 +14,7 @@ import com.pomelo.app.springboot.app.config.JwtUtils;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +30,9 @@ public class AuthController {
     private final UsuarioService usuarioService;
     private final UsuarioRepository usuarioRepository;
     private final JwtUtils jwtUtils;
+    
+    @Value("${app.google.redirect-uri}")
+    private String googleRedirectUri;
 
     public AuthController(AuthService authService, GoogleAuthService googleAuthService, GoogleCalendarService googleCalendarService, UsuarioService usuarioService, UsuarioRepository usuarioRepository, JwtUtils jwtUtils) {
         this.authService = authService;
@@ -199,7 +203,7 @@ public class AuthController {
                 // Intercambiar código por tokens
                 com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse tokenResponse = 
                     flow.newTokenRequest(code)
-                        .setRedirectUri(System.getProperty("app.google.redirect-uri", "http://localhost:3000/auth/google/callback"))
+                        .setRedirectUri(googleRedirectUri)
                         .execute();
 
                 // Calcular fecha de expiración

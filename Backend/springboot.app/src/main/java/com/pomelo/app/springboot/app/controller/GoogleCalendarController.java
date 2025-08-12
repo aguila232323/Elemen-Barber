@@ -13,6 +13,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -31,6 +33,9 @@ public class GoogleCalendarController {
 
     @Value("${google.client.secret}")
     private String googleClientSecret;
+    
+    @Value("${app.google.redirect-uri}")
+    private String redirectUri;
 
     private static final NetHttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     private static final GsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
@@ -62,7 +67,7 @@ public class GoogleCalendarController {
                     .build();
 
             String authorizationUrl = flow.newAuthorizationUrl()
-                    .setRedirectUri("http://localhost:3000/auth/google/callback")
+                    .setRedirectUri(redirectUri)
                     .build();
 
             return ResponseEntity.ok(Map.of(
@@ -109,7 +114,7 @@ public class GoogleCalendarController {
 
             // Intercambiar código por tokens
             GoogleTokenResponse tokenResponse = flow.newTokenRequest(code)
-                    .setRedirectUri("http://localhost:3000/auth/google/callback")
+                    .setRedirectUri(redirectUri)
                     .execute();
 
             // Calcular fecha de expiración
@@ -155,7 +160,7 @@ public class GoogleCalendarController {
                     .build();
 
             String authorizationUrl = flow.newAuthorizationUrl()
-                    .setRedirectUri("http://localhost:3000/auth/google/callback")
+                    .setRedirectUri(redirectUri)
                     .build();
 
             return ResponseEntity.ok(Map.of(
