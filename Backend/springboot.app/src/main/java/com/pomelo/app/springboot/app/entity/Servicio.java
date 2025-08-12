@@ -22,10 +22,10 @@ public class Servicio {
     @Column(nullable = false)
     private Integer duracionMinutos;
 
-    @Column(length = 10, columnDefinition = "VARCHAR(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+    @Column(length = 10)
     private String emoji;
 
-    @Column(length = 200, columnDefinition = "VARCHAR(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+    @Column(length = 200)
     private String textoDescriptivo;
 
     @Column(length = 7, name = "color_google_calendar")
