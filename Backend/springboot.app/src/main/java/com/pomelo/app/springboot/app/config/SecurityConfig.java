@@ -42,7 +42,6 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/verificacion/**").permitAll() // Permitir endpoints de verificación
                 .requestMatchers("/h2-console/**").permitAll()
-                .requestMatchers("/test", "/").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/servicios").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/servicios").hasRole("ADMIN")

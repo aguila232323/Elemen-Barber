@@ -108,27 +108,7 @@ public class EmailService {
         }
     }
 
-    @Async
-    public void enviarEmailPrueba(String emailDestino) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            
-            helper.setTo(emailDestino);
-            helper.setSubject("🧪 Prueba de Email - Elemen");
-            helper.setFrom("Elemen Barber <elemenbarber@gmail.com>");
-            
-            String htmlContent = crearEmailPruebaHTML();
-            helper.setText(htmlContent, true);
-            
-            mailSender.send(message);
-            System.out.println("✅ Email de prueba enviado a: " + emailDestino);
-            
-        } catch (MessagingException e) {
-            System.err.println("❌ Error al enviar email de prueba: " + e.getMessage());
-            throw new RuntimeException("Error al enviar email de prueba", e);
-        }
-    }
+
 
     @Async
     public void enviarCodigoVerificacion(String emailDestino, String nombreUsuario, String codigoVerificacion) {
@@ -607,111 +587,7 @@ public class EmailService {
             """, nombreCliente, nombreServicio, fechaHora, duracion, precio);
     }
 
-    private String crearEmailPruebaHTML() {
-        return """
-            <!DOCTYPE html>
-            <html lang="es">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Prueba de Email</title>
-                <style>
-                    body {
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        line-height: 1.6;
-                        color: #333;
-                        background-color: #f4f4f4;
-                        margin: 0;
-                        padding: 0;
-                    }
-                    .container {
-                        max-width: 600px;
-                        margin: 20px auto;
-                        background: white;
-                        border-radius: 10px;
-                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                        overflow: hidden;
-                    }
-                    .header {
-                        background: linear-gradient(135deg, #2c3e50 0%%, #34495e 50%%, #1a1a1a 100%%);
-                        color: white;
-                        padding: 30px;
-                        text-align: center;
-                    }
-                    .header h1 {
-                        margin: 0;
-                        font-size: 28px;
-                        font-weight: 700;
-                        text-transform: uppercase;
-                        letter-spacing: 2px;
-                    }
-                    .header .logo {
-                        width: 80px;
-                        height: auto;
-                        margin-bottom: 15px;
-                        border-radius: 8px;
-                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                    }
-                    .content {
-                        padding: 40px 30px;
-                    }
-                    .success-message {
-                        background: #d4edda;
-                        border: 1px solid #c3e6cb;
-                        border-radius: 8px;
-                        padding: 20px;
-                        margin: 20px 0;
-                        color: #155724;
-                        text-align: center;
-                    }
-                    .footer {
-                        background: #f8f9fa;
-                        padding: 25px 30px;
-                        text-align: center;
-                        border-top: 1px solid #e9ecef;
-                    }
-                    .footer-logo {
-                        font-size: 24px;
-                        font-weight: 700;
-                        margin-bottom: 10px;
-                        text-transform: uppercase;
-                        letter-spacing: 1px;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <img src="https://esentialbarber.com/logoElemental.png" alt="Elemen" class="logo">
-                        <h1>Elemen</h1>
-                        <p>Prueba de Email</p>
-                    </div>
-                    
-                    <div class="content">
-                        <div class="success-message">
-                            <strong>✅ ¡Sistema de correo funcionando correctamente!</strong>
-                        </div>
-                        
-                        <p>Este es un email de prueba para verificar que el sistema de correo funciona correctamente.</p>
-                        
-                        <p>Si recibes este email, significa que:</p>
-                        <ul>
-                            <li>✅ La configuración SMTP está funcionando</li>
-                            <li>✅ Los emails se envían correctamente</li>
-                            <li>✅ El formato HTML se renderiza bien</li>
-                            <li>✅ El sistema está listo para producción</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="footer">
-                        <div class="footer-logo">Elemen</div>
-                        <p>¡Gracias por probar nuestro sistema!</p>
-                    </div>
-                </div>
-            </body>
-            </html>
-            """;
-    }
+
 
     private String crearEmailVerificacionHTML(String nombreUsuario, String codigoVerificacion) {
         return String.format("""

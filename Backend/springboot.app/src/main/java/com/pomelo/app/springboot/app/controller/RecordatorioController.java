@@ -61,95 +61,13 @@ public class RecordatorioController {
         }
     }
 
-    /**
-     * Envía un email de prueba
-     */
-    @PostMapping("/enviar-prueba")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> enviarEmailPrueba(@RequestParam String email) {
-        try {
-            System.out.println("🧪 ENVIANDO EMAIL DE PRUEBA A: " + email);
-            emailService.enviarEmailPrueba(email);
-            return ResponseEntity.ok().body("Email de prueba enviado a: " + email);
-        } catch (Exception e) {
-            System.err.println("❌ Error al enviar email de prueba: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
-        }
-    }
 
-    /**
-     * Prueba la configuración de email
-     */
-    @GetMapping("/test-email-config")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> testEmailConfig() {
-        try {
-            return ResponseEntity.ok().body(Map.of(
-                "host", "smtp.gmail.com",
-                "port", 587,
-                "username", "elemenbarber@gmail.com",
-                "auth", true,
-                "starttls", true,
-                "debug", true,
-                "timeout", 5000,
-                "connectionTimeout", 5000,
-                "writeTimeout", 5000
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
-        }
-    }
 
-    /**
-     * Obtiene las citas próximas (para debugging)
-     */
-    @GetMapping("/citas-proximas")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> obtenerCitasProximas() {
-        try {
-            LocalDateTime ahora = LocalDateTime.now();
-            LocalDateTime unaHoraDespues = ahora.plusHours(1);
-            
-            List<Cita> citasProximas = citaRepository.findCitasProximas(ahora, unaHoraDespues);
-            
-            return ResponseEntity.ok().body(Map.of(
-                "horaActual", ahora.toString(),
-                "horaLimite", unaHoraDespues.toString(),
-                "citasEncontradas", citasProximas.size(),
-                "citas", citasProximas.stream().map(cita -> Map.of(
-                    "id", cita.getId(),
-                    "cliente", cita.getCliente().getNombre(),
-                    "email", cita.getCliente().getEmail(),
-                    "servicio", cita.getServicio().getNombre(),
-                    "fechaHora", cita.getFechaHora().toString(),
-                    "estado", cita.getEstado()
-                )).toList()
-            ));
-        } catch (Exception e) {
-            System.err.println("❌ Error al obtener citas próximas: " + e.getMessage());
-            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
-        }
-    }
 
-    /**
-     * Obtiene el estado del sistema de recordatorios
-     */
-    @GetMapping("/estado")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> obtenerEstadoSistema() {
-        try {
-            return ResponseEntity.ok().body(Map.of(
-                "sistemaActivo", true,
-                "schedulingHabilitado", true,
-                "intervaloVerificacion", "5 minutos",
-                "horaActual", LocalDateTime.now().toString(),
-                "proximaVerificacion", LocalDateTime.now().plusMinutes(5).toString()
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
-        }
-    }
+
+
+
+
 
     /**
      * Ejecuta manualmente el recordatorio de reseñas
