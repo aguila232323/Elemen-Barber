@@ -870,20 +870,24 @@ const CitasAdmin: React.FC = () => {
       return total; // 0 = libre
     }, 0);
     
-    // Calcular porcentaje
-    const percentage = Math.round((minutosOcupados / totalMinutosDisponibles) * 100);
-    
-    // Contar citas únicas (para mostrar en la UI)
+    // Calcular porcentaje basado en 14 citas como 100% (situación normal)
+    // 14 citas = 100%, pero puede superar el 100% en situaciones especiales
     const citasUnicas = dayEvents.length;
+    const porcentajeBase = (citasUnicas / 14) * 100;
+    
+    // El porcentaje puede superar el 100% sin problema
+    const percentage = Math.round(porcentajeBase);
     
     return {
       occupied: citasUnicas,
-      total: totalMinutosDisponibles / 60, // Convertir a horas para mostrar
+      total: 14, // 14 citas como referencia del 100%
       percentage: percentage,
       events: dayEvents,
       minutosOcupados: minutosOcupados,
       citasSimultaneas: Math.max(...timeline), // Máximo número de citas simultáneas
-      horasOcupadas: (minutosOcupados / 60).toFixed(1)
+      horasOcupadas: (minutosOcupados / 60).toFixed(1),
+      citasReferencia: 14, // Citas de referencia para el 100%
+      porcentajeReal: Math.round((minutosOcupados / totalMinutosDisponibles) * 100) // Porcentaje real basado en tiempo
     };
   };
 
@@ -1546,14 +1550,13 @@ const CitasAdmin: React.FC = () => {
                         
                         <div className="occupancy-slots">
                           <div className="slots-number">
-                            {occupancy.occupied} citas
+                            {occupancy.occupied} de {occupancy.citasReferencia} citas
                           </div>
-                          <div className="slots-label">
-                            {occupancy.citasSimultaneas && occupancy.citasSimultaneas > 1 ? `Máx: ${occupancy.citasSimultaneas} simultáneas` : 'Sin solapamientos'}
-                          </div>
-                          <div className="lunch-note">
-                            🍽️ Excluye hora de comida (14:00-15:00)
-                          </div>
+                          {occupancy.percentage > 100 && (
+                            <div className="overflow-note">
+                              ⚠️ Supera capacidad normal
+                            </div>
+                          )}
                         </div>
                       </div>
                       

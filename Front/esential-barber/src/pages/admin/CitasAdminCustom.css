@@ -1768,6 +1768,26 @@
   letter-spacing: 0.5px;
 }
 
+/* ===== NOTA DE SUPERACIÓN DE CAPACIDAD ===== */
+.overflow-note {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+  text-align: center;
+  margin-top: 4px;
+  box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+
 .events-list {
   flex: 1;
   overflow-y: auto;

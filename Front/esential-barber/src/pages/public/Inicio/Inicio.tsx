@@ -16,7 +16,7 @@ const reviews = [
     avatar: '👨‍💼'
   },
   { 
-    text: 'El mejor corte de mi vida, muy recomendado. Luis es un verdadero profesional.', 
+            text: 'El mejor corte de mi vida, muy recomendado. Luis García es un verdadero profesional.', 
     author: 'Carlos Gómez', 
     rating: 5,
     company: 'Cliente VIP',
@@ -149,7 +149,7 @@ const Inicio: React.FC = () => {
             <FaUser />
           </span>
           <span className={styles.infoContent}>
-            <span className={styles.infoTitle}>Luis</span>
+                            <span className={styles.infoTitle}>Luis García</span>
             <span className={styles.infoSubtitle}>
               <span className={styles.desktopText}>Barbero principal</span>
               <span className={styles.mobileText}>Barbero</span>
