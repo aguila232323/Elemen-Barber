@@ -6,6 +6,7 @@ import { Autoplay, EffectCoverflow } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/effect-coverflow';
 import { useServicios } from '../../../hooks/useServicios';
+import { config } from '../../../config/config';
 
 const reviews = [
   { 
@@ -84,7 +85,7 @@ const Inicio: React.FC = () => {
   useEffect(() => {
     const cargarResenas = async () => {
       try {
-        const res = await fetch('http://localhost:8080/api/resenas/publicas', {
+        const res = await fetch(`${config.API_BASE_URL}/api/resenas/publicas`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

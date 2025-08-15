@@ -3,6 +3,7 @@ import styles from './Perfil.module.css';
 import { useNavigate } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSave, FaTimes, FaSignOutAlt, FaLock, FaEye, FaEyeSlash, FaCheckCircle, FaTrash, FaUserEdit } from 'react-icons/fa';
 import defaultProfile from '../../../assets/images/usuario.png';
+import { config } from '../../../config/config';
 // import GoogleCalendarInfo from '../../../components/GoogleCalendarInfo';
 
 // Función para generar avatar genérico basado en el nombre
@@ -160,7 +161,7 @@ const Perfil: React.FC = () => {
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (!token) return;
-    fetch('http://localhost:8080/api/usuarios/perfil', {
+            fetch(`${config.API_BASE_URL}/api/usuarios/perfil`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(async res => {
@@ -254,7 +255,7 @@ const Perfil: React.FC = () => {
         return;
       }
 
-      const res = await fetch('http://localhost:8080/api/usuarios/avatar', {
+      const res = await fetch(`${config.API_BASE_URL}/api/usuarios/avatar`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -303,7 +304,7 @@ const Perfil: React.FC = () => {
       // Recargar datos originales
       const token = localStorage.getItem('authToken');
       if (token) {
-        fetch('http://localhost:8080/api/usuarios/perfil', {
+        fetch(`${config.API_BASE_URL}/api/usuarios/perfil`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
           .then(async res => {
@@ -348,7 +349,7 @@ const Perfil: React.FC = () => {
           return;
         }
 
-        const res = await fetch('http://localhost:8080/api/usuarios/cambiar-password', {
+        const res = await fetch(`${config.API_BASE_URL}/api/usuarios/cambiar-password`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -398,7 +399,7 @@ const Perfil: React.FC = () => {
           const normalizedPhone = normalizePhoneForStorage(usuario.telefono);
           const usuarioConTelefonoNormalizado = { ...usuario, telefono: normalizedPhone };
           
-          res = await fetch('http://localhost:8080/api/usuarios/perfil', {
+          res = await fetch(`${config.API_BASE_URL}/api/usuarios/perfil`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -407,7 +408,7 @@ const Perfil: React.FC = () => {
             body: JSON.stringify(usuarioConTelefonoNormalizado)
           });
         } else {
-          res = await fetch('http://localhost:8080/api/usuarios/perfil', {
+          res = await fetch(`${config.API_BASE_URL}/api/usuarios/perfil`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -492,7 +493,7 @@ const Perfil: React.FC = () => {
         throw new Error('No hay token de autenticación');
       }
 
-      const res = await fetch('http://localhost:8080/api/usuarios/eliminar-cuenta', {
+      const res = await fetch(`${config.API_BASE_URL}/api/usuarios/eliminar-cuenta`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -538,7 +539,7 @@ const Perfil: React.FC = () => {
         throw new Error('No hay token de autenticación');
       }
 
-      const res = await fetch('http://localhost:8080/api/usuarios/eliminar-cuenta', {
+      const res = await fetch(`${config.API_BASE_URL}/api/usuarios/eliminar-cuenta`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

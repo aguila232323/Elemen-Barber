@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import EmailVerification from './EmailVerification';
 import { useGoogleLogin } from '@react-oauth/google';
 import GooglePhoneModal from './GooglePhoneModal';
+import { config } from '../../config/config';
 
 interface LoginProps {
   onLoginSuccess?: () => void;
@@ -73,7 +74,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
     setForgotPasswordLoading(true);
     
     try {
-      const response = await fetch('http://localhost:8080/api/auth/forgot-password', {
+      const response = await fetch(`${config.API_BASE_URL}/api/auth/forgot-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -118,7 +119,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
         const telefono = userInfo.phone_number || null;
         
         // Enviar datos al backend
-        const backendResponse = await fetch('http://localhost:8080/api/auth/google', {
+        const backendResponse = await fetch(`${config.API_BASE_URL}/api/auth/google`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -150,7 +151,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
             // Verificar acceso a Google Calendar para usuarios de Google
             if (userInfo.email) {
               try {
-                const calendarResponse = await fetch('http://localhost:8080/api/auth/google/check-calendar-access', {
+                const calendarResponse = await fetch(`${config.API_BASE_URL}/api/auth/google/check-calendar-access`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',

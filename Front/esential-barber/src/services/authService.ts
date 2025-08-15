@@ -1,4 +1,5 @@
 // @ts-check
+import { config } from '../config/config';
 
 /**
  * Inicia sesión con email y password
@@ -7,7 +8,7 @@
  * @returns {Promise<{token: string, [key: string]: any}>}
  */
 export async function login(email: string, password: string) {
-  const response = await fetch('http://localhost:8080/api/auth/login', {
+  const response = await fetch(`${config.API_BASE_URL}/api/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -33,7 +34,7 @@ export async function login(email: string, password: string) {
  * @returns {Promise<any>}
  */
 export async function reenviarCodigoVerificacion(email: string) {
-  const response = await fetch('http://localhost:8080/api/verificacion/reenviar-codigo', {
+  const response = await fetch(`${config.API_BASE_URL}/api/verificacion/reenviar-codigo`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -53,7 +54,7 @@ export async function reenviarCodigoVerificacion(email: string) {
  * @returns {Promise<any>}
  */
 export async function reenviarCodigoSimple(email: string) {
-  const response = await fetch('http://localhost:8080/api/verificacion/reenviar-simple', {
+  const response = await fetch(`${config.API_BASE_URL}/api/verificacion/reenviar-simple`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -74,7 +75,7 @@ export async function reenviarCodigoSimple(email: string) {
  * @returns {Promise<any>}
  */
 export async function verificarCodigo(email: string, codigo: string) {
-  const response = await fetch('http://localhost:8080/api/verificacion/verificar-codigo', {
+  const response = await fetch(`${config.API_BASE_URL}/api/verificacion/verificar-codigo`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -97,7 +98,7 @@ export async function verificarCodigo(email: string, codigo: string) {
  * @returns {Promise<any>}
  */
 export async function register(nombre: string, email: string, password: string, telefono: string) {
-  const response = await fetch('http://localhost:8080/api/auth/register', {
+  const response = await fetch(`${config.API_BASE_URL}/api/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

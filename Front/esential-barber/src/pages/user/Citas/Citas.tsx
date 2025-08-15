@@ -5,6 +5,7 @@ import SeleccionarServicioModal from '../../../components/SeleccionarServicioMod
 import CalendarBooking from '../../../components/CalendarBooking';
 import ResenaModal from '../../../components/ResenaModal';
 import { FaSave, FaTimes, FaUserPlus, FaStar } from 'react-icons/fa';
+import { config } from '../../../config/config';
 
 interface Cita {
   id: number;
@@ -78,7 +79,7 @@ const Citas: React.FC<CitasProps> = () => {
       setError('');
       try {
         const token = localStorage.getItem('authToken');
-        const res = await fetch('http://localhost:8080/api/citas/mis-citas', {
+        const res = await fetch(`${config.API_BASE_URL}/api/citas/mis-citas`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         if (!res.ok) throw new Error('No se pudieron cargar tus citas');
@@ -115,7 +116,7 @@ const Citas: React.FC<CitasProps> = () => {
   const fetchUsuarios = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch('http://localhost:8080/api/usuarios', {
+              const res = await fetch(`${config.API_BASE_URL}/api/usuarios`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       
@@ -132,7 +133,7 @@ const Citas: React.FC<CitasProps> = () => {
   const fetchServicios = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch('http://localhost:8080/api/servicios', {
+              const res = await fetch(`${config.API_BASE_URL}/api/servicios`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       
@@ -164,7 +165,7 @@ const Citas: React.FC<CitasProps> = () => {
 
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch('http://localhost:8080/api/citas/crear', {
+              const res = await fetch(`${config.API_BASE_URL}/api/citas/crear`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -251,7 +252,7 @@ const Citas: React.FC<CitasProps> = () => {
 
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch(`http://localhost:8080/api/citas/${citaACancelar.id}`, {
+              const res = await fetch(`${config.API_BASE_URL}/api/citas/${citaACancelar.id}`, {
         method: 'DELETE',
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
@@ -298,7 +299,7 @@ const Citas: React.FC<CitasProps> = () => {
     setGuardandoResena(true);
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch('http://localhost:8080/api/resenas', {
+              const res = await fetch(`${config.API_BASE_URL}/api/resenas`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

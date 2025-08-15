@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styles from './SeleccionarServicioModal.module.css';
 import { FaCut, FaPaintBrush, FaMagic, FaUserTie, FaQuestion, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
+import { config } from '../config/config';
 
 interface Servicio {
   id: number;
@@ -35,7 +36,7 @@ const SeleccionarServicioModal: React.FC<Props> = ({ serviciosSeleccionados, set
 
   useEffect(() => {
     setLoading(true);
-    fetch('http://localhost:8080/api/servicios')
+    fetch(`${config.API_BASE_URL}/api/servicios`)
       .then(res => {
         if (!res.ok) throw new Error('Error al obtener servicios');
         return res.json();

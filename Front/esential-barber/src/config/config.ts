@@ -11,7 +11,7 @@ interface Config {
 
 // Configuración para desarrollo local
 const devConfig: Config = {
-  API_BASE_URL: 'http://localhost:8080',
+  API_BASE_URL: 'https://api.elemenbarber.com',
   GOOGLE_CLIENT_ID: '861425306153-5odf703ho7dt8at2r5jqpu2t9ei0iakg.apps.googleusercontent.com',
   GOOGLE_REDIRECT_URI: 'http://localhost:3000/auth/google/callback',
   FRONTEND_URL: 'http://localhost:3000'

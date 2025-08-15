@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { config } from '../config/config';
 
 export interface Servicio {
   id: number;
@@ -20,7 +21,7 @@ export const useServicios = () => {
     const fetchServicios = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:8080/api/servicios', {
+        const response = await fetch(`${config.API_BASE_URL}/api/servicios`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

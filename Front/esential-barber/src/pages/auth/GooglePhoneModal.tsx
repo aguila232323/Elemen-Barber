@@ -8,6 +8,7 @@ import {
   handlePhoneChange,
   handlePhoneBlur
 } from '../../utils/phoneUtils';
+import { config } from '../../config/config';
 
 interface GooglePhoneModalProps {
   email: string;
@@ -37,7 +38,7 @@ const GooglePhoneModal: React.FC<GooglePhoneModalProps> = ({ email, onComplete, 
 
     try {
       const telefonoNormalizado = normalizePhoneForStorage(telefono);
-      const response = await fetch('http://localhost:8080/api/auth/google/complete', {
+      const response = await fetch(`${config.API_BASE_URL}/api/auth/google/complete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

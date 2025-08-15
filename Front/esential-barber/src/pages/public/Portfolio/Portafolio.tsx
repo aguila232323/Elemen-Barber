@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import styles from './Portafolio.module.css'
 import { useAuth } from '../../../context/AuthContext'
 import { FaPlus, FaTrash, FaTimes } from 'react-icons/fa'
+import { config } from '../../../config/config'
 
 interface Foto {
   id: number;
@@ -31,7 +32,7 @@ const Portafolio: React.FC = () => {
   const cargarFotos = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8080/api/portfolio/fotos');
+      const response = await fetch(`${config.API_BASE_URL}/api/portfolio/fotos`);
       if (!response.ok) {
         throw new Error('Error al cargar las fotos');
       }
@@ -130,7 +131,7 @@ const Portafolio: React.FC = () => {
         try {
           const base64 = await convertToBase64(file);
           
-          const response = await fetch('http://localhost:8080/api/portfolio/admin/añadir', {
+          const response = await fetch(`${config.API_BASE_URL}/api/portfolio/admin/añadir`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -176,7 +177,7 @@ const Portafolio: React.FC = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:8080/api/portfolio/admin/eliminar/${id}`, {
+      const response = await fetch(`${config.API_BASE_URL}/api/portfolio/admin/eliminar/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

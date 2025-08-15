@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
+import { config } from '../config/config';
 
 interface User {
   email?: string;
@@ -27,7 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(true);
       
       // Primero verificar el estado del usuario (incluyendo baneo)
-      fetch('http://localhost:8080/api/usuarios/estado', {
+      fetch(`${config.API_BASE_URL}/api/usuarios/estado`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
         .then(async res => {
@@ -45,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
           
           // Si no está baneado, obtener el perfil completo
-          return fetch('http://localhost:8080/api/usuarios/perfil', {
+          return fetch(`${config.API_BASE_URL}/api/usuarios/perfil`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
         })

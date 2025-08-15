@@ -58,7 +58,7 @@ const EmailVerification: React.FC<EmailVerificationProps> = ({
     } catch (err: any) {
 
       if (err.message.includes('fetch')) {
-        setError('Error de conexión. Verifica que el servidor esté ejecutándose en http://localhost:8080');
+        setError('Error de conexión. Verifica que el servidor esté ejecutándose correctamente');
       } else {
         setError(err.message || 'Error al reenviar código');
       }

@@ -1,4 +1,5 @@
 // Servicio para manejar la integración con Google Calendar
+import { config } from '../config/config';
 
 export interface GoogleCalendarStatus {
   isGoogleUser: boolean;
@@ -26,7 +27,7 @@ export const googleCalendarService = {
       throw new Error('No hay token de autenticación');
     }
 
-    const response = await fetch('http://localhost:8080/api/google-calendar/status', {
+    const response = await fetch(`${config.API_BASE_URL}/api/google-calendar/status`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -50,7 +51,7 @@ export const googleCalendarService = {
       throw new Error('No hay token de autenticación');
     }
 
-    const response = await fetch('http://localhost:8080/api/google-calendar/auth-url', {
+    const response = await fetch(`${config.API_BASE_URL}/api/google-calendar/auth-url`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -74,7 +75,7 @@ export const googleCalendarService = {
       throw new Error('No hay token de autenticación');
     }
 
-    const response = await fetch('http://localhost:8080/api/google-calendar/authorize', {
+    const response = await fetch(`${config.API_BASE_URL}/api/google-calendar/authorize`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -99,7 +100,7 @@ export const googleCalendarService = {
       throw new Error('No hay token de autenticación');
     }
 
-    const response = await fetch('http://localhost:8080/api/google-calendar/callback', {
+    const response = await fetch(`${config.API_BASE_URL}/api/google-calendar/callback`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -125,7 +126,7 @@ export const googleCalendarService = {
       throw new Error('No hay token de autenticación');
     }
 
-    const response = await fetch('http://localhost:8080/api/google-calendar/revoke', {
+    const response = await fetch(`${config.API_BASE_URL}/api/google-calendar/revoke`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

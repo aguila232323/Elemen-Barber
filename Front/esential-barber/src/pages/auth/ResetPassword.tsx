@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
+import { config } from '../../config/config';
 
 const ResetPassword: React.FC = () => {
   const { token } = useParams<{ token: string }>();
@@ -24,7 +25,7 @@ const ResetPassword: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/api/auth/validate-reset-token/${token}`, {
+      const response = await fetch(`${config.API_BASE_URL}/api/auth/validate-reset-token/${token}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -65,7 +66,7 @@ const ResetPassword: React.FC = () => {
     setMessage('');
 
     try {
-      const response = await fetch('http://localhost:8080/api/auth/reset-password', {
+      const response = await fetch(`${config.API_BASE_URL}/api/auth/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

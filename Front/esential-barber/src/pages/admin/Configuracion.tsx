@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaCog, FaSave, FaTimes, FaCalendarAlt, FaUserPlus, FaCalendarCheck, FaUmbrellaBeach } from 'react-icons/fa';
 import styles from './Configuracion.module.css';
+import { config } from '../../config/config';
 
 // Colores oficiales de Google Calendar
 const GOOGLE_CALENDAR_COLORS = [
@@ -163,7 +164,7 @@ const Configuracion: React.FC = () => {
     setServiciosLoading(true);
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch('http://localhost:8080/api/servicios', {
+      const res = await fetch(`${config.API_BASE_URL}/api/servicios`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       if (res.ok) {
@@ -211,7 +212,7 @@ const Configuracion: React.FC = () => {
     setCitasLoading(true);
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch('http://localhost:8080/api/citas/todas', {
+      const res = await fetch(`${config.API_BASE_URL}/api/citas/todas`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       const data = await res.json();
@@ -239,7 +240,7 @@ const Configuracion: React.FC = () => {
   const fetchUsuarios = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch('http://localhost:8080/api/usuarios', {
+      const res = await fetch(`${config.API_BASE_URL}/api/usuarios`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       const data = await res.json();
@@ -317,7 +318,7 @@ const Configuracion: React.FC = () => {
   const fetchTiempoMinimoActual = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch('http://localhost:8080/api/configuracion/tiempo-minimo', {
+      const res = await fetch(`${config.API_BASE_URL}/api/configuracion/tiempo-minimo`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       
@@ -357,7 +358,7 @@ const Configuracion: React.FC = () => {
     setUsuariosLoading(true);
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch('http://localhost:8080/api/usuarios', {
+      const res = await fetch(`${config.API_BASE_URL}/api/usuarios`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       const data = await res.json();
@@ -380,7 +381,7 @@ const Configuracion: React.FC = () => {
       const token = localStorage.getItem('authToken');
       const action = usuariosModal === 'banear' ? 'banear' : 'desbanear';
       
-      const res = await fetch(`http://localhost:8080/api/usuarios/${usuarioSeleccionado}/${action}`, {
+      const res = await fetch(`${config.API_BASE_URL}/api/usuarios/${usuarioSeleccionado}/${action}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -442,7 +443,7 @@ const Configuracion: React.FC = () => {
   const fetchVacaciones = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch('http://localhost:8080/api/vacaciones', {
+      const res = await fetch(`${config.API_BASE_URL}/api/vacaciones`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       const data = await res.json();
@@ -456,7 +457,7 @@ const Configuracion: React.FC = () => {
     setResenasLoading(true);
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch('http://localhost:8080/api/resenas/todas', {
+      const res = await fetch(`${config.API_BASE_URL}/api/resenas/todas`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       if (res.ok) {
@@ -490,7 +491,7 @@ const Configuracion: React.FC = () => {
         return;
       }
 
-      const res = await fetch(`http://localhost:8080/api/citas/disponibilidad?fecha=${fecha}&duracion=${servicio.duracionMinutos}&userRole=ADMIN`, {
+      const res = await fetch(`${config.API_BASE_URL}/api/citas/disponibilidad?fecha=${fecha}&duracion=${servicio.duracionMinutos}&userRole=ADMIN`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
 
@@ -515,7 +516,7 @@ const Configuracion: React.FC = () => {
     );
     setWarningAction(() => async () => {
       try {
-        const res = await fetch('http://localhost:8080/api/vacaciones', {
+        const res = await fetch(`${config.API_BASE_URL}/api/vacaciones`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -548,7 +549,7 @@ const Configuracion: React.FC = () => {
     setWarningMessage('¿Estás seguro de que quieres eliminar este período de vacaciones?');
     setWarningAction(() => async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/vacaciones/${id}`, {
+        const res = await fetch(`${config.API_BASE_URL}/api/vacaciones/${id}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('authToken')}`
@@ -580,7 +581,7 @@ const Configuracion: React.FC = () => {
 
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch(`http://localhost:8080/api/resenas/${resenaSeleccionada}`, {
+      const res = await fetch(`${config.API_BASE_URL}/api/resenas/${resenaSeleccionada}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -693,7 +694,7 @@ const Configuracion: React.FC = () => {
     setAddMsg(null);
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch('http://localhost:8080/api/servicios', {
+      const res = await fetch(`${config.API_BASE_URL}/api/servicios`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -731,7 +732,7 @@ const Configuracion: React.FC = () => {
     setEditMsg(null);
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch(`http://localhost:8080/api/servicios/${editId}`, {
+      const res = await fetch(`${config.API_BASE_URL}/api/servicios/${editId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -770,7 +771,7 @@ const Configuracion: React.FC = () => {
     setDeleteMsg(null);
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch(`http://localhost:8080/api/servicios/${deleteId}`, {
+      const res = await fetch(`${config.API_BASE_URL}/api/servicios/${deleteId}`, {
         method: 'DELETE',
         headers: {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -807,7 +808,7 @@ const Configuracion: React.FC = () => {
       }
       
       // Obtener todas las citas periódicas del usuario
-      const res = await fetch('http://localhost:8080/api/citas/todas', {
+      const res = await fetch(`${config.API_BASE_URL}/api/citas/todas`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       const todasLasCitas = await res.json();
@@ -819,7 +820,7 @@ const Configuracion: React.FC = () => {
       
       // Eliminar todas las citas periódicas del usuario
       const deletePromises = citasDelUsuario.map((cita: Cita) =>
-        fetch(`http://localhost:8080/api/citas/${cita.id}`, {
+        fetch(`${config.API_BASE_URL}/api/citas/${cita.id}`, {
           method: 'DELETE',
           headers: {
             ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -861,7 +862,7 @@ const Configuracion: React.FC = () => {
       }
       
       // Obtener todas las citas periódicas del usuario
-      const res = await fetch('http://localhost:8080/api/citas/todas', {
+      const res = await fetch(`${config.API_BASE_URL}/api/citas/todas`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       const todasLasCitas = await res.json();
@@ -873,7 +874,7 @@ const Configuracion: React.FC = () => {
       
       // Modificar todas las citas periódicas del usuario
       const updatePromises = citasDelUsuario.map((cita: Cita) =>
-        fetch(`http://localhost:8080/api/citas/${cita.id}`, {
+        fetch(`${config.API_BASE_URL}/api/citas/${cita.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -924,7 +925,7 @@ const Configuracion: React.FC = () => {
         confirmada: false
       };
       
-      const res = await fetch(`http://localhost:8080/api/citas/fija?periodicidadDias=${addCitaForm.periodicidadDias}`, {
+      const res = await fetch(`${config.API_BASE_URL}/api/citas/fija?periodicidadDias=${addCitaForm.periodicidadDias}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -968,7 +969,7 @@ const Configuracion: React.FC = () => {
     try {
       const token = localStorage.getItem('authToken');
       
-      const res = await fetch('http://localhost:8080/api/configuracion/tiempo-minimo', {
+      const res = await fetch(`${config.API_BASE_URL}/api/configuracion/tiempo-minimo`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

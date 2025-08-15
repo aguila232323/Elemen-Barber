@@ -6,6 +6,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './CitasAdminCustom.css';
 import { FaCalendarAlt, FaTimes, FaSave, FaBars, FaChevronLeft, FaChevronRight, FaChevronDown, FaList } from 'react-icons/fa';
 import { useServicios } from '../../hooks/useServicios';
+import { config } from '../../config/config';
 
 // Configurar moment para español
 moment.locale('es', {
@@ -449,7 +450,7 @@ const CitasAdmin: React.FC = () => {
       setCancelingCita(cita.id);
       const token = localStorage.getItem('authToken');
       
-      const response = await fetch(`http://localhost:8080/api/citas/${cita.id}`, {
+              const response = await fetch(`${config.API_BASE_URL}/api/citas/${cita.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -536,7 +537,7 @@ const CitasAdmin: React.FC = () => {
       setError('');
       try {
         const token = localStorage.getItem('authToken');
-        const res = await fetch('http://localhost:8080/api/citas/todas', {
+        const res = await fetch(`${config.API_BASE_URL}/api/citas/todas`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         if (!res.ok) throw new Error('No se pudieron cargar las citas');
@@ -1027,7 +1028,7 @@ const CitasAdmin: React.FC = () => {
       
 
       
-      const res = await fetch(`http://localhost:8080/api/citas/fija?periodicidadDias=${periodicForm.periodicidadDias}`, {
+      const res = await fetch(`${config.API_BASE_URL}/api/citas/fija?periodicidadDias=${periodicForm.periodicidadDias}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

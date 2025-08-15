@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { config } from '../config/config';
 
 // Simulación de disponibilidad por día (0-100%)
 function getDisponibilidad(dia: number) {
@@ -75,7 +76,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
   useEffect(() => {
     const fetchTiempoMinimo = async () => {
       try {
-        const res = await fetch('http://localhost:8080/api/configuracion/tiempo-minimo');
+        const res = await fetch(`${config.API_BASE_URL}/api/configuracion/tiempo-minimo`);
         const data = await res.json();
         if (data.horasMinimas) {
           setTiempoMinimo(data.horasMinimas);
@@ -93,7 +94,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
       const fetchUsuarios = async () => {
         try {
           const token = localStorage.getItem('authToken');
-          const res = await fetch('http://localhost:8080/api/usuarios', {
+          const res = await fetch(`${config.API_BASE_URL}/api/usuarios`, {
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
           });
           
@@ -146,7 +147,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
       setLoadingHoras(true);
       const fecha = `${anio}-${String(mes+1).padStart(2,'0')}-${String(diaSeleccionado).padStart(2,'0')}`;
       const userRole = user?.rol || 'USER';
-      fetch(`http://localhost:8080/api/citas/disponibilidad?fecha=${fecha}&duracion=${duracion}&userRole=${userRole}`)
+      fetch(`${config.API_BASE_URL}/api/citas/disponibilidad?fecha=${fecha}&duracion=${duracion}&userRole=${userRole}`)
         .then(res => res.json())
         .then(data => {
           setHorasLibres(data.horasLibres || []);
@@ -166,7 +167,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
     const fetchDisponibilidadMes = async () => {
       try {
         const userRole = user?.rol || 'USER';
-        const res = await fetch(`http://localhost:8080/api/citas/disponibilidad-mes?anio=${anio}&mes=${mes+1}&duracion=${duracion}&userRole=${userRole}`);
+        const res = await fetch(`${config.API_BASE_URL}/api/citas/disponibilidad-mes?anio=${anio}&mes=${mes+1}&duracion=${duracion}&userRole=${userRole}`);
         const data = await res.json();
         const map: {[dia: number]: number} = {};
         if (data.dias && Array.isArray(data.dias)) {
@@ -505,7 +506,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
                     // Incluir clienteId si es admin y se ha seleccionado un usuario
                     ...(user?.rol === 'ADMIN' && usuarioSeleccionado && { clienteId: parseInt(usuarioSeleccionado) })
                   };
-                  const res = await fetch('http://localhost:8080/api/citas', {
+                  const res = await fetch(`${config.API_BASE_URL}/api/citas`, {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',

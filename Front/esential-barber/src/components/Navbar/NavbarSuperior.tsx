@@ -8,6 +8,7 @@ import Login from '../../pages/auth/Login';
 import Register from '../../pages/auth/Register';
 import SeleccionarServicioModal from '../SeleccionarServicioModal';
 import CalendarBooking from '../CalendarBooking';
+import { config } from '../../config/config';
 
 interface Servicio {
   id: number;
@@ -71,7 +72,7 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
 
   // Cargar servicios disponibles al montar
   useEffect(() => {
-    fetch('http://localhost:8080/api/servicios')
+    fetch(`${config.API_BASE_URL}/api/servicios`)
       .then(res => res.json())
       .then(data => setServiciosDisponibles(data))
       .catch(() => setServiciosDisponibles([]));
