@@ -69,7 +69,7 @@ public class DatabaseMigrationService {
     private boolean columnExists(String columnName) {
         try {
             String sql = "SELECT COUNT(*) FROM information_schema.columns " +
-                        "WHERE table_schema = 'EsentialBarber' " +
+                        "WHERE table_schema = 'public' " +
                         "AND table_name = 'usuario' " +
                         "AND column_name = ?";
             
@@ -84,7 +84,7 @@ public class DatabaseMigrationService {
     private boolean citaColumnExists(String columnName) {
         try {
             String sql = "SELECT COUNT(*) FROM information_schema.columns " +
-                        "WHERE table_schema = 'EsentialBarber' " +
+                        "WHERE table_schema = 'public' " +
                         "AND table_name = 'cita' " +
                         "AND column_name = ?";
             
