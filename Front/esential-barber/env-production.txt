@@ -1,0 +1,26 @@
+# ========================================
+# VARIABLES DE ENTORNO PARA PRODUCCIÓN (NETLIFY)
+# ========================================
+
+# Configuración de la API (Backend en Railway)
+REACT_APP_API_URL=https://api.elemenbarber.com
+
+# Configuración del Frontend
+REACT_APP_FRONTEND_URL=https://elemenbarber.com
+
+# Configuración de Google OAuth
+REACT_APP_GOOGLE_REDIRECT_URI=https://elemenbarber.com/auth/google/callback
+
+# ========================================
+# CONFIGURACIÓN DE GOOGLE OAUTH
+# ========================================
+# Client ID de Google (ya configurado en google.ts)
+# GOOGLE_CLIENT_ID=861425306153-5odf703ho7dt8at2r5jqpu2t9ei0iakg.apps.googleusercontent.com
+
+# ========================================
+# NOTAS IMPORTANTES:
+# ========================================
+# - Estas variables se configuran en el dashboard de Netlify
+# - Ve a Site settings → Environment variables
+# - Agrega cada variable una por una
+# - Los cambios requieren un nuevo deploy
