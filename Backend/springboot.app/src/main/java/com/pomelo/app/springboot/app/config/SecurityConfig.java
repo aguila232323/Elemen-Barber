@@ -22,17 +22,20 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtFilter jwtFilter;
-    
-    @Autowired
-    private CorsConfigurationSource corsConfigurationSource;
-    
-    @Autowired
-    private OncePerRequestFilter securityHeadersFilter;
-    
-    @Autowired
-    private OncePerRequestFilter rateLimitFilter;
+    private final JwtFilter jwtFilter;
+    private final CorsConfigurationSource corsConfigurationSource;
+    private final OncePerRequestFilter securityHeadersFilter;
+    private final OncePerRequestFilter rateLimitFilter;
+
+    public SecurityConfig(JwtFilter jwtFilter, 
+                         CorsConfigurationSource corsConfigurationSource,
+                         OncePerRequestFilter securityHeadersFilter,
+                         OncePerRequestFilter rateLimitFilter) {
+        this.jwtFilter = jwtFilter;
+        this.corsConfigurationSource = corsConfigurationSource;
+        this.securityHeadersFilter = securityHeadersFilter;
+        this.rateLimitFilter = rateLimitFilter;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
