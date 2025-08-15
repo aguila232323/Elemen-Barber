@@ -6,7 +6,7 @@
  * @param {string} password
  * @returns {Promise<{token: string, [key: string]: any}>}
  */
-export async function login(email, password) {
+export async function login(email: string, password: string) {
   const response = await fetch('http://localhost:8080/api/auth/login', {
     method: 'POST',
     headers: {
@@ -32,7 +32,7 @@ export async function login(email, password) {
  * @param {string} email
  * @returns {Promise<any>}
  */
-export async function reenviarCodigoVerificacion(email) {
+export async function reenviarCodigoVerificacion(email: string) {
   const response = await fetch('http://localhost:8080/api/verificacion/reenviar-codigo', {
     method: 'POST',
     headers: {
@@ -52,7 +52,7 @@ export async function reenviarCodigoVerificacion(email) {
  * @param {string} email
  * @returns {Promise<any>}
  */
-export async function reenviarCodigoSimple(email) {
+export async function reenviarCodigoSimple(email: string) {
   const response = await fetch('http://localhost:8080/api/verificacion/reenviar-simple', {
     method: 'POST',
     headers: {
@@ -73,7 +73,7 @@ export async function reenviarCodigoSimple(email) {
  * @param {string} codigo
  * @returns {Promise<any>}
  */
-export async function verificarCodigo(email, codigo) {
+export async function verificarCodigo(email: string, codigo: string) {
   const response = await fetch('http://localhost:8080/api/verificacion/verificar-codigo', {
     method: 'POST',
     headers: {
@@ -96,7 +96,7 @@ export async function verificarCodigo(email, codigo) {
  * @param {string} telefono
  * @returns {Promise<any>}
  */
-export async function register(nombre, email, password, telefono) {
+export async function register(nombre: string, email: string, password: string, telefono: string) {
   const response = await fetch('http://localhost:8080/api/auth/register', {
     method: 'POST',
     headers: {

@@ -3,12 +3,9 @@ import styles from './Login.module.css';
 import { FaEnvelope, FaLock, FaUser, FaPhone } from 'react-icons/fa';
 import { register as registerService } from '../../services/authService';
 import { 
-  validateSpanishPhone, 
-  normalizePhoneForStorage, 
   getPhoneErrorMessage,
   handlePhoneChange,
-  handlePhoneBlur,
-  formatPhoneForDisplay
+  handlePhoneBlur
 } from '../../utils/phoneUtils';
 import EmailVerification from './EmailVerification';
 
@@ -59,7 +56,7 @@ const Register: React.FC<RegisterProps> = ({ onClose, onSwitchToLogin, onVerific
 
     setLoading(true);
     try {
-      const data = await registerService(nombre, email, password, telefono);
+      await registerService(nombre, email, password, telefono);
       setSuccess('Usuario registrado correctamente. Se ha enviado un código de verificación a tu email.');
       setRegisteredEmail(email);
       setShowVerification(true);

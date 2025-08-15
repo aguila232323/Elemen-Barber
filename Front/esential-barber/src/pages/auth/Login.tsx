@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styles from './Login.module.css';
 import { login as loginService } from '../../services/authService';
-import { FaEnvelope, FaLock } from 'react-icons/fa';
+// Iconos no utilizados por ahora
 import { useAuth } from '../../context/AuthContext';
 import EmailVerification from './EmailVerification';
 import { useGoogleLogin } from '@react-oauth/google';
@@ -163,10 +163,8 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
                 });
                 
                 if (calendarResponse.ok) {
-                  const calendarData = await calendarResponse.json();
                   // Verificación de Calendar completada
                 } else {
-                  const errorData = await calendarResponse.json();
                   // Error al verificar acceso a Calendar
                 }
               } catch (calendarErr) {
@@ -195,7 +193,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister, onClo
     }
   });
 
-  const handlePhoneComplete = (telefono: string) => {
+  const handlePhoneComplete = (_telefono: string) => {
     setShowPhoneModal(false);
     setGoogleUserEmail('');
     

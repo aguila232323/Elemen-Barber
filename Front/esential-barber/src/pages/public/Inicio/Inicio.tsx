@@ -52,7 +52,8 @@ const reviews = [
   },
 ];
 
-const getStars = (rating: number) => '★'.repeat(rating) + '☆'.repeat(5 - rating);
+// Función para mostrar estrellas (no utilizada por ahora)
+// const getStars = (rating: number) => '★'.repeat(rating) + '☆'.repeat(5 - rating);
 
 const bannerImg = 'https://static.vecteezy.com/system/resources/previews/005/121/041/non_2x/hairdressers-cut-their-clients-in-barbershop-advertising-and-barber-shop-concept-free-photo.jpg';
 
@@ -73,7 +74,7 @@ const getUserName = () => {
 };
 
 const Inicio: React.FC = () => {
-  const userName = getUserName();
+  // const userName = getUserName(); // Variable no utilizada por ahora
   const { servicios, loading, error } = useServicios();
   const [resenas, setResenas] = useState<any[]>([]);
   const [estadisticasResenas, setEstadisticasResenas] = useState<any>({});
@@ -390,7 +391,7 @@ const Inicio: React.FC = () => {
 
       {/* Servicios Destacados */}
       <div className={styles.featuredServices}>
-        {servicios.slice(0, 3).map((servicio, idx) => (
+        {servicios.slice(0, 3).map((servicio) => (
           <div key={servicio.id} className={styles.serviceCard}>
             <div className={styles.serviceIcon}>
               <span style={{fontSize:'2.7rem'}} role="img" aria-label={servicio.nombre}>
