@@ -1,0 +1,45 @@
+# ================================
+# VARIABLES PARA AGREGAR MANUALMENTE EN RAILWAY
+# ================================
+# NOTA: Railway detecta automáticamente: PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD, PORT
+
+# ================================
+# SPRING SECURITY
+# ================================
+SPRING_SECURITY_USER_NAME=admin
+SPRING_SECURITY_USER_PASSWORD=admin123
+
+# ================================
+# GOOGLE OAUTH
+# ================================
+GOOGLE_CLIENT_ID=861425306153-5odf703ho7dt8at2r5jqpu2t9ei0iakg.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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
+APP_GOOGLE_REDIRECT_URI=https://esential-barber-backend.railway.app/auth/google/callback
+ADMIN_EMAIL=elemenbarber@gmail.com
+ADMIN_GOOGLE_CALENDAR_ENABLED=true
+
+# ================================
+# EMAIL (SMTP)
+# ================================
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=elemenbarber@gmail.com
+MAIL_PASSWORD=psqv hxns rxhi eoue
+
+# ================================
+# CORS / FRONTEND
+# ================================
+CORS_ALLOWED_ORIGINS=https://esentialbarber.com,http://localhost:3000,http://localhost:5173
+APP_FRONTEND_BASE_URL=https://esentialbarber.com
+
+# ================================
+# SEGURIDAD AVANZADA
+# ================================
+APP_SECURITY_HSTS_MAX_AGE=31536000
+APP_SECURITY_CSP_DEFAULT_SRC=default-src 'self'
+
+# ================================
+# RATE LIMITING
+# ================================
+APP_RATE_LIMIT_MAX_REQUESTS=60
+APP_RATE_LIMIT_MAX_LOGIN=5
