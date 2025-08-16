@@ -1,8 +1,8 @@
-# Política de Privacidad - Esential Barber
+# Política de Privacidad - Elemen Barber
 
 ## Descripción
 
-Esta página contiene la Política de Privacidad completa para la aplicación Esential Barber. La política está diseñada para cumplir con los requisitos de Google Play Store y otras regulaciones de privacidad.
+Esta página contiene la Política de Privacidad completa para la aplicación Elemen Barber. La política está diseñada para cumplir con los requisitos de Google Play Store y otras regulaciones de privacidad.
 
 ## Ubicación
 
@@ -21,7 +21,7 @@ Esta página contiene la Política de Privacidad completa para la aplicación Es
 5. **Seguridad de Datos** - Medidas de protección implementadas
 6. **Retención de Datos** - Períodos de conservación
 7. **Derechos del Usuario** - Derechos ARCO+ y GDPR
-8. **Cookies** - Uso de tecnologías de seguimiento
+8. **Almacenamiento Local** - Uso de almacenamiento del navegador
 9. **Servicios de Terceros** - Integraciones (Google Calendar)
 10. **Menores de Edad** - Protección de menores
 11. **Cambios a la Política** - Proceso de actualización
@@ -53,7 +53,7 @@ La política se actualiza automáticamente con la fecha actual y puede ser modif
 
 Para consultas sobre esta política:
 - **Email:** elemenbarber@gmail.com
-- **Aplicación:** Esential Barber
+- **Aplicación:** Elemen Barber
 
 ## Enlaces Relacionados
 

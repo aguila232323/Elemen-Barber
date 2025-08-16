@@ -16,9 +16,9 @@ const PoliticaPrivacidad: React.FC = () => {
         <div className={styles.section}>
           <h2>1. Información General</h2>
           <p>
-            Esential Barber ("nosotros", "nuestra", "nos") se compromete a proteger y respetar su privacidad. 
+            Elemen Barber ("nosotros", "nuestra", "nos") se compromete a proteger y respetar su privacidad. 
             Esta Política de Privacidad describe cómo recopilamos, utilizamos, almacenamos y protegemos su información 
-            personal cuando utiliza nuestra aplicación móvil y servicios relacionados.
+            personal cuando utiliza nuestra aplicación web y servicios relacionados.
           </p>
         </div>
 
@@ -37,10 +37,10 @@ const PoliticaPrivacidad: React.FC = () => {
           <h3>2.2 Información de Uso</h3>
           <p>También recopilamos información sobre cómo utiliza nuestra aplicación:</p>
           <ul>
-            <li>Datos de uso de la aplicación</li>
-            <li>Información del dispositivo</li>
-            <li>Dirección IP</li>
-            <li>Cookies y tecnologías similares</li>
+            <li>Datos de uso de la aplicación (funciones utilizadas, frecuencia de uso)</li>
+            <li>Información del dispositivo (tipo de dispositivo, sistema operativo)</li>
+            <li>Dirección IP (para seguridad y análisis)</li>
+            <li>Datos de sesión (para mantener su sesión activa)</li>
           </ul>
         </div>
 
@@ -98,40 +98,48 @@ const PoliticaPrivacidad: React.FC = () => {
           </ul>
         </div>
 
-        <div className={styles.section}>
-          <h2>8. Cookies y Tecnologías Similares</h2>
-          <p>
-            Utilizamos cookies y tecnologías similares para mejorar su experiencia en nuestra aplicación, 
-            analizar el tráfico y personalizar el contenido. Puede controlar el uso de cookies a través 
-            de la configuración de su navegador.
-          </p>
-        </div>
+                  <div className={styles.section}>
+            <h2>8. Almacenamiento Local y Sesiones</h2>
+            <p>
+              Nuestra aplicación utiliza almacenamiento local del navegador para mantener su sesión activa 
+              y recordar sus preferencias. Esta información se almacena únicamente en su dispositivo y no 
+              se comparte con terceros. Puede eliminar estos datos en cualquier momento desde la configuración 
+              de su navegador.
+            </p>
+          </div>
 
-        <div className={styles.section}>
-          <h2>9. Servicios de Terceros</h2>
-          <p>
-            Nuestra aplicación puede integrar servicios de terceros como Google Calendar para la gestión 
-            de citas. Estos servicios tienen sus propias políticas de privacidad, y le recomendamos 
-            revisarlas.
-          </p>
-        </div>
+                  <div className={styles.section}>
+            <h2>9. Servicios de Terceros</h2>
+            <p>
+              Nuestra aplicación integra los siguientes servicios de terceros:
+            </p>
+            <ul>
+              <li><strong>Google Sign-In:</strong> Para la autenticación de usuarios</li>
+              <li><strong>Google Calendar:</strong> Para la gestión y sincronización de citas</li>
+              <li><strong>Servicios de hosting:</strong> Para almacenar y procesar datos de forma segura</li>
+            </ul>
+            <p>
+              Estos servicios tienen sus propias políticas de privacidad, y le recomendamos revisarlas.
+            </p>
+          </div>
 
-        <div className={styles.section}>
-          <h2>10. Menores de Edad</h2>
-          <p>
-            Nuestros servicios no están dirigidos a menores de 18 años. No recopilamos intencionalmente 
-            información personal de menores de edad. Si cree que hemos recopilado información de un menor, 
-            contáctenos inmediatamente.
-          </p>
-        </div>
+                  <div className={styles.section}>
+            <h2>10. Menores de Edad</h2>
+            <p>
+              Nuestros servicios están dirigidos a personas mayores de 18 años. No recopilamos intencionalmente 
+              información personal de menores de edad. Si cree que hemos recopilado información de un menor, 
+              contáctenos inmediatamente para proceder con su eliminación.
+            </p>
+          </div>
 
-        <div className={styles.section}>
-          <h2>11. Cambios a esta Política</h2>
-          <p>
-            Podemos actualizar esta Política de Privacidad ocasionalmente. Le notificaremos cualquier 
-            cambio significativo a través de nuestra aplicación o por correo electrónico.
-          </p>
-        </div>
+                  <div className={styles.section}>
+            <h2>11. Cambios a esta Política</h2>
+            <p>
+              Podemos actualizar esta Política de Privacidad ocasionalmente. Le notificaremos cualquier 
+              cambio significativo a través de nuestra aplicación web o por correo electrónico. 
+              La fecha de última actualización se muestra al inicio de esta política.
+            </p>
+          </div>
 
         <div className={styles.section}>
           <h2>12. Contacto</h2>
@@ -141,17 +149,17 @@ const PoliticaPrivacidad: React.FC = () => {
           </p>
           <div className={styles.contactInfo}>
             <p><strong>Email:</strong> elemenbarber@gmail.com</p>
-            <p><strong>Dirección:</strong> Esential Barber</p>
+            <p><strong>Aplicación:</strong> Elemen Barber</p>
           </div>
         </div>
 
-        <div className={styles.section}>
-          <h2>13. Consentimiento</h2>
-          <p>
-            Al utilizar nuestra aplicación, usted acepta los términos de esta Política de Privacidad. 
-            Si no está de acuerdo con esta política, por favor no utilice nuestros servicios.
-          </p>
-        </div>
+                  <div className={styles.section}>
+            <h2>13. Consentimiento</h2>
+            <p>
+              Al utilizar nuestra aplicación web, usted acepta los términos de esta Política de Privacidad. 
+              Si no está de acuerdo con esta política, por favor no utilice nuestros servicios.
+            </p>
+          </div>
       </div>
     </div>
   );
