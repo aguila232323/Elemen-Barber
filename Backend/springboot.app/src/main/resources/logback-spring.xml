@@ -18,18 +18,61 @@
     
     <!-- Perfil de producción -->
     <springProfile name="prod">
-        <!-- Appender para archivo de logs simplificado -->
+        <!-- Appender para archivo de logs -->
         <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <file>logs/elemen-barber.log</file>
             <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>logs/elemen-barber.%d{yyyy-MM-dd}.log</fileNamePattern>
-                <maxHistory>7</maxHistory>
+                <fileNamePattern>logs/elemen-barber.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                    <maxFileSize>100MB</maxFileSize>
+                </timeBasedFileNamingAndTriggeringPolicy>
+                <maxHistory>30</maxHistory>
             </rollingPolicy>
             
             <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-                <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{requestId}] [%X{clientIp}] - %msg%n</pattern>
             </encoder>
         </appender>
+        
+        <!-- Appender para errores -->
+        <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>logs/elemen-barber-error.log</file>
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>ERROR</level>
+            </filter>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>logs/elemen-barber-error.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                    <maxFileSize>100MB</maxFileSize>
+                </timeBasedFileNamingAndTriggeringPolicy>
+                <maxHistory>30</maxHistory>
+            </rollingPolicy>
+            
+            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{requestId}] [%X{clientIp}] - %msg%n</pattern>
+            </encoder>
+        </appender>
+        
+        <!-- Appender para auditoría -->
+        <appender name="AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>logs/elemen-barber-audit.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>logs/elemen-barber-audit.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                    <maxFileSize>100MB</maxFileSize>
+                </timeBasedFileNamingAndTriggeringPolicy>
+                <maxHistory>90</maxHistory>
+            </rollingPolicy>
+            
+            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [AUDIT] [%X{requestId}] [%X{clientIp}] [%X{userId}] - %msg%n</pattern>
+            </encoder>
+        </appender>
+        
+        <!-- Logger para auditoría -->
+        <logger name="com.pomelo.app.audit" level="INFO" additivity="false">
+            <appender-ref ref="AUDIT_FILE" />
+        </logger>
         
         <!-- Logger para la aplicación -->
         <logger name="com.pomelo.app" level="INFO" />
@@ -43,12 +86,10 @@
         <!-- Logger para Spring -->
         <logger name="org.springframework" level="WARN" />
         
-        <!-- Logger para HikariCP -->
-        <logger name="com.zaxxer.hikari" level="WARN" />
-        
         <!-- Root logger -->
-        <root level="WARN">
+        <root level="INFO">
             <appender-ref ref="FILE" />
+            <appender-ref ref="ERROR_FILE" />
         </root>
     </springProfile>
     
