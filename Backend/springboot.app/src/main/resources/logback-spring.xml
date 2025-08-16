@@ -13,7 +13,7 @@
             <appender-ref ref="CONSOLE" />
         </root>
         
-        <logger name="com.pomelo.app" level="DEBUG" />
+        <logger name="com.pomelo.app" level="INFO" />
     </springProfile>
     
     <!-- Perfil de producción -->

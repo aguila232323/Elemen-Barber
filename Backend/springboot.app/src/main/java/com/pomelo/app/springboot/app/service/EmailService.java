@@ -57,11 +57,7 @@ public class EmailService {
     @Async
     public void enviarRecordatorioCita(Cita cita) {
         try {
-            System.out.println("📧 INICIANDO ENVÍO DE RECORDATORIO");
-            System.out.println("👤 Cliente: " + cita.getCliente().getNombre());
-            System.out.println("📧 Email destino: " + cita.getCliente().getEmail());
-            System.out.println("📅 Fecha cita: " + cita.getFechaHora());
-            System.out.println("📋 Servicio: " + cita.getServicio().getNombre());
+            // Logs reducidos para evitar rate limiting de Railway
             
             // Verificar que mailSender esté disponible
             if (mailSender == null) {
@@ -86,20 +82,14 @@ public class EmailService {
                 fechaFormateada = cita.getFechaHora().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
             }
             
-            System.out.println("📝 Fecha formateada: " + fechaFormateada);
-            
-            // Crear contenido HTML del email de recordatorio
+                        // Crear contenido HTML del email de recordatorio
             String htmlContent = crearEmailRecordatorioHTML(cita.getCliente().getNombre(), cita.getServicio().getNombre(), 
-                                                         fechaFormateada, cita.getServicio().getDuracionMinutos(), 
-                                                         cita.getServicio().getPrecio());
-            
-            System.out.println("📄 Contenido HTML generado correctamente");
+                                                          fechaFormateada, cita.getServicio().getDuracionMinutos(), 
+                                                          cita.getServicio().getPrecio());
             
             helper.setText(htmlContent, true);
-            
-            System.out.println("📤 Enviando email...");
             mailSender.send(message);
-            System.out.println("✅ Email de recordatorio enviado exitosamente a: " + cita.getCliente().getEmail());
+            // Email enviado exitosamente
             
         } catch (Exception e) {
             System.err.println("❌ Error al enviar email de recordatorio: " + e.getMessage());
