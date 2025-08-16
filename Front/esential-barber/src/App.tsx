@@ -6,6 +6,7 @@ import AdminNavbar from './components/Navbar/AdminNavbar';
 import Inicio from './pages/public/Inicio/Inicio';
 import Portafolio from './pages/public/Portfolio/Portafolio';
 import ContactoResenas from './pages/public/ContactoResenas/ContactoResenas';
+import PoliticaPrivacidad from './pages/public/PoliticaPrivacidad/PoliticaPrivacidad';
 import Login from './pages/auth/Login';
 import Citas from './pages/user/Citas/Citas';
 import Toast from './components/ui/Toast';
@@ -68,6 +69,7 @@ function AppContent() {
           <Route path="/" element={<Inicio />} />
           <Route path="/contacto" element={<ContactoResenas />} />
           <Route path="/portafolio" element={<Portafolio />} />
+          <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
           <Route path="/auth/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
           <Route path="/register" element={<Register />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
@@ -99,7 +101,11 @@ function AppContent() {
         <Toast message="¡Inicio de sesión exitoso!" type="success" onClose={() => setShowLoginToast(false)} />
       )}
       <footer className="footer">
-        © {new Date().getFullYear()} Esential Barber. Todos los derechos reservados. | Contacto: elemenbarber@gmail.com
+        © {new Date().getFullYear()} Esential Barber. Todos los derechos reservados. | 
+        <a href="/politica-privacidad" style={{ color: 'inherit', textDecoration: 'underline', marginLeft: '5px' }}>
+          Política de Privacidad
+        </a> | 
+        Contacto: elemenbarber@gmail.com
       </footer>
     </div>
   );
