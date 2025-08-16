@@ -142,15 +142,14 @@ public class CitaService {
                     }
                 }
                 
-                // Enviar email de cancelación para citas periódicas
+                // Enviar email de cancelación específico para citas periódicas
                 try {
-                    emailService.enviarCancelacionCita(
+                    emailService.enviarCancelacionCitaPeriodica(
                         cita.getCliente().getEmail(),
                         cita.getCliente().getNombre(),
                         cita.getServicio().getNombre(),
-                        cita.getFechaHora(),
-                        cita.getServicio().getDuracionMinutos(),
-                        cita.getServicio().getPrecio()
+                        cita.getPeriodicidadDias(),
+                        citasPeriodicas.size()
                     );
                     System.out.println("✅ Email de cancelación de cita periódica enviado a: " + cita.getCliente().getEmail());
                 } catch (Exception e) {

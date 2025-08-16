@@ -222,7 +222,7 @@ public class EmailService {
             <body>
                 <div class=\"container\">
                     <div class=\"header\">
-                        <img src=\"https://esentialbarber.com/logoElemental.png\" alt=\"Elemen\" style=\"width:80px; border-radius:8px;\">
+                        <img src=\"https://elemenbarber.com/logoElemental.png\" alt=\"Elemen\" style=\"width:80px; border-radius:8px;\">
                         <h1>Elemen</h1>
                         <p>Tu opinión nos ayuda a mejorar</p>
                     </div>
@@ -364,7 +364,7 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <img src="https://esentialbarber.com/logoElemental.png" alt="Elemen" class="logo">
+                        <img src="https://elemenbarber.com/logoElemental.png" alt="Elemen" class="logo">
                         <h1>Elemen</h1>
                         <p>Tu cita ha sido confirmada</p>
                     </div>
@@ -536,7 +536,7 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <img src="https://esentialbarber.com/logoElemental.png" alt="Elemen" class="logo">
+                        <img src="https://elemenbarber.com/logoElemental.png" alt="Elemen" class="logo">
                         <h1>Elemen</h1>
                         <p>Recordatorio de tu cita</p>
                     </div>
@@ -690,7 +690,7 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <img src="https://esentialbarber.com/logoElemental.png" alt="Elemen" class="logo">
+                        <img src="https://elemenbarber.com/logoElemental.png" alt="Elemen" class="logo">
                         <h1>Elemen</h1>
                         <p>Verificación de tu cuenta</p>
                     </div>
@@ -837,7 +837,7 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <img src="https://esentialbarber.com/logoElemental.png" alt="Elemen" class="logo">
+                        <img src="https://elemenbarber.com/logoElemental.png" alt="Elemen" class="logo">
                         <h1>Elemen</h1>
                         <p>Recuperación de Contraseña</p>
                     </div>
@@ -853,24 +853,24 @@ public class EmailService {
                         
                         <p>Para cambiar tu contraseña, haz clic en el siguiente enlace:</p>
                         
-                        <div style="text-align: center; margin: 30px 0;">
-                            <a href="http://localhost:3000/reset-password/%s" 
-                               style="display: inline-block; 
-                                      background: #1976d2; 
-                                      color: white; 
-                                      padding: 15px 30px; 
-                                      text-decoration: none; 
-                                      border-radius: 8px; 
-                                      font-weight: bold; 
-                                      font-size: 16px;">
-                                🔑 Restablecer Contraseña
-                            </a>
-                        </div>
-                        
-                        <p style="color: #666; font-size: 14px; text-align: center;">
-                            O copia y pega este enlace en tu navegador:<br>
-                            <span style="color: #1976d2; word-break: break-all;">http://localhost:3000/reset-password/%s</span>
-                        </p>
+                                                 <div style="text-align: center; margin: 30px 0;">
+                             <a href="https://elemenbarber.com/reset-password/%s" 
+                                style="display: inline-block; 
+                                       background: #1976d2; 
+                                       color: white; 
+                                       padding: 15px 30px; 
+                                       text-decoration: none; 
+                                       border-radius: 8px; 
+                                       font-weight: bold; 
+                                       font-size: 16px;">
+                                 🔑 Restablecer Contraseña
+                             </a>
+                         </div>
+                         
+                         <p style="color: #666; font-size: 14px; text-align: center;">
+                             O copia y pega este enlace en tu navegador:<br>
+                             <span style="color: #1976d2; word-break: break-all;">https://elemenbarber.com/reset-password/%s</span>
+                         </p>
                         
                         <div class="warning">
                             <strong>⚠️ Importante:</strong>
@@ -1051,7 +1051,7 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <img src="https://esentialbarber.com/logoElemental.png" alt="Elemen" class="logo">
+                        <img src="https://elemenbarber.com/logoElemental.png" alt="Elemen" class="logo">
                         <h1>Elemen</h1>
                         <p>🔄 Cita Periódica Creada</p>
                     </div>
@@ -1168,6 +1168,31 @@ public class EmailService {
         }
     }
 
+    @Async
+    public void enviarCancelacionCitaPeriodica(String emailCliente, String nombreCliente, String nombreServicio, 
+                                              int periodicidadDias, int totalCitasCanceladas) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            
+            helper.setTo(emailCliente);
+            helper.setSubject("🔄 Cita Periódica Cancelada - Elemen");
+            helper.setFrom("Elemen Barber <elemenbarber@gmail.com>");
+            
+            // Crear contenido HTML del email de cancelación de cita periódica
+            String htmlContent = crearEmailCancelacionPeriodicaHTML(nombreCliente, nombreServicio, 
+                                                                  periodicidadDias, totalCitasCanceladas);
+            
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+            System.out.println("✅ Email de cancelación de cita periódica enviado a: " + emailCliente);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error al enviar email de cancelación de cita periódica: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private String crearEmailCancelacionHTML(String nombreCliente, String nombreServicio, 
                                            String fechaFormateada, int duracionMinutos, double precio) {
         StringBuilder html = new StringBuilder();
@@ -1206,7 +1231,7 @@ public class EmailService {
         html.append("<body>");
         html.append("<div class=\"container\">");
         html.append("<div class=\"header\">");
-        html.append("<img src=\"https://esentialbarber.com/logoElemental.png\" alt=\"Elemen\" class=\"logo\">");
+        html.append("<img src=\"https://elemenbarber.com/logoElemental.png\" alt=\"Elemen\" class=\"logo\">");
         html.append("<h1>Elemen</h1>");
         html.append("<p>❌ Cita Cancelada</p>");
         html.append("</div>");
@@ -1260,5 +1285,228 @@ public class EmailService {
         html.append("</html>");
         
         return html.toString();
+    }
+
+    private String crearEmailCancelacionPeriodicaHTML(String nombreCliente, String nombreServicio, 
+                                                     int periodicidadDias, int totalCitasCanceladas) {
+        return String.format("""
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Cita Periódica Cancelada - Elemen</title>
+                <style>
+                    body {
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        background-color: #f8f9fa;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    .container {
+                        max-width: 600px;
+                        margin: 0 auto;
+                        background: white;
+                        border-radius: 12px;
+                        overflow: hidden;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    }
+                    .header {
+                        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+                        color: white;
+                        text-align: center;
+                        padding: 30px 20px;
+                    }
+                    .logo {
+                        width: 80px;
+                        height: 80px;
+                        border-radius: 50%;
+                        margin-bottom: 15px;
+                    }
+                    .header h1 {
+                        margin: 0;
+                        font-size: 28px;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                    }
+                    .header p {
+                        margin: 10px 0 0 0;
+                        font-size: 16px;
+                        opacity: 0.9;
+                    }
+                    .content {
+                        padding: 40px 30px;
+                    }
+                    .greeting {
+                        font-size: 20px;
+                        font-weight: 600;
+                        margin-bottom: 25px;
+                        color: #2c3e50;
+                    }
+                    .cancellation-message {
+                        background: #fff5f5;
+                        border: 1px solid #fed7d7;
+                        border-radius: 8px;
+                        padding: 20px;
+                        margin-bottom: 25px;
+                        text-align: center;
+                    }
+                    .cancellation-message strong {
+                        color: #c53030;
+                        font-size: 18px;
+                    }
+                    .periodic-details {
+                        background: #f8f9fa;
+                        border-radius: 8px;
+                        padding: 25px;
+                        margin-bottom: 25px;
+                    }
+                    .detail-row {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 12px 0;
+                        border-bottom: 1px solid #e9ecef;
+                    }
+                    .detail-row:last-child {
+                        border-bottom: none;
+                    }
+                    .detail-label {
+                        font-weight: 600;
+                        color: #495057;
+                        min-width: 120px;
+                    }
+                    .detail-value {
+                        color: #6c757d;
+                        text-align: right;
+                        font-weight: 500;
+                    }
+                    .stats-container {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                        gap: 15px;
+                        margin: 25px 0;
+                    }
+                    .stat-card {
+                        background: white;
+                        border-radius: 8px;
+                        padding: 20px;
+                        text-align: center;
+                        border: 2px solid #e9ecef;
+                        transition: all 0.3s ease;
+                    }
+                    .stat-card:hover {
+                        border-color: #dc3545;
+                        transform: translateY(-2px);
+                    }
+                    .stat-number {
+                        font-size: 32px;
+                        font-weight: 700;
+                        color: #dc3545;
+                        margin-bottom: 5px;
+                    }
+                    .stat-label {
+                        font-size: 14px;
+                        color: #666;
+                        font-weight: 600;
+                    }
+                    .info-section {
+                        background: #e3f2fd;
+                        border: 1px solid #bbdefb;
+                        border-radius: 8px;
+                        padding: 20px;
+                        margin-bottom: 25px;
+                    }
+                    .info-section strong {
+                        color: #1976d2;
+                        display: block;
+                        margin-bottom: 10px;
+                    }
+                    .info-section ul {
+                        margin: 10px 0;
+                        padding-left: 20px;
+                    }
+                    .info-section li {
+                        margin-bottom: 8px;
+                        color: #1565c0;
+                    }
+                    .footer {
+                        background: #f8f9fa;
+                        padding: 25px 30px;
+                        text-align: center;
+                        border-top: 1px solid #e9ecef;
+                    }
+                    .footer-logo {
+                        font-size: 24px;
+                        font-weight: 700;
+                        margin-bottom: 10px;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                    }
+                    .contact-info {
+                        margin-top: 15px;
+                        color: #6c757d;
+                        font-size: 14px;
+                        line-height: 1.5;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <img src="https://elemenbarber.com/logoElemental.png" alt="Elemen" class="logo">
+                        <h1>Elemen</h1>
+                        <p>🔄 Cita Periódica Cancelada</p>
+                    </div>
+                    <div class="content">
+                        <div class="greeting">¡Hola %s!</div>
+                        <div class="cancellation-message">
+                            <strong>🔄 Tu cita periódica ha sido cancelada</strong>
+                        </div>
+                        <p>Te informamos que tu cita periódica ha sido cancelada exitosamente. Aquí tienes los detalles:</p>
+                        <div class="periodic-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Servicio:</span>
+                                <span class="detail-value">%s</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Periodicidad:</span>
+                                <span class="detail-value">Cada %d días</span>
+                            </div>
+                        </div>
+                        <div class="stats-container">
+                            <div class="stat-card">
+                                <div class="stat-number">%d</div>
+                                <div class="stat-label">Citas Canceladas</div>
+                            </div>
+                        </div>
+                        <div class="info-section">
+                            <strong>📋 Información importante:</strong>
+                            <ul>
+                                <li>Todas las citas periódicas han sido canceladas</li>
+                                <li>No se te cobrará ningún cargo por la cancelación</li>
+                                <li>Puedes crear una nueva cita periódica cuando lo desees</li>
+                                <li>Si tienes alguna pregunta, no dudes en contactarnos</li>
+                            </ul>
+                        </div>
+                        <p style="color: #6c757d; font-size: 14px;">
+                            Para crear una nueva cita periódica, visita nuestra aplicación o contacta con nosotros directamente.
+                        </p>
+                    </div>
+                    <div class="footer">
+                        <div class="footer-logo">Elemen</div>
+                        <p>¡Gracias por tu comprensión!</p>
+                        <div class="contact-info">
+                            📞 Contacto: +34 683 23 55 47<br>
+                            📧 Email: elemenbarber@gmail.com
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """, nombreCliente, nombreServicio, periodicidadDias, totalCitasCanceladas);
     }
 } 
