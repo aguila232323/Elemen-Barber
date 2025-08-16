@@ -69,9 +69,13 @@ public class CitaService {
         
         // Intentar crear eventos en Google Calendar para usuarios de Google y admin
         try {
-                            // Crear eventos en Google Calendar
-                Usuario usuarioActualizado = usuarioRepository.findByEmail(citaGuardada.getCliente().getEmail()).orElse(citaGuardada.getCliente());
-                googleCalendarService.createCalendarEventsForUserAndAdmin(citaGuardada, usuarioActualizado);
+            System.out.println("🎯 Intentando crear eventos en Google Calendar...");
+            
+            // Recargar el usuario desde la base de datos para obtener los tokens más recientes
+            Usuario usuarioActualizado = usuarioRepository.findByEmail(citaGuardada.getCliente().getEmail()).orElse(citaGuardada.getCliente());
+            
+            googleCalendarService.createCalendarEventsForUserAndAdmin(citaGuardada, usuarioActualizado);
+            System.out.println("✅ Eventos de Google Calendar creados exitosamente");
         } catch (Exception e) {
             // No fallar la creación de la cita si falla el Google Calendar
             System.err.println("❌ Error al crear eventos en Google Calendar: " + e.getMessage());
