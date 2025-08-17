@@ -24,6 +24,39 @@ public class PortfolioController {
     }
 
     /**
+     * Endpoint de diagnóstico para verificar el estado de la BD
+     */
+    @GetMapping("/diagnostico")
+    public ResponseEntity<?> diagnostico() {
+        try {
+            List<Portfolio> todasLasFotos = portfolioService.obtenerTodasLasFotos();
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("totalFotos", todasLasFotos.size());
+            response.put("fotosActivas", portfolioService.contarFotosActivas());
+            response.put("timestamp", java.time.LocalDateTime.now());
+            
+            // Verificar estructura de la primera foto si existe
+            if (!todasLasFotos.isEmpty()) {
+                Portfolio primeraFoto = todasLasFotos.get(0);
+                Map<String, Object> fotoInfo = new HashMap<>();
+                fotoInfo.put("id", primeraFoto.getId());
+                fotoInfo.put("nombre", primeraFoto.getNombre());
+                fotoInfo.put("tieneImagenUrl", primeraFoto.getImagenUrl() != null);
+                fotoInfo.put("activo", primeraFoto.getActivo());
+                response.put("primeraFoto", fotoInfo);
+            }
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Error en diagnóstico");
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    /**
      * Obtiene fotos optimizadas para móviles (máximo 5 fotos)
      */
     @GetMapping("/fotos-mobile")
