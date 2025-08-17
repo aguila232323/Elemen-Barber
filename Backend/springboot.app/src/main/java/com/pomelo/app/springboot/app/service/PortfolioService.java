@@ -34,8 +34,8 @@ public class PortfolioService {
     /**
      * Añade una nueva foto al portfolio
      */
-    public Portfolio añadirFoto(String nombre, String imagenBase64, String urlInstagram) {
-        Portfolio nuevaFoto = new Portfolio(nombre, imagenBase64, urlInstagram);
+    public Portfolio añadirFoto(String nombre, String imagenUrl, String urlInstagram) {
+        Portfolio nuevaFoto = new Portfolio(nombre, imagenUrl, urlInstagram);
         return portfolioRepository.save(nuevaFoto);
     }
     

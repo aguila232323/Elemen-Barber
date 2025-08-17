@@ -24,12 +24,40 @@ public class PortfolioController {
     }
 
     /**
+     * Obtiene fotos optimizadas para móviles (máximo 5 fotos)
+     */
+    @GetMapping("/fotos-mobile")
+    public ResponseEntity<?> obtenerFotosMobile() {
+        try {
+            List<Portfolio> fotos = portfolioService.obtenerFotosActivas();
+            
+            // Limitamos a 5 fotos para móviles
+            if (fotos.size() > 5) {
+                fotos = fotos.subList(0, 5);
+            }
+            
+            return ResponseEntity.ok(fotos);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Error al obtener las fotos del portfolio");
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    /**
      * Obtiene todas las fotos activas del portfolio (público)
      */
     @GetMapping("/fotos")
     public ResponseEntity<?> obtenerFotos() {
         try {
             List<Portfolio> fotos = portfolioService.obtenerFotosActivas();
+            
+            // Optimización: limitar a 10 fotos más recientes para móviles
+            if (fotos.size() > 10) {
+                fotos = fotos.subList(0, 10);
+            }
+            
             return ResponseEntity.ok(fotos);
         } catch (Exception e) {
             Map<String, String> errorResponse = new HashMap<>();
@@ -62,17 +90,17 @@ public class PortfolioController {
     public ResponseEntity<?> añadirFoto(@RequestBody Map<String, String> request) {
         try {
             String nombre = request.get("nombre");
-            String imagenBase64 = request.get("imagenBase64");
+            String imagenUrl = request.get("imagenUrl");
             String urlInstagram = request.get("urlInstagram");
 
-            if (nombre == null || imagenBase64 == null) {
+            if (nombre == null || imagenUrl == null) {
                 Map<String, String> errorResponse = new HashMap<>();
                 errorResponse.put("error", "Datos incompletos");
-                errorResponse.put("message", "El nombre y la imagen son obligatorios");
+                errorResponse.put("message", "El nombre y la URL de la imagen son obligatorios");
                 return ResponseEntity.badRequest().body(errorResponse);
             }
 
-            Portfolio nuevaFoto = portfolioService.añadirFoto(nombre, imagenBase64, urlInstagram != null ? urlInstagram : "");
+            Portfolio nuevaFoto = portfolioService.añadirFoto(nombre, imagenUrl, urlInstagram != null ? urlInstagram : "");
             
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Foto añadida correctamente");

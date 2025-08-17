@@ -14,8 +14,8 @@ public class Portfolio {
     @Column(name = "nombre", nullable = false)
     private String nombre;
     
-    @Column(name = "imagen_base64", columnDefinition = "TEXT")
-    private String imagenBase64;
+    @Column(name = "imagen_url")
+    private String imagenUrl;
     
     @Column(name = "url_instagram")
     private String urlInstagram;
@@ -32,9 +32,9 @@ public class Portfolio {
     }
     
     // Constructor con parámetros
-    public Portfolio(String nombre, String imagenBase64, String urlInstagram) {
+    public Portfolio(String nombre, String imagenUrl, String urlInstagram) {
         this.nombre = nombre;
-        this.imagenBase64 = imagenBase64;
+        this.imagenUrl = imagenUrl;
         this.urlInstagram = urlInstagram;
         this.fechaCreacion = LocalDateTime.now();
         this.activo = true;
@@ -57,12 +57,12 @@ public class Portfolio {
         this.nombre = nombre;
     }
     
-    public String getImagenBase64() {
-        return imagenBase64;
+    public String getImagenUrl() {
+        return imagenUrl;
     }
     
-    public void setImagenBase64(String imagenBase64) {
-        this.imagenBase64 = imagenBase64;
+    public void setImagenUrl(String imagenUrl) {
+        this.imagenUrl = imagenUrl;
     }
     
     public String getUrlInstagram() {
