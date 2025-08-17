@@ -14,9 +14,6 @@ public class Portfolio {
     @Column(name = "nombre", nullable = false)
     private String nombre;
     
-    @Column(name = "imagen_base64", columnDefinition = "TEXT")
-    private String imagenBase64;
-    
     @Column(name = "imagen_url")
     private String imagenUrl;
     
@@ -38,7 +35,6 @@ public class Portfolio {
     public Portfolio(String nombre, String imagenUrl, String urlInstagram) {
         this.nombre = nombre;
         this.imagenUrl = imagenUrl;
-        this.imagenBase64 = null; // No usar Base64
         this.urlInstagram = urlInstagram;
         this.fechaCreacion = LocalDateTime.now();
         this.activo = true;
@@ -59,14 +55,6 @@ public class Portfolio {
     
     public void setNombre(String nombre) {
         this.nombre = nombre;
-    }
-    
-    public String getImagenBase64() {
-        return imagenBase64;
-    }
-    
-    public void setImagenBase64(String imagenBase64) {
-        this.imagenBase64 = imagenBase64;
     }
     
     public String getImagenUrl() {
