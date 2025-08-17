@@ -1,0 +1,1211 @@
+/* ===== PORTFOLIO RESPONSIVE ===== */
+
+/* Contenedor principal */
+.portafolioContainer {
+  background: #121212;
+  min-height: 100vh;
+  padding: 2.5rem 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.portafolioSection {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 4vw;
+}
+
+.portafolioTitulo {
+  color: #fff;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.portafolioContent {
+  background: #fff;
+  border-radius: 1.2rem;
+  padding: 2.5rem 3vw;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Galería de fotos */
+.galeria {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  animation: fadeInUp 0.6s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fotos individuales */
+.foto {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  min-height: 350px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 18px;
+  box-shadow: 0 16px 48px 0 rgba(0,0,0,0.38), 0 2px 8px 0 rgba(0,0,0,0.18);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+
+.fotoClickable {
+  cursor: pointer;
+}
+
+.fotoClickable:hover {
+  transform: scale(1.06);
+  z-index: 2;
+  box-shadow: 0 32px 80px 0 rgba(0,0,0,0.48), 0 4px 16px 0 rgba(0,0,0,0.22);
+}
+
+.fotoClickable:focus {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Botón de eliminar foto (solo para admin) */
+.deletePhotoBtn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(244, 67, 54, 0.9);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: scale(0.8);
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.foto:hover .deletePhotoBtn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.deletePhotoBtn:hover {
+  background: rgba(244, 67, 54, 1);
+  transform: scale(1.05);
+}
+
+.deletePhotoBtn span {
+  font-size: 12px;
+}
+
+/* Botón flotante de admin */
+.adminButtons {
+  position: fixed;
+  bottom: 120px;
+  right: 30px;
+  z-index: 1000;
+}
+
+.addPhotoBtn {
+  background: linear-gradient(135deg, #64b5f6, #42a5f5);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(100, 181, 246, 0.4);
+  position: relative;
+  white-space: nowrap;
+}
+
+.addPhotoBtn:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 12px 32px rgba(100, 181, 246, 0.6);
+}
+
+.addPhotoBtn:active {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.addPhotoBtn span {
+  display: inline;
+  font-size: 0.9rem;
+}
+
+/* Animación de pulso para el botón flotante */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 8px 24px rgba(100, 181, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 8px 24px rgba(100, 181, 246, 0.6), 0 0 0 8px rgba(100, 181, 246, 0.1);
+  }
+  100% {
+    box-shadow: 0 8px 24px rgba(100, 181, 246, 0.4);
+  }
+}
+
+.addPhotoBtn {
+  animation: pulse 2s infinite;
+}
+
+.addPhotoBtn:hover {
+  animation: none;
+}
+
+/* Modal de admin */
+.adminModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease;
+}
+
+.adminModalContent {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border: 1px solid rgba(100, 181, 246, 0.3);
+  border-radius: 20px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  animation: modalSlideIn 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.adminModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 0 24px;
+  margin-bottom: 20px;
+}
+
+.adminModalHeader h3 {
+  color: #64b5f6;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  background: linear-gradient(135deg, #64b5f6, #42a5f5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.adminModalCloseBtn {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+}
+
+.adminModalCloseBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.adminModalBody {
+  padding: 0 24px 24px 24px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Contenedor de input de archivo */
+.fileInputContainer {
+  margin-bottom: 24px;
+}
+
+.fileInput {
+  display: none;
+}
+
+.fileInputLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  border: 2px dashed rgba(100, 181, 246, 0.4);
+  border-radius: 16px;
+  background: rgba(100, 181, 246, 0.05);
+  color: #64b5f6;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  gap: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.fileInputLabel:hover {
+  border-color: rgba(100, 181, 246, 0.6);
+  background: rgba(100, 181, 246, 0.1);
+  transform: translateY(-2px);
+}
+
+.fileInputLabel svg {
+  font-size: 2rem;
+  color: #64b5f6;
+}
+
+/* Información del archivo seleccionado */
+.selectedFileInfo {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.selectedFileInfo p {
+  color: #ccc;
+  margin: 4px 0;
+  font-size: 0.9rem;
+}
+
+/* Acciones del modal */
+.adminModalActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.cancelBtn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ccc;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancelBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.addBtn {
+  background: linear-gradient(135deg, #64b5f6, #42a5f5);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.addBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(100, 181, 246, 0.3);
+}
+
+.addBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Overlay para fotos clickeables */
+.fotoClickable::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.fotoClickable:hover::after {
+  opacity: 1;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modalContent {
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  border-radius: 0;
+  max-width: 400px;
+  width: 100%;
+  min-width: 326px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: slideInUp 0.3s ease;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modalCloseBtn {
+  position: absolute;
+  top: -18px;
+  right: -18px;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transition: all 0.3s ease;
+}
+
+.modalCloseBtn:hover {
+  background: #333;
+  transform: scale(1.1);
+}
+
+.closeIcon {
+  display: block;
+  width: 100%;
+  text-align: center;
+  line-height: 36px;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.instagramEmbed {
+  width: 100%;
+  max-width: 400px;
+  min-width: 326px;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 1024px) {
+  .portafolioSection {
+    padding: 0 3vw;
+  }
+  
+  .portafolioContent {
+    padding: 2rem 2.5vw;
+    max-width: 95%;
+  }
+  
+  .galeria {
+    gap: 1.5rem;
+  }
+  
+  .foto {
+    min-height: 300px;
+  }
+  
+  .adminModalContent {
+    max-width: 90%;
+  }
+  
+  .deleteModalContent {
+    max-width: 90%;
+  }
+}
+
+/* Tablets pequeñas */
+@media (max-width: 900px) {
+  .portafolioSection {
+    padding: 0 2.5vw;
+  }
+  
+  .galeria {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  
+  .foto {
+    min-height: 280px;
+  }
+  
+  .portafolioContent {
+    padding: 1.8rem 2vw;
+  }
+  
+  .adminModalContent {
+    max-width: 95%;
+  }
+  
+  .deleteModalContent {
+    max-width: 95%;
+  }
+}
+
+/* Móviles grandes */
+@media (max-width: 768px) {
+  .portafolioContainer {
+    padding: 2rem 0;
+  }
+  
+  .portafolioSection {
+    padding: 0 2vw;
+  }
+  
+  .portafolioContent {
+    padding: 1.5rem 1.5vw;
+    border-radius: 1rem;
+  }
+  
+  .galeria {
+    gap: 1.2rem;
+  }
+  
+  .foto {
+    min-height: 250px;
+    border-radius: 12px;
+  }
+  
+  .fotoClickable:hover {
+    transform: scale(1.04);
+  }
+  
+  .deletePhotoBtn {
+    padding: 6px 10px;
+    font-size: 12px;
+    top: 10px;
+    right: 10px;
+  }
+  
+  .deletePhotoBtn span {
+    font-size: 10px;
+  }
+  
+  .adminButtons {
+    bottom: 100px;
+    right: 20px;
+  }
+  
+  .addPhotoBtn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+  
+  .addPhotoBtn span {
+    font-size: 0.8rem;
+  }
+  
+  .adminModalContent {
+    max-width: 95%;
+    border-radius: 16px;
+  }
+  
+  .adminModalHeader {
+    padding: 20px 20px 0 20px;
+  }
+  
+  .adminModalHeader h3 {
+    font-size: 1.3rem;
+  }
+  
+  .adminModalBody {
+    padding: 0 20px 20px 20px;
+  }
+  
+  .fileInputLabel {
+    padding: 30px 16px;
+    font-size: 0.9rem;
+  }
+  
+  .fileInputLabel svg {
+    font-size: 1.5rem;
+  }
+}
+
+/* Móviles medianos */
+@media (max-width: 600px) {
+  .portafolioSection {
+    padding: 0 1.5vw;
+  }
+  
+  .galeria {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .foto {
+    min-height: 220px;
+    border-radius: 10px;
+  }
+  
+  .portafolioContent {
+    padding: 1.2rem 1.5vw;
+  }
+  
+  .fotoClickable:hover {
+    transform: scale(1.02);
+  }
+  
+  .adminModalContent {
+    max-width: 98%;
+    border-radius: 12px;
+  }
+  
+  .deleteModalContent {
+    max-width: 98%;
+    border-radius: 12px;
+  }
+  
+  .adminModalHeader {
+    padding: 16px 16px 0 16px;
+  }
+  
+  .adminModalHeader h3 {
+    font-size: 1.2rem;
+  }
+  
+  .adminModalBody {
+    padding: 0 16px 16px 16px;
+  }
+  
+  .fileInputLabel {
+    padding: 24px 12px;
+    font-size: 0.85rem;
+  }
+  
+  .fileInputLabel svg {
+    font-size: 1.3rem;
+  }
+  
+  .adminModalActions {
+    flex-direction: column;
+  }
+  
+  .cancelBtn,
+  .addBtn {
+    width: 100%;
+    padding: 12px;
+  }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+  .portafolioContainer {
+    padding: 1.5rem 0;
+  }
+  
+  .portafolioSection {
+    padding: 0 1vw;
+  }
+  
+  .portafolioContent {
+    padding: 1rem 1.2vw;
+    border-radius: 0.8rem;
+  }
+  
+  .galeria {
+    gap: 0.8rem;
+  }
+  
+  .foto {
+    min-height: 200px;
+    border-radius: 8px;
+  }
+  
+  .modalContent {
+    max-width: 95%;
+    min-width: 280px;
+  }
+  
+  .modalCloseBtn {
+    width: 32px;
+    height: 32px;
+    top: -16px;
+    right: -16px;
+  }
+  
+  .closeIcon {
+    line-height: 32px;
+    font-size: 1.1rem;
+  }
+  
+  .instagramEmbed {
+    max-width: 95%;
+    min-width: 280px;
+  }
+  
+  .deletePhotoBtn {
+    padding: 5px 8px;
+    font-size: 11px;
+    top: 8px;
+    right: 8px;
+  }
+  
+  .deletePhotoBtn span {
+    font-size: 9px;
+  }
+  
+  .adminButtons {
+    bottom: 80px;
+    right: 15px;
+  }
+  
+  .addPhotoBtn {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+  }
+  
+  .addPhotoBtn span {
+    font-size: 0.75rem;
+  }
+  
+  .adminModalContent {
+    max-width: 98%;
+    border-radius: 10px;
+  }
+  
+  .deleteModalContent {
+    max-width: 98%;
+    border-radius: 10px;
+  }
+  
+  .adminModalHeader {
+    padding: 12px 12px 0 12px;
+  }
+  
+  .adminModalHeader h3 {
+    font-size: 1.1rem;
+  }
+  
+  .adminModalBody {
+    padding: 0 12px 12px 12px;
+  }
+  
+  .fileInputLabel {
+    padding: 20px 10px;
+    font-size: 0.8rem;
+  }
+  
+  .fileInputLabel svg {
+    font-size: 1.2rem;
+  }
+  
+  .selectedFileInfo {
+    padding: 12px;
+  }
+  
+  .selectedFileInfo p {
+    font-size: 0.8rem;
+  }
+}
+
+/* Móviles muy pequeños */
+@media (max-width: 360px) {
+  .portafolioContainer {
+    padding: 1rem 0;
+  }
+  
+  .portafolioSection {
+    padding: 0 0.8vw;
+  }
+  
+  .portafolioContent {
+    padding: 0.8rem 1vw;
+    border-radius: 0.6rem;
+  }
+  
+  .galeria {
+    gap: 0.6rem;
+  }
+  
+  .foto {
+    min-height: 180px;
+    border-radius: 6px;
+  }
+  
+  .modalContent {
+    max-width: 98%;
+    min-width: 260px;
+  }
+  
+  .instagramEmbed {
+    max-width: 98%;
+    min-width: 260px;
+  }
+  
+  .deletePhotoBtn {
+    padding: 4px 6px;
+    font-size: 10px;
+    top: 6px;
+    right: 6px;
+  }
+  
+  .deletePhotoBtn span {
+    font-size: 8px;
+  }
+  
+  .adminButtons {
+    bottom: 60px;
+    right: 10px;
+  }
+  
+  .addPhotoBtn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .addPhotoBtn span {
+    font-size: 0.7rem;
+  }
+  
+  .adminModalContent {
+    max-width: 99%;
+    border-radius: 8px;
+  }
+  
+  .deleteModalContent {
+    max-width: 99%;
+    border-radius: 8px;
+  }
+  
+  .adminModalHeader {
+    padding: 10px 10px 0 10px;
+  }
+  
+  .adminModalHeader h3 {
+    font-size: 1rem;
+  }
+  
+  .adminModalBody {
+    padding: 0 10px 10px 10px;
+  }
+  
+  .fileInputLabel {
+    padding: 16px 8px;
+    font-size: 0.75rem;
+  }
+  
+  .fileInputLabel svg {
+    font-size: 1.1rem;
+  }
+}
+
+/* Orientación landscape en móviles */
+@media (max-width: 768px) and (orientation: landscape) {
+  .portafolioContainer {
+    padding: 1rem 0;
+  }
+  
+  .portafolioSection {
+    padding: 0 3vw;
+  }
+  
+  .galeria {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .foto {
+    min-height: 180px;
+  }
+  
+  .modalContent {
+    max-width: 80%;
+  }
+  
+  .adminModalContent {
+    max-width: 80%;
+  }
+  
+  .deleteModalContent {
+    max-width: 80%;
+  }
+}
+
+/* Mejoras para dispositivos táctiles */
+@media (hover: none) and (pointer: coarse) {
+  .fotoClickable:hover {
+    transform: none;
+  }
+  
+  .fotoClickable:active {
+    transform: scale(0.98);
+  }
+  
+  .modalCloseBtn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .foto {
+    min-height: 200px;
+  }
+  
+  .deletePhotoBtn {
+    opacity: 1;
+    transform: scale(1);
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  
+  .deletePhotoBtn span {
+    font-size: 12px;
+  }
+  
+  .addPhotoBtn {
+    min-height: 44px;
+    padding: 12px 20px;
+    font-size: 1rem;
+  }
+  
+  .addPhotoBtn span {
+  font-size: 0.9rem;
+}
+
+/* Modal de confirmación de eliminación */
+.deleteModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  animation: fadeIn 0.3s ease;
+}
+
+.deleteModalContent {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  border-radius: 20px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  animation: modalSlideIn 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.deleteModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 0 24px;
+  margin-bottom: 20px;
+}
+
+.deleteModalHeader h3 {
+  color: #f44336;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.deleteModalCloseBtn {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+}
+
+.deleteModalCloseBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.deleteModalBody {
+  padding: 0 24px 24px 24px;
+  text-align: center;
+}
+
+.deleteModalIcon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.deleteModalIcon svg {
+  font-size: 3rem;
+  color: #f44336;
+}
+
+.deleteModalText {
+  color: #fff;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.deleteModalWarning {
+  color: #f44336;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.deleteModalActions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.cancelDeleteBtn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ccc;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancelDeleteBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.confirmDeleteBtn {
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.confirmDeleteBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+}
+  
+  .adminModalCloseBtn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Mejoras para pantallas de alta densidad */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .foto {
+    box-shadow: 0 8px 24px 0 rgba(0,0,0,0.3), 0 1px 4px 0 rgba(0,0,0,0.12);
+  }
+  
+  .fotoClickable:hover {
+    box-shadow: 0 16px 40px 0 rgba(0,0,0,0.4), 0 2px 8px 0 rgba(0,0,0,0.15);
+  }
+}
+
+/* Animaciones escalonadas para las fotos */
+.foto {
+  animation: fadeInUp 0.6s ease;
+  animation-fill-mode: both;
+}
+
+.foto:nth-child(1) { animation-delay: 0.1s; }
+.foto:nth-child(2) { animation-delay: 0.2s; }
+.foto:nth-child(3) { animation-delay: 0.3s; }
+.foto:nth-child(4) { animation-delay: 0.4s; }
+.foto:nth-child(5) { animation-delay: 0.5s; }
+.foto:nth-child(6) { animation-delay: 0.6s; }
+.foto:nth-child(7) { animation-delay: 0.7s; }
+.foto:nth-child(8) { animation-delay: 0.8s; }
+.foto:nth-child(9) { animation-delay: 0.9s; }
+
+/* Mejoras de accesibilidad */
+.fotoClickable:focus-visible {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Optimización para carga de imágenes */
+.foto {
+  background-color: #f5f5f5;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Efectos de carga */
+.foto::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.foto.loading::before {
+  opacity: 1;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Loading State */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #64b5f6;
+  min-height: 50vh;
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(100, 181, 246, 0.3);
+  border-top: 3px solid #64b5f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loadingText {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Error State */
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #f44336;
+  min-height: 50vh;
+}
+
+.errorIcon {
+  font-size: 2rem;
+  margin-bottom: 16px;
+}
+
+.errorText {
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+}

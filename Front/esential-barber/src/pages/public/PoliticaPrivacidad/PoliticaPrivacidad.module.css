@@ -1,0 +1,128 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-tertiary) 100%);
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.content {
+  max-width: 800px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: var(--border-radius-2xl);
+  padding: 40px;
+  box-shadow: var(--shadow-2xl);
+  backdrop-filter: blur(10px);
+  margin: 20px 0;
+}
+
+.title {
+  color: var(--text-dark);
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+  margin-bottom: 30px;
+  border-bottom: 3px solid var(--primary-color);
+  padding-bottom: 15px;
+}
+
+.section {
+  margin-bottom: 30px;
+}
+
+.section h2 {
+  color: var(--primary-color);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: 15px;
+  border-left: 4px solid var(--primary-color);
+  padding-left: 15px;
+}
+
+.section h3 {
+  color: var(--text-dark);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin: 20px 0 10px 0;
+}
+
+.section p {
+  color: var(--text-dark);
+  line-height: 1.6;
+  margin-bottom: 15px;
+  font-size: var(--font-size-base);
+}
+
+.section ul {
+  margin: 15px 0;
+  padding-left: 20px;
+}
+
+.section li {
+  color: var(--text-dark);
+  line-height: 1.6;
+  margin-bottom: 8px;
+  font-size: var(--font-size-base);
+}
+
+.lastUpdated {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: var(--border-radius-lg);
+  border-left: 4px solid var(--primary-color);
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.contactInfo {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: var(--border-radius-lg);
+  border: 1px solid #e9ecef;
+  margin-top: 15px;
+}
+
+.contactInfo p {
+  margin: 8px 0;
+  color: var(--text-dark);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+  
+  .content {
+    padding: 25px;
+    margin: 10px 0;
+  }
+  
+  .title {
+    font-size: var(--font-size-3xl);
+  }
+  
+  .section h2 {
+    font-size: var(--font-size-xl);
+  }
+  
+  .section h3 {
+    font-size: var(--font-size-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 20px;
+  }
+  
+  .title {
+    font-size: var(--font-size-2xl);
+  }
+  
+  .section h2 {
+    font-size: var(--font-size-lg);
+  }
+}

@@ -1,0 +1,197 @@
+.loginForm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  background: linear-gradient(135deg, #23272f 60%, #1976d2 100%);
+  border-radius: 20px;
+  box-shadow: 0 8px 40px 0 rgba(25, 118, 210, 0.18), 0 1.5px 8px 0 rgba(0,0,0,0.10);
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  min-width: 280px;
+  max-width: 370px;
+  margin: 0 auto;
+  position: relative;
+}
+.loginForm h2 {
+  color: #fff;
+  font-size: 1.7rem;
+  font-weight: 900;
+  margin-bottom: 1rem;
+  letter-spacing: 1.2px;
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(25,118,210,0.10);
+}
+.loginField, .loginInput, .loginButton, .loginGoogle, .loginDivider {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+.loginInput {
+  padding: 1rem 1.1rem 1rem 2.3rem;
+  border-radius: 12px;
+  border: 1.5px solid #3a4050;
+  font-size: 1.08rem;
+  background: #181b22;
+  color: #fff;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s, background 0.2s;
+  box-shadow: 0 1.5px 8px 0 rgba(25, 118, 210, 0.07);
+  text-align: left;
+  height: 44px;
+  margin-bottom: 0;
+}
+.loginInput:focus {
+  border: 1.7px solid var(--primary-color);
+  background: #23272f;
+}
+.loginInput::placeholder {
+  color: #b0b0b0;
+  font-size: 1.13rem;
+  opacity: 0.95;
+  text-align: left;
+}
+.loginError {
+  color: #fff;
+  font-size: 1.08rem;
+  background: #e74c3c;
+  border-radius: 9px;
+  padding: 0.8rem 1.1rem;
+  border: none;
+  text-align: center;
+  margin-bottom: -0.7rem;
+  width: 100%;
+  box-shadow: 0 2px 8px rgba(231,76,60,0.10);
+}
+.loginMsg {
+  color: #43b94a;
+  font-size: 1rem;
+  background: #182a18;
+  border-radius: 7px;
+  padding: 0.7rem 1rem;
+  border: 1px solid #43b94a;
+  text-align: center;
+  margin-bottom: -0.7rem;
+  width: 100%;
+}
+.loginButton {
+  background: linear-gradient(90deg, #1976d2 60%, #43b94a 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 0;
+  height: 56px;
+  font-size: 1.18rem;
+  font-weight: 900;
+  cursor: pointer;
+  margin-top: 0.2rem;
+  box-shadow: 0 2px 12px rgba(25,118,210,0.13);
+  transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
+  letter-spacing: 1.2px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.loginButton:hover {
+  background: linear-gradient(90deg, #1251a3 60%, #43b94a 100%);
+  box-shadow: 0 4px 18px rgba(25,118,210,0.18);
+}
+.loginButton:active {
+  transform: scale(0.98);
+}
+.loginButton:disabled {
+  background: #b0b0b0;
+  color: #fff;
+  cursor: not-allowed;
+}
+.loginDivider {
+  background: transparent;
+  color: #b0b0b0;
+  font-size: 1.13rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-align: center;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.3rem 0 0.3rem 0;
+  border-radius: 12px;
+}
+.loginGoogle {
+  background: #fff;
+  color: #1976d2;
+  border: 2.2px solid #1976d2;
+  border-radius: 12px;
+  padding: 0;
+  height: 56px;
+  font-weight: 800;
+  font-size: 1.18rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  box-shadow: 0 1.5px 8px 0 rgba(25, 118, 210, 0.07);
+  transition: background 0.18s, color 0.18s, border 0.18s;
+  text-align: center;
+  margin-top: 0.2rem;
+}
+.loginGoogle:hover {
+  background: #f7f8fa;
+  color: #1251a3;
+  border: 2.2px solid #43b94a;
+}
+.loginRegister {
+  text-align: center;
+  margin-top: 0.8rem;
+  color: #eee;
+  font-size: 1.05rem;
+  font-weight: 600;
+  width: 100%;
+}
+.loginRegisterLink {
+  color: var(--primary-color);
+  font-weight: 900;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-left: 2px;
+  transition: color 0.18s;
+}
+.loginRegisterLink:hover {
+  color: #64b5f6;
+}
+.inputIcon {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--primary-color);
+  font-size: 1.35rem;
+  pointer-events: none;
+  opacity: 0.95;
+}
+.loginButton, .loginGoogle, .loginDivider {
+  height: 44px;
+  font-size: 1.08rem;
+  border-radius: 12px;
+}
+@media (max-width: 480px) {
+  .loginForm {
+    padding: 1rem 0.2rem 1rem 0.2rem;
+    min-width: 0;
+    max-width: 98vw;
+    border-radius: 12px;
+  }
+  .loginField, .loginInput, .loginButton, .loginGoogle, .loginDivider {
+    border-radius: 9px;
+    height: 38px;
+    font-size: 0.98rem;
+  }
+  .inputIcon {
+    font-size: 1.08rem;
+    left: 0.6rem;
+  }
+} 

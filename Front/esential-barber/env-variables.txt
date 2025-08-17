@@ -1,0 +1,26 @@
+# ========================================
+# VARIABLES DE ENTORNO PARA DESARROLLO LOCAL
+# ========================================
+
+# Configuración de la API (Backend)
+REACT_APP_API_URL=http://localhost:8080
+
+# Configuración del Frontend
+REACT_APP_FRONTEND_URL=http://localhost:3000
+
+# Configuración de Google OAuth
+REACT_APP_GOOGLE_REDIRECT_URI=http://localhost:3000/auth/google/callback
+
+# ========================================
+# CONFIGURACIÓN DE GOOGLE OAUTH
+# ========================================
+# Client ID de Google (ya configurado en google.ts)
+# GOOGLE_CLIENT_ID=861425306153-5odf703ho7dt8at2r5jqpu2t9ei0iakg.apps.googleusercontent.com
+
+# ========================================
+# NOTAS IMPORTANTES:
+# ========================================
+# - Este archivo es para DESARROLLO LOCAL
+# - Para PRODUCCIÓN (Netlify), usa las variables de entorno del dashboard
+# - Todas las variables en React deben empezar con REACT_APP_
+# - Copia este contenido en un archivo llamado .env

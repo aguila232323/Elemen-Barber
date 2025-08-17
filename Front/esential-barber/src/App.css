@@ -1,0 +1,119 @@
+body, html, #root, .main-container {
+  min-height: 100vh;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #121212;
+  color: #fff;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  position: relative;
+}
+
+.content {
+  flex: 1;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  position: relative;
+  padding-top: 64px; /* Altura de la navbar fija */
+}
+
+.footer {
+  background: black;
+  color: #fff;
+  text-align: center;
+  padding: 1.2rem 0;
+  font-size: 1rem;
+  letter-spacing: 1px;
+  margin-top: auto;
+  position: relative;
+  z-index: 10;
+}
+
+/* Mejoras de accesibilidad y UX */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, input, textarea {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Optimizaciones para dispositivos táctiles */
+@media (hover: none) and (pointer: coarse) {
+  button, .menuLink, .profileIcon {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Responsive Design Mejorado */
+@media (max-width: 1024px) {
+  .content {
+    padding: 0;
+    padding-top: 64px; /* Altura de la navbar fija */
+  }
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 0;
+    margin: 0;
+    padding-top: 64px; /* Altura de la navbar fija */
+  }
+  
+  .footer {
+    padding: 1rem 0;
+    font-size: 0.9rem;
+  }
+  
+  /* Mejorar legibilidad en móviles */
+  body {
+    font-size: 16px; /* Evita zoom automático en iOS */
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding-top: 64px; /* Altura de la navbar fija */
+  }
+  
+  .footer {
+    padding: 0.8rem 0;
+    font-size: 0.8rem;
+  }
+  
+  /* Optimizaciones para pantallas muy pequeñas */
+  .main-container {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .content {
+    padding-top: 64px; /* Altura de la navbar fija */
+  }
+}
+
+/* Mejoras de performance */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
