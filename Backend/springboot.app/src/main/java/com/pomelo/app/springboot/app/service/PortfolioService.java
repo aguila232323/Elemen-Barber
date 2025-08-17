@@ -73,6 +73,10 @@ public class PortfolioService {
             Portfolio fotoEncontrada = foto.get();
             fotoEncontrada.setNombre(nombre);
             fotoEncontrada.setUrlInstagram(urlInstagram);
+            // Si no tiene imagenUrl, crear una basada en el nombre
+            if (fotoEncontrada.getImagenUrl() == null || fotoEncontrada.getImagenUrl().isEmpty()) {
+                fotoEncontrada.setImagenUrl("/images/portfolio/" + nombre);
+            }
             return Optional.of(portfolioRepository.save(fotoEncontrada));
         }
         return Optional.empty();
