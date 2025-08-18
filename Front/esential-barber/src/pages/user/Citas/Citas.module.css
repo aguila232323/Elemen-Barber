@@ -260,165 +260,57 @@
   gap: 1rem;
 }
 
-/* Nuevos estilos para el diseño moderno de citas */
 .citasHistorialItem {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: stretch;
   background: #1a1a1a;
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 1rem;
-  border: 1px solid rgba(100, 181, 246, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  padding: 1.2rem;
+  margin-bottom: 0.5rem;
+  position: relative;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border: 1px solid rgba(100, 181, 246, 0.15);
+  overflow: hidden;
+  min-height: 140px;
+}
+
+.citasHistorialItem::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, #1976d2, #64b5f6);
+  z-index: 1;
+  border-radius: 16px 16px 0 0;
+}
+
+/* Bordes superiores según el estado de la cita - SOLO EL BORDE SUPERIOR */
+.citasHistorialItem.estadoPendienteBorde::before {
+  background: linear-gradient(90deg, #ffc107, #ffb300) !important;
+}
+
+.citasHistorialItem.estadoCompletadaBorde::before {
+  background: linear-gradient(90deg, #28a745, #20c997) !important;
+}
+
+.citasHistorialItem.estadoFinalizadaBorde::before {
+  background: linear-gradient(90deg, #28a745, #20c997) !important;
+}
+
+.citasHistorialItem.estadoCanceladaBorde::before {
+  background: linear-gradient(90deg, #dc3545, #c82333) !important;
 }
 
 .citasHistorialItem:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-  border-color: rgba(100, 181, 246, 0.4);
 }
 
-.citasHistorialItemHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-}
-
-.citasHistorialItemInfo {
-  flex: 1;
-}
-
-.citasHistorialItemServicio {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.citasHistorialItemEmoji {
-  font-size: 1.2rem;
-}
-
-.citasHistorialItemNombre {
-  color: #64b5f6;
-  font-weight: 600;
-  font-size: 1.1rem;
-}
-
-.citasHistorialItemFecha {
-  color: #ccc;
-  font-size: 0.9rem;
-  margin-bottom: 0.3rem;
-}
-
-.citasHistorialItemHora {
-  color: #888;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.citasHistorialItemEstado {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.citasHistorialItemEstadoBadge {
-  padding: 0.4rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.citasHistorialItemEstadoBadge.confirmada {
-  background: linear-gradient(135deg, #28a745, #20c997);
-  color: #fff;
-}
-
-.citasHistorialItemEstadoBadge.pendiente {
-  background: linear-gradient(135deg, #ffc107, #ffb300);
-  color: #000;
-}
-
-.citasHistorialItemEstadoBadge.cancelada {
-  background: linear-gradient(135deg, #dc3545, #c82333);
-  color: #fff;
-}
-
-.citasHistorialItemEstadoBadge.completada {
-  background: linear-gradient(135deg, #28a745, #20c997);
-  color: #fff;
-}
-
-.citasHistorialItemComentario {
-  background: rgba(100, 181, 246, 0.1);
-  border-radius: 8px;
-  padding: 0.8rem;
-  margin-bottom: 1rem;
-  border-left: 3px solid #64b5f6;
-  color: #ccc;
-  font-size: 0.9rem;
-}
-
-.citasHistorialItemAcciones {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: flex-end;
-}
-
-.citasHistorialItemBotonCancelar {
-  background: linear-gradient(135deg, #dc3545, #c82333);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 0.6rem 1rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.citasHistorialItemBotonCancelar:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
-}
-
-.citasHistorialItemBotonCancelar:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.citasHistorialItemBotonResena {
-  background: linear-gradient(135deg, #ffc107, #ffb300);
-  color: #000;
-  border: none;
-  border-radius: 8px;
-  padding: 0.6rem 1rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.citasHistorialItemBotonResena:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
-}
-
-.citasHistorialItemResenaHecha {
-  color: #28a745;
-  font-size: 0.8rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-/* Estilos existentes que se mantienen */
 .citaColInfo {
   display: flex;
   flex-direction: column;
@@ -486,6 +378,7 @@
   align-items: center;
   gap: 0.5rem;
 }
+
 
 .citasHistorialFechaHora {
   color: #888;
@@ -601,6 +494,7 @@
   .citasHistorialItem {
     padding: 1rem;
     margin-bottom: 0.8rem;
+    min-height: 120px;
   }
   
   .citaColFecha {
@@ -651,6 +545,8 @@
   .citasHistorialItem {
     padding: 0.8rem;
     margin-bottom: 0.6rem;
+    min-height: 100px;
+    flex-direction: column;
   }
   
   .citaColInfo {

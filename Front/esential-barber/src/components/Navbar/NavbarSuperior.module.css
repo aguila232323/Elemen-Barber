@@ -107,11 +107,6 @@
   object-fit: contain;
   padding: 2px 0;
   transition: transform 0.3s ease;
-  cursor: pointer;
-}
-
-.logoImg:hover {
-  transform: scale(1.05);
 }
 
 /* Grupo derecho desktop */

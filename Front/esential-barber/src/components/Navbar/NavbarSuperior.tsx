@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaUserCircle, FaBars, FaTimes } from 'react-icons/fa';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import styles from './NavbarSuperior.module.css';
 import logoElemental from '../../assets/images/logoElemental.png';
@@ -51,7 +51,6 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isInVerificationMode, setIsInVerificationMode] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
   const { user } = useAuth();
 
   // Actualizar nombre de usuario cuando cambie el token o el usuario
@@ -115,11 +114,6 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
 
   const handleMobileMenuToggle = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  const handleLogoClick = () => {
-    navigate('/');
-    setSection('inicio');
   };
 
   const handleMobileMenuClose = () => {
@@ -223,12 +217,7 @@ const Navbar: React.FC<NavbarProps> = ({ section, setSection, onLoginSuccess }) 
 
           {/* Logo centrado */}
           <div className={styles.logoContainer}>
-            <img 
-              src={logoElemental} 
-              alt="Logo Elemental Barber" 
-              className={styles.logoImg} 
-              onClick={handleLogoClick}
-            />
+            <img src={logoElemental} alt="Logo Elemental Barber" className={styles.logoImg} />
           </div>
 
           {/* Menú desktop - Derecha: Portfolio, Cita y Perfil */}
