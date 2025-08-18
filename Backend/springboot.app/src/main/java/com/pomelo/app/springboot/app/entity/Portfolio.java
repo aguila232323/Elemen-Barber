@@ -14,7 +14,7 @@ public class Portfolio {
     @Column(name = "nombre", nullable = false)
     private String nombre;
     
-    @Column(name = "imagen_base64", columnDefinition = "LONGTEXT")
+    @Column(name = "imagen_base64", columnDefinition = "TEXT")
     private String imagenBase64;
     
     @Column(name = "url_instagram")
