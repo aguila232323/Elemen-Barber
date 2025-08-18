@@ -84,7 +84,27 @@ const Citas: React.FC<CitasProps> = () => {
         });
         if (!res.ok) throw new Error('No se pudieron cargar tus citas');
         const data = await res.json();
-        setCitas(data);
+        
+        // Ordenar citas: más recientes primero, terminadas al final
+        const citasOrdenadas = data.sort((a: Cita, b: Cita) => {
+          const fechaA = new Date(a.fechaHora);
+          const fechaB = new Date(b.fechaHora);
+          
+          // Separar citas terminadas de las activas
+          const esTerminadaA = a.estado === 'finalizada' || a.estado === 'completada';
+          const esTerminadaB = b.estado === 'finalizada' || b.estado === 'completada';
+          
+          // Si una es terminada y la otra no, la terminada va al final
+          if (esTerminadaA && !esTerminadaB) return 1;
+          if (!esTerminadaA && esTerminadaB) return -1;
+          
+          // Si ambas son del mismo tipo (terminadas o activas), ordenar por fecha
+          // Para citas activas: más reciente primero
+          // Para citas terminadas: más reciente primero
+          return fechaB.getTime() - fechaA.getTime();
+        });
+        
+        setCitas(citasOrdenadas);
         
       } catch (err: any) {
         setError(err.message || 'Error al cargar tus citas');
@@ -116,7 +136,7 @@ const Citas: React.FC<CitasProps> = () => {
   const fetchUsuarios = async () => {
     try {
       const token = localStorage.getItem('authToken');
-              const res = await fetch(`${config.API_BASE_URL}/api/usuarios`, {
+      const res = await fetch(`${config.API_BASE_URL}/api/usuarios`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       
@@ -133,7 +153,7 @@ const Citas: React.FC<CitasProps> = () => {
   const fetchServicios = async () => {
     try {
       const token = localStorage.getItem('authToken');
-              const res = await fetch(`${config.API_BASE_URL}/api/servicios`, {
+      const res = await fetch(`${config.API_BASE_URL}/api/servicios`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       
@@ -165,7 +185,7 @@ const Citas: React.FC<CitasProps> = () => {
 
     try {
       const token = localStorage.getItem('authToken');
-              const res = await fetch(`${config.API_BASE_URL}/api/citas/crear`, {
+      const res = await fetch(`${config.API_BASE_URL}/api/citas/crear`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -252,7 +272,7 @@ const Citas: React.FC<CitasProps> = () => {
 
     try {
       const token = localStorage.getItem('authToken');
-              const res = await fetch(`${config.API_BASE_URL}/api/citas/${citaACancelar.id}`, {
+      const res = await fetch(`${config.API_BASE_URL}/api/citas/${citaACancelar.id}`, {
         method: 'DELETE',
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
@@ -299,7 +319,7 @@ const Citas: React.FC<CitasProps> = () => {
     setGuardandoResena(true);
     try {
       const token = localStorage.getItem('authToken');
-              const res = await fetch(`${config.API_BASE_URL}/api/resenas`, {
+      const res = await fetch(`${config.API_BASE_URL}/api/resenas`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -381,7 +401,37 @@ const Citas: React.FC<CitasProps> = () => {
           ) : error ? (
             <div className={styles.citasHistorialVacio} style={{color:'#e74c3c'}}>{error}</div>
           ) : citas.length === 0 ? (
-            <div className={styles.citasHistorialVacio}>No tienes citas registradas.</div>
+            <div className={styles.citasHistorialVacio}>
+              <p>No tienes citas registradas.</p>
+              <button
+                onClick={handleReservarDeNuevo}
+                style={{
+                  background: 'linear-gradient(135deg, #007bff, #0056b3)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '0.8rem 1.5rem',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  marginTop: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,123,255,0.3)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                📅 Reservar Cita
+              </button>
+            </div>
           ) : (
             <>
               {errorCancelacion && (
@@ -390,200 +440,168 @@ const Citas: React.FC<CitasProps> = () => {
                 </div>
               )}
             <ul className={styles.citasHistorialLista}>
-              {citas.map(cita => {
-                // const fecha = cita.fechaHora ? cita.fechaHora.split('T')[0] : '';
-                // const hora = cita.fechaHora ? cita.fechaHora.split('T')[1]?.substring(0,5) : '';
-                // Formato bonito de fecha
-                const dateObj = cita.fechaHora ? new Date(cita.fechaHora) : null;
-                const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-                const diaNum = dateObj ? dateObj.getDate() : '';
-                const mesNombre = dateObj ? meses[dateObj.getMonth()] : '';
-                const horaStr = dateObj ? dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '';
-                // Datos fijos de barbería y peluquero
-                const nombreBarberia = 'Elemen Barber';
-                const nombrePeluquero = 'Luis Garcia Mudarra';
-                // Obtener el emoji del servicio desde la base de datos
-                const emojiServicio = cita.servicio?.emoji || '💈';
-                return (
-                                     <li key={cita.id} className={
-                     styles.citasHistorialItem + ' ' +
-                     (cita.estado === 'finalizada' || cita.estado === 'completada' ? styles.estadoFinalizadaBorde : 
-                      cita.estado === 'cancelada' ? styles.estadoCanceladaBorde : 
-                      cita.estado === 'confirmada' ? styles.estadoPendienteBorde : styles.estadoPendienteBorde)
-                   }>
-                    <div className={styles.citaColInfo}>
-                      {cita.estado && (
-                                                 <span className={
-                           styles.citasHistorialEstado + ' ' +
-                           (cita.estado === 'finalizada' || cita.estado === 'completada' ? styles.estadoFinalizada : 
-                            cita.estado === 'cancelada' ? styles.estadoCancelada : 
-                            cita.estado === 'confirmada' ? styles.estadoPendiente : styles.estadoPendiente)
-                         }>
-                          {cita.estado === 'finalizada' || cita.estado === 'completada' ? 'TERMINADO' : 
-                           cita.estado === 'cancelada' ? 'CANCELADO' : 
-                           cita.estado === 'confirmada' ? 'CONFIRMADA' : 'PENDIENTE'}
-                        </span>
-                      )}
-                      <div className={styles.citasHistorialServicio}>
-                        <span style={{ marginRight: '0.5rem', fontSize: '1.2rem' }}>{emojiServicio}</span>
-                        {cita.servicio?.nombre}
-                      </div>
-                      <div className={styles.citaInfoBarberia}>
-                        <img src={fotoLuis} alt="Luis" className={styles.citaLogoBarberia} />
-                        <div className={styles.citaInfoText}>
-                          <span className={styles.citaNombreBarberia}>{nombreBarberia}</span>
-                          <span className={styles.citaNombrePeluquero}>con {nombrePeluquero}</span>
-                        </div>
-                      </div>
-                      {cita.comentario && <div className={styles.citasHistorialComentario}>{cita.comentario}</div>}
-                      
-                      {/* Botones de acción */}
-                      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                        
-                        {/* Botón de cancelar para citas pendientes o confirmadas */}
-                        {(cita.estado === 'pendiente' || cita.estado === 'confirmada') && (
-                          <button 
-                            className={styles.citaReservarBtn}
-                                                         style={{
-                               background: puedeCancelarCita(cita.fechaHora) ? 'linear-gradient(135deg, #dc3545, #c82333)' : '#95a5a6',
-                               color: '#fff',
-                               border: 'none',
-                               borderRadius: '6px',
-                               padding: '0.5rem 1rem',
-                               fontSize: '0.8rem',
-                               cursor: cancelandoCita === cita.id ? 'not-allowed' : 'pointer',
-                               opacity: cancelandoCita === cita.id ? 0.7 : 1,
-                               boxShadow: puedeCancelarCita(cita.fechaHora) ? '0 2px 8px rgba(220, 53, 69, 0.3)' : 'none',
-                               transition: 'all 0.3s ease'
-                             }}
-                            onClick={() => handleCancelarCita(cita.id)}
-                            disabled={cancelandoCita === cita.id}
-                          >
-                            {cancelandoCita === cita.id ? 'Cancelando...' : 'Cancelar Cita'}
-                          </button>
-                        )}
-                        
-                                                 {/* Mensaje informativo para citas que no se pueden cancelar */}
-                         {(cita.estado === 'pendiente' || cita.estado === 'confirmada') && !puedeCancelarCita(cita.fechaHora) && (
-                          <div style={{
-                            fontSize: '0.8rem',
-                            color: '#e74c3c',
-                            fontStyle: 'italic',
-                            marginTop: '0.5rem'
-                          }}>
-                            No se puede cancelar (menos de 2 horas de antelación)
-                          </div>
-                        )}
-                        
-                        
-                        
-                        {/* Botón de reseña para citas completadas/finalizadas */}
-                        {(cita.estado === 'completada' || cita.estado === 'finalizada') && 
-                         !cita.reseñada && (
-                          <button 
-                            className={styles.citaReservarBtn}
-                            onClick={() => handleAbrirResenaModal(cita)}
-                            style={{
-                              background: 'linear-gradient(135deg, #ffd700, #ffb300)',
-                              color: '#000',
-                              border: 'none',
-                              borderRadius: '8px',
-                              padding: '0.6rem 1.2rem',
-                              fontSize: '0.85rem',
-                              cursor: 'pointer',
-                              boxShadow: '0 3px 10px rgba(255, 215, 0, 0.3)',
-                              transition: 'all 0.3s ease',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '0.4rem',
-                              fontWeight: '600'
-                            }}
-                            onMouseOver={(e) => {
-                              e.currentTarget.style.transform = 'translateY(-2px)';
-                              e.currentTarget.style.boxShadow = '0 5px 15px rgba(255, 215, 0, 0.4)';
-                            }}
-                            onMouseOut={(e) => {
-                              e.currentTarget.style.transform = 'translateY(0)';
-                              e.currentTarget.style.boxShadow = '0 3px 10px rgba(255, 215, 0, 0.3)';
-                            }}
-                          >
-                            <FaStar style={{ fontSize: '1rem' }} />
-                            Añadir Reseña
-                          </button>
-                        )}
-                        
-                        {/* Indicador de reseña ya calificada */}
-                        {(cita.estado === 'completada' || cita.estado === 'finalizada') && 
-                         cita.reseñada && (
-                          <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            padding: '0.6rem 1.2rem',
-                            fontSize: '0.85rem',
-                            color: '#fff',
-                            background: 'linear-gradient(135deg, #27ae60, #2ecc71)',
-                            borderRadius: '8px',
-                            border: 'none',
-                            fontWeight: '600',
-                            boxShadow: '0 3px 10px rgba(39, 174, 96, 0.3)',
-                            transition: 'all 0.3s ease',
-                            cursor: 'default',
-                            position: 'relative',
-                            overflow: 'hidden'
-                          }}
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.transform = 'translateY(-1px)';
-                            e.currentTarget.style.boxShadow = '0 5px 15px rgba(39, 174, 96, 0.4)';
-                          }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = '0 3px 10px rgba(39, 174, 96, 0.3)';
-                          }}
-                          >
-                            <FaStar style={{ 
-                              color: '#f1c40f', 
-                              fontSize: '1rem',
-                              filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))'
-                            }} />
-                            <span>✓ Ya calificada</span>
-                            <div style={{
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              bottom: 0,
-                              background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)',
-                              animation: 'shimmer 2s infinite'
-                            }} />
-                          </div>
-                        )}
-                        
-
-                        
-                        {/* Botón de reservar de nuevo para citas finalizadas/canceladas */}
-                        {(cita.estado === 'completada' || cita.estado === 'finalizada' || cita.estado === 'cancelada') && (
-                          <button className={styles.citaReservarBtn} onClick={handleReservarDeNuevo}>
-                            Reservar de nuevo
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    <div className={styles.citaColFecha}>
-                      <div className={styles.citasHistorialFechaMes}>{mesNombre}</div>
-                      <div className={styles.citasHistorialFechaDia}>{diaNum}</div>
-                      <div className={styles.citasHistorialFechaHora}>{horaStr}</div>
-                    </div>
-                  </li>
+              {/* Separar citas activas y terminadas */}
+              {(() => {
+                // Separar citas activas y terminadas
+                const citasActivas = citas.filter(cita => 
+                  cita.estado !== 'finalizada' && cita.estado !== 'completada'
                 );
-              })}
+                const citasTerminadas = citas.filter(cita => 
+                  cita.estado === 'finalizada' || cita.estado === 'completada'
+                );
+                
+                return (
+                  <>
+                    {/* Citas Activas */}
+                    {citasActivas.length > 0 && (
+                      <>
+                        <div style={{ padding: '1rem 0 0.5rem 0', borderBottom: '2px solid #e0e0e0', marginBottom: '1rem' }}>
+                          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600, color: '#2c3e50', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            📅 Citas Activas ({citasActivas.length})
+                          </h3>
+                        </div>
+                        {citasActivas.map(cita => (
+                          <li key={cita.id} className={styles.citasHistorialItem}>
+                            <div className={styles.citasHistorialItemHeader}>
+                              <div className={styles.citasHistorialItemInfo}>
+                                <div className={styles.citasHistorialItemServicio}>
+                                  <span className={styles.citasHistorialItemEmoji}>
+                                    {cita.servicio?.emoji || '💇'}
+                                  </span>
+                                  <span className={styles.citasHistorialItemNombre}>
+                                    {cita.servicio?.nombre}
+                                  </span>
+                                </div>
+                                <div className={styles.citasHistorialItemFecha}>
+                                  {new Date(cita.fechaHora).toLocaleDateString('es-ES', {
+                                    weekday: 'long',
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                  })}
+                                </div>
+                                <div className={styles.citasHistorialItemHora}>
+                                  {new Date(cita.fechaHora).toLocaleTimeString('es-ES', {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </div>
+                              </div>
+                              <div className={styles.citasHistorialItemEstado}>
+                                <span className={`${styles.citasHistorialItemEstadoBadge} ${
+                                  cita.estado === 'confirmada' ? styles.confirmada :
+                                  cita.estado === 'pendiente' ? styles.pendiente :
+                                  cita.estado === 'cancelada' ? styles.cancelada :
+                                  styles.completada
+                                }`}>
+                                  {cita.estado === 'confirmada' ? '✅ Confirmada' :
+                                   cita.estado === 'pendiente' ? '⏳ Pendiente' :
+                                   cita.estado === 'cancelada' ? '❌ Cancelada' :
+                                   '✅ Completada'}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            {cita.comentario && (
+                              <div className={styles.citasHistorialItemComentario}>
+                                <strong>Comentario:</strong> {cita.comentario}
+                              </div>
+                            )}
+                            
+                            <div className={styles.citasHistorialItemAcciones}>
+                              {cita.estado !== 'cancelada' && puedeCancelarCita(cita.fechaHora) && (
+                                <button
+                                  onClick={() => handleCancelarCita(cita.id)}
+                                  className={styles.citasHistorialItemBotonCancelar}
+                                  disabled={cancelandoCita === cita.id}
+                                >
+                                  {cancelandoCita === cita.id ? 'Cancelando...' : 'Cancelar Cita'}
+                                </button>
+                              )}
+                            </div>
+                          </li>
+                        ))}
+                      </>
+                    )}
+                    
+                    {/* Citas Terminadas */}
+                    {citasTerminadas.length > 0 && (
+                      <>
+                        <div style={{ padding: '2rem 0 0.5rem 0', borderBottom: '2px solid #95a5a6', marginBottom: '1rem', marginTop: '2rem' }}>
+                          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600, color: '#7f8c8d', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            ✅ Historial de Citas ({citasTerminadas.length})
+                          </h3>
+                        </div>
+                        {citasTerminadas.map(cita => (
+                          <li key={cita.id} className={styles.citasHistorialItem}>
+                            <div className={styles.citasHistorialItemHeader}>
+                              <div className={styles.citasHistorialItemInfo}>
+                                <div className={styles.citasHistorialItemServicio}>
+                                  <span className={styles.citasHistorialItemEmoji}>
+                                    {cita.servicio?.emoji || '💇'}
+                                  </span>
+                                  <span className={styles.citasHistorialItemNombre}>
+                                    {cita.servicio?.nombre}
+                                  </span>
+                                </div>
+                                <div className={styles.citasHistorialItemFecha}>
+                                  {new Date(cita.fechaHora).toLocaleDateString('es-ES', {
+                                    weekday: 'long',
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                  })}
+                                </div>
+                                <div className={styles.citasHistorialItemHora}>
+                                  {new Date(cita.fechaHora).toLocaleTimeString('es-ES', {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </div>
+                              </div>
+                              <div className={styles.citasHistorialItemEstado}>
+                                <span className={`${styles.citasHistorialItemEstadoBadge} ${styles.completada}`}>
+                                  ✅ Completada
+                                </span>
+                              </div>
+                            </div>
+                            
+                            {cita.comentario && (
+                              <div className={styles.citasHistorialItemComentario}>
+                                <strong>Comentario:</strong> {cita.comentario}
+                              </div>
+                            )}
+                            
+                            <div className={styles.citasHistorialItemAcciones}>
+                              {!cita.reseñada && (
+                                <button
+                                  onClick={() => handleAbrirResenaModal(cita)}
+                                  className={styles.citasHistorialItemBotonResena}
+                                >
+                                  <FaStar style={{marginRight: '0.5rem'}} />
+                                  Dejar Reseña
+                                </button>
+                              )}
+                              {cita.reseñada && (
+                                <span className={styles.citasHistorialItemResenaHecha}>
+                                  ✅ Reseña enviada
+                                </span>
+                              )}
+                            </div>
+                          </li>
+                        ))}
+                      </>
+                    )}
+                  </>
+                );
+              })()}
             </ul>
             </>
           )}
         </div>
       </div>
       
-             {showServicioModal && (
+      {showServicioModal && (
          <SeleccionarServicioModal
            serviciosSeleccionados={serviciosSeleccionados}
            setServiciosSeleccionados={setServiciosSeleccionados}
