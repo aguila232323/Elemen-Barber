@@ -5,8 +5,8 @@
 # Etapa de construcción
 FROM maven:3.8.4-openjdk-17 AS build
 WORKDIR /app
-COPY pom.xml .
-COPY src ./src
+COPY Backend/springboot.app/pom.xml .
+COPY Backend/springboot.app/src ./src
 RUN mvn clean package -DskipTests
 
 # Etapa de ejecución
@@ -22,14 +22,13 @@ RUN addgroup --system javauser && adduser --system --ingroup javauser javauser
 
 WORKDIR /app
 COPY --from=build /app/target/springboot.app-0.0.1-SNAPSHOT.jar app.jar
-RUN chown javauser:javauser app.jar
+
+# Directorio de logs (crear antes de cambiar usuario)
+RUN mkdir -p /app/logs && chown javauser:javauser app.jar && chown javauser:javauser /app/logs
 USER javauser
 
 # Exponer puerto (Railway lo asigna, pero esto es referencia)
 EXPOSE 8080
-
-# Directorio de logs
-RUN mkdir -p /app/logs && chown javauser:javauser /app/logs
 
 # Healthcheck (ajustado para Spring Boot Actuator)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
