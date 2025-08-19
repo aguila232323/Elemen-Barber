@@ -18,6 +18,7 @@ import GoogleCallback from './pages/auth/GoogleCallback';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import CitasAdmin from './pages/admin/CitasAdmin';
 import Configuracion from './pages/admin/Configuracion';
+import PrivateRoute from './components/PrivateRoute';
 
 function AppContent() {
   const location = useLocation();
@@ -74,9 +75,21 @@ function AppContent() {
           <Route path="/register" element={<Register />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/auth/google/callback" element={<GoogleCallback />} />
-          <Route path="/citas" element={user && user.rol === 'ADMIN' ? <CitasAdmin /> : <Citas onLoginSuccess={handleLoginSuccess} />} />
-          <Route path="/perfil" element={<Perfil />} />
-          <Route path="/admin/configuracion" element={<Configuracion />} />
+          <Route path="/citas" element={
+            <PrivateRoute>
+              {user && user.rol === 'ADMIN' ? <CitasAdmin /> : <Citas onLoginSuccess={handleLoginSuccess} />}
+            </PrivateRoute>
+          } />
+          <Route path="/perfil" element={
+            <PrivateRoute>
+              <Perfil />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/configuracion" element={
+            <PrivateRoute requiredRole="ADMIN">
+              <Configuracion />
+            </PrivateRoute>
+          } />
         </Routes>
       </main>
       {!loading && user && (

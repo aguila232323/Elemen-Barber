@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { config } from '../config/config';
 
@@ -34,6 +34,102 @@ interface Props {
   nombresServicios: string;
 }
 
+// Hook personalizado para debounce
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+// Componente memoizado para días del calendario
+const CalendarDay = React.memo(({ 
+  dia, 
+  disponibilidadMes, 
+  diaSeleccionado, 
+  fechaCalculos, 
+  anio, 
+  mes, 
+  user, 
+  onDayClick 
+}: {
+  dia: number;
+  disponibilidadMes: {[dia: number]: number};
+  diaSeleccionado: number | null;
+  fechaCalculos: any;
+  anio: number;
+  mes: number;
+  user: any;
+  onDayClick: (dia: number) => void;
+}) => {
+  const libres = disponibilidadMes[dia] ?? 0;
+  const total: number = 10; // Debe coincidir con el backend
+  const porcentaje = total === 0 ? 0 : Math.round((libres/total)*100);
+  let colorBarra = porcentaje > 70 ? '#43b94a' : porcentaje > 30 ? '#ffe066' : '#e74c3c';
+  
+  // Deshabilitar días en el pasado
+  const esPasado = (anio < fechaCalculos.anioActual) || 
+                   (anio === fechaCalculos.anioActual && mes < fechaCalculos.mesActual) || 
+                   (anio === fechaCalculos.anioActual && mes === fechaCalculos.mesActual && dia < fechaCalculos.hoy);
+  
+  // Deshabilitar días sin slots disponibles (para usuarios no-admin)
+  const sinSlotsDisponibles = user?.rol !== 'ADMIN' && libres === 0 && !esPasado;
+  const esSeleccionable = !esPasado && !sinSlotsDisponibles;
+  
+  return (
+    <div 
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        cursor: esSeleccionable ? 'pointer' : 'not-allowed',
+        opacity: esSeleccionable ? 1 : 0.45
+      }} 
+      onClick={() => {
+        if (esSeleccionable) {
+          onDayClick(dia);
+        }
+      }}
+    >
+      <div style={{
+        width: '2rem',
+        height: '2rem',
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: diaSeleccionado === dia ? '#1976d2' : (esPasado || sinSlotsDisponibles) ? '#f5f5f5' : '#fff',
+        color: diaSeleccionado === dia ? '#fff' : (esPasado || sinSlotsDisponibles) ? '#999' : '#1976d2',
+        border: diaSeleccionado === dia ? '2px solid #1976d2' : (esPasado || sinSlotsDisponibles) ? '1.5px solid #ddd' : '1.5px solid #1976d2',
+        fontWeight: 800,
+        marginBottom: 2,
+        fontSize: '0.9rem',
+        boxShadow: diaSeleccionado === dia ? '0 2px 8px rgba(25,118,210,0.10)' : 'none',
+        transition: 'all 0.18s',
+        letterSpacing: 0.5
+      }}>
+        {dia}
+      </div>
+      <div style={{
+        width: '1.2rem',
+        height: '0.25rem',
+        borderRadius: 3,
+        background: (esPasado || sinSlotsDisponibles) ? '#ddd' : colorBarra,
+        marginBottom: 2
+      }}></div>
+    </div>
+  );
+});
+
 const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompletada, nombresServicios }) => {
   const { user } = useAuth();
   const today = new Date();
@@ -57,20 +153,40 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
   const [busquedaUsuario, setBusquedaUsuario] = useState<string>('');
   const [mostrarDropdown, setMostrarDropdown] = useState(false);
 
+  // Refs para evitar re-renders innecesarios
+  const lastFetchRef = useRef<{mes: number, anio: number} | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   // Obtener la duración del servicio seleccionado (ahora solo se puede seleccionar uno)
-  const duracion = servicio.length > 0 ? servicio[0].duracionMinutos : 45;
+  const duracion = useMemo(() => servicio.length > 0 ? servicio[0].duracionMinutos : 45, [servicio]);
 
-  // Días del mes
-  const diasEnMes = new Date(anio, mes + 1, 0).getDate();
-  const primerDiaSemana = new Date(anio, mes, 1).getDay(); // 0=domingo
+  // Memoizar cálculos de fecha para evitar recálculos
+  const fechaCalculos = useMemo(() => {
+    const diasEnMes = new Date(anio, mes + 1, 0).getDate();
+    const primerDiaSemana = new Date(anio, mes, 1).getDay(); // 0=domingo
+    
+    // Calcular fecha y hora actual para restricciones
+    const now = new Date();
+    const hoy = now.getDate();
+    const mesActual = now.getMonth();
+    const anioActual = now.getFullYear();
+    const horaActual = now.getHours();
+    const minutosActual = now.getMinutes();
 
-  // Calcular fecha y hora actual para restricciones
-  const now = new Date();
-  const hoy = now.getDate();
-  const mesActual = now.getMonth();
-  const anioActual = now.getFullYear();
-  const horaActual = now.getHours();
-  const minutosActual = now.getMinutes();
+    return {
+      diasEnMes,
+      primerDiaSemana,
+      hoy,
+      mesActual,
+      anioActual,
+      horaActual,
+      minutosActual
+    };
+  }, [mes, anio]);
+
+  // Debounce para cambios de mes/año
+  const debouncedMes = useDebounce(mes, 300);
+  const debouncedAnio = useDebounce(anio, 300);
 
   // Obtener tiempo mínimo de reserva
   useEffect(() => {
@@ -128,8 +244,8 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
     };
   }, [mostrarDropdown]);
 
-  // Navegación de mes
-  function cambiarMes(delta: number) {
+  // Navegación de mes optimizada
+  const cambiarMes = useCallback((delta: number) => {
     let nuevoMes = mes + delta;
     let nuevoAnio = anio;
     if (nuevoMes < 0) { nuevoMes = 11; nuevoAnio--; }
@@ -139,35 +255,65 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
     setDiaSeleccionado(null);
     setHoraSeleccionada(null);
     setHorasLibres([]);
-  }
+  }, [mes, anio]);
 
-  // Consultar horas libres al seleccionar un día
+  // Consultar horas libres al seleccionar un día (optimizado)
   useEffect(() => {
     if (diaSeleccionado) {
       setLoadingHoras(true);
       const fecha = `${anio}-${String(mes+1).padStart(2,'0')}-${String(diaSeleccionado).padStart(2,'0')}`;
       const userRole = user?.rol || 'USER';
-      fetch(`${config.API_BASE_URL}/api/citas/disponibilidad?fecha=${fecha}&duracion=${duracion}&userRole=${userRole}`)
+      
+      // Cancelar petición anterior si existe
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      
+      abortControllerRef.current = new AbortController();
+      
+      fetch(`${config.API_BASE_URL}/api/citas/disponibilidad?fecha=${fecha}&duracion=${duracion}&userRole=${userRole}`, {
+        signal: abortControllerRef.current.signal
+      })
         .then(res => res.json())
         .then(data => {
           setHorasLibres(data.horasLibres || []);
           setLoadingHoras(false);
         })
-        .catch(() => {
-          setHorasLibres([]);
-          setLoadingHoras(false);
+        .catch((error) => {
+          if (error.name !== 'AbortError') {
+            setHorasLibres([]);
+            setLoadingHoras(false);
+          }
         });
     } else {
       setHorasLibres([]);
     }
   }, [diaSeleccionado, mes, anio, duracion, user?.rol]);
 
-  // Consultar disponibilidad de todo el mes al cambiar mes/año
+  // Consultar disponibilidad de todo el mes al cambiar mes/año (con debounce y cache)
   useEffect(() => {
+    // Evitar llamadas duplicadas
+    const currentFetch = { mes: debouncedMes, anio: debouncedAnio };
+    if (lastFetchRef.current && 
+        lastFetchRef.current.mes === currentFetch.mes && 
+        lastFetchRef.current.anio === currentFetch.anio) {
+      return;
+    }
+
     const fetchDisponibilidadMes = async () => {
       try {
+        // Cancelar petición anterior si existe
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+        
+        abortControllerRef.current = new AbortController();
+        
         const userRole = user?.rol || 'USER';
-        const res = await fetch(`${config.API_BASE_URL}/api/citas/disponibilidad-mes?anio=${anio}&mes=${mes+1}&duracion=${duracion}&userRole=${userRole}`);
+        const res = await fetch(`${config.API_BASE_URL}/api/citas/disponibilidad-mes?anio=${debouncedAnio}&mes=${debouncedMes+1}&duracion=${duracion}&userRole=${userRole}`, {
+          signal: abortControllerRef.current.signal
+        });
+        
         const data = await res.json();
         const map: {[dia: number]: number} = {};
         if (data.dias && Array.isArray(data.dias)) {
@@ -177,12 +323,25 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
           });
         }
         setDisponibilidadMes(map);
-      } catch {
-        setDisponibilidadMes({});
+        lastFetchRef.current = currentFetch;
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          setDisponibilidadMes({});
+        }
       }
     };
+    
     fetchDisponibilidadMes();
-  }, [mes, anio, duracion, user?.rol]);
+  }, [debouncedMes, debouncedAnio, duracion, user?.rol]);
+
+  // Cleanup al desmontar
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   // --- UI principal ---
   if (confirmStep) {
@@ -560,40 +719,32 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
             style={{background:'none',border:'none',fontSize:18,cursor: (anio > today.getFullYear() || (anio === today.getFullYear() && mes > today.getMonth())) ? 'pointer' : 'not-allowed',color:'#1976d2', opacity: (anio > today.getFullYear() || (anio === today.getFullYear() && mes > today.getMonth())) ? 1 : 0.4}}
             disabled={anio < today.getFullYear() || (anio === today.getFullYear() && mes <= today.getMonth())}
           >&lt;</button>
-          <span style={{flex:1, textAlign:'center', fontWeight:800, fontSize:'1.1rem', textTransform:'capitalize', color:'#1976d2', letterSpacing:1, margin:'0 1rem', display:'block'}}>{new Date(anio, mes).toLocaleString('es-ES',{month:'long',year:'numeric'})}</span>
+          <span style={{flex:1, textAlign:'center', fontWeight:800, fontSize:'1.1rem', textTransform:'capitalize', color:'#1976d2', letterSpacing:1, margin:'0 1rem', display:'block'}}>
+            {useMemo(() => new Date(anio, mes).toLocaleString('es-ES',{month:'long',year:'numeric'}), [anio, mes])}
+          </span>
           <button onClick={()=>cambiarMes(1)} style={{background:'none',border:'none',fontSize:18,cursor:'pointer',color:'#1976d2'}}>&gt;</button>
         </div>
         <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'0.25rem',marginBottom:8}}>
           {['L','M','X','J','V','S','D'].map(dia=>(<div key={dia} style={{textAlign:'center',fontWeight:700,color:'#1976d2',fontSize:'0.9rem'}}>{dia}</div>))}
-          {Array(primerDiaSemana===0?6:primerDiaSemana-1).fill(null).map((_,i)=>(<div key={'empty'+i}></div>))}
-          {Array.from({length:diasEnMes},(_,i)=>{
+          {Array(fechaCalculos.primerDiaSemana===0?6:fechaCalculos.primerDiaSemana-1).fill(null).map((_,i)=>(<div key={'empty'+i}></div>))}
+          {Array.from({length:fechaCalculos.diasEnMes},(_,i)=>{
             const dia = i+1;
-            const libres = disponibilidadMes[dia] ?? 0;
-            const total: number = 10; // Debe coincidir con el backend
-            const porcentaje = total === 0 ? 0 : Math.round((libres/total)*100);
-            let colorBarra = porcentaje > 70 ? '#43b94a' : porcentaje > 30 ? '#ffe066' : '#e74c3c';
-            // Deshabilitar días en el pasado
-            const esPasado = (anio < anioActual) || (anio === anioActual && mes < mesActual) || (anio === anioActual && mes === mesActual && dia < hoy);
-            // Deshabilitar días sin slots disponibles (para usuarios no-admin)
-            const sinSlotsDisponibles = user?.rol !== 'ADMIN' && libres === 0 && !esPasado;
-            const esSeleccionable = !esPasado && !sinSlotsDisponibles;
-            
             return (
-              <div key={dia} style={{display:'flex',flexDirection:'column',alignItems:'center',cursor: esSeleccionable?'pointer':'not-allowed',opacity:esSeleccionable?1:0.45}} onClick={()=>{if(esSeleccionable){setDiaSeleccionado(dia);setHoraSeleccionada(null);}}}>
-                <div style={{
-                  width:'2rem',height:'2rem',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
-                  background: diaSeleccionado===dia?'#1976d2':(esPasado || sinSlotsDisponibles)?'#f5f5f5':'#fff',
-                  color: diaSeleccionado===dia?'#fff':(esPasado || sinSlotsDisponibles)?'#999':'#1976d2',
-                  border: diaSeleccionado===dia?'2px solid #1976d2':(esPasado || sinSlotsDisponibles)?'1.5px solid #ddd':'1.5px solid #1976d2',
-                  fontWeight:800,marginBottom:2,
-                  fontSize:'0.9rem',
-                  boxShadow: diaSeleccionado===dia?'0 2px 8px rgba(25,118,210,0.10)':'none',
-                  transition:'all 0.18s',
-                  letterSpacing:0.5
-                }}>{dia}</div>
-                <div style={{width:'1.2rem',height:'0.25rem',borderRadius:3,background:(esPasado || sinSlotsDisponibles)?'#ddd':colorBarra,marginBottom:2}}></div>
-              </div>
-            )
+              <CalendarDay
+                key={dia}
+                dia={dia}
+                disponibilidadMes={disponibilidadMes}
+                diaSeleccionado={diaSeleccionado}
+                fechaCalculos={fechaCalculos}
+                anio={anio}
+                mes={mes}
+                user={user}
+                onDayClick={(dia) => {
+                  setDiaSeleccionado(dia);
+                  setHoraSeleccionada(null);
+                }}
+              />
+            );
           })}
         </div>
         {diaSeleccionado && (
@@ -613,9 +764,9 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
               {horasLibres.map(hora=>{
                 // Deshabilitar horas en el pasado si es hoy
                 let esHoraPasada = false;
-                if (anio === anioActual && mes === mesActual && diaSeleccionado === hoy) {
+                if (anio === fechaCalculos.anioActual && mes === fechaCalculos.mesActual && diaSeleccionado === fechaCalculos.hoy) {
                   const [h, m] = hora.split(':').map(Number);
-                  if (h < horaActual || (h === horaActual && m <= minutosActual)) esHoraPasada = true;
+                  if (h < fechaCalculos.horaActual || (h === fechaCalculos.horaActual && m <= fechaCalculos.minutosActual)) esHoraPasada = true;
                 }
                 return (
                   <button key={hora} onClick={()=>!esHoraPasada && setHoraSeleccionada(hora)}

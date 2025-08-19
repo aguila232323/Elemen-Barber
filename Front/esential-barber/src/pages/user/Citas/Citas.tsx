@@ -4,7 +4,7 @@ import fotoLuis from '../../../assets/images/luis.jpg';
 import SeleccionarServicioModal from '../../../components/SeleccionarServicioModal';
 import CalendarBooking from '../../../components/CalendarBooking';
 import ResenaModal from '../../../components/ResenaModal';
-import { FaSave, FaTimes, FaUserPlus, FaStar } from 'react-icons/fa';
+import { FaSave, FaTimes, FaUserPlus, FaStar, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import { config } from '../../../config/config';
 
 interface Cita {
@@ -73,6 +73,12 @@ const Citas: React.FC<CitasProps> = () => {
   const [citaParaResenar, setCitaParaResenar] = useState<Cita | null>(null);
   const [guardandoResena, setGuardandoResena] = useState(false);
 
+  // Estados para ordenamiento
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [sortBy, setSortBy] = useState<string>('fecha');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [citasOriginales, setCitasOriginales] = useState<Cita[]>([]);
+
   useEffect(() => {
     const fetchCitas = async () => {
       setLoading(true);
@@ -85,6 +91,7 @@ const Citas: React.FC<CitasProps> = () => {
         if (!res.ok) throw new Error('No se pudieron cargar tus citas');
         const data = await res.json();
         setCitas(data);
+        setCitasOriginales(data);
         
       } catch (err: any) {
         setError(err.message || 'Error al cargar tus citas');
@@ -111,6 +118,24 @@ const Citas: React.FC<CitasProps> = () => {
       fetchServicios();
     }
   }, [isAdmin]);
+
+  // Cerrar dropdown cuando se hace clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('[data-sort-dropdown]')) {
+        setShowSortDropdown(false);
+      }
+    };
+
+    if (showSortDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showSortDropdown]);
 
   // Función para obtener lista de usuarios
   const fetchUsuarios = async () => {
@@ -284,6 +309,57 @@ const Citas: React.FC<CitasProps> = () => {
     window.location.reload();
   };
 
+  // Funciones de ordenamiento
+  const handleSort = (sortType: string) => {
+    let newSortOrder: 'asc' | 'desc' = 'asc';
+    
+    // Si ya está ordenado por este criterio, cambiar el orden
+    if (sortBy === sortType) {
+      newSortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+    }
+    
+    setSortBy(sortType);
+    setSortOrder(newSortOrder);
+    setShowSortDropdown(false);
+    
+    // Aplicar ordenamiento
+    const sortedCitas = [...citasOriginales].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortType) {
+        case 'fecha':
+          comparison = new Date(a.fechaHora).getTime() - new Date(b.fechaHora).getTime();
+          break;
+        case 'servicio':
+          comparison = (a.servicio?.nombre || '').localeCompare(b.servicio?.nombre || '');
+          break;
+        case 'estado':
+          comparison = (a.estado || '').localeCompare(b.estado || '');
+          break;
+        default:
+          comparison = 0;
+      }
+      
+      return newSortOrder === 'asc' ? comparison : -comparison;
+    });
+    
+    setCitas(sortedCitas);
+  };
+
+  const getSortIcon = (sortType: string) => {
+    if (sortBy !== sortType) return <FaSort />;
+    return sortOrder === 'asc' ? <FaSortUp /> : <FaSortDown />;
+  };
+
+  const getSortLabel = (sortType: string) => {
+    switch (sortType) {
+      case 'fecha': return 'Fecha';
+      case 'servicio': return 'Servicio';
+      case 'estado': return 'Estado';
+      default: return 'Ordenar';
+    }
+  };
+
 
 
   // Abrir modal de reseña
@@ -333,7 +409,107 @@ const Citas: React.FC<CitasProps> = () => {
     <>
       <div className={styles.citasHistorialBg}>
         <div className={styles.citasHistorialCont}>
-          <h2 className={styles.citasHistorialTitle}>Mis citas</h2>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '1.5rem',
+            flexWrap: 'wrap',
+            gap: '1rem'
+          }}>
+            <h2 className={styles.citasHistorialTitle}>Mis citas</h2>
+            
+            {/* Botón de ordenamiento */}
+            <div style={{ position: 'relative' }} data-sort-dropdown>
+              <button
+                onClick={() => setShowSortDropdown(!showSortDropdown)}
+                style={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '0.7rem 1.2rem',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                  minWidth: '140px',
+                  justifyContent: 'space-between'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+                }}
+                              >
+                  <span>Ordenar por {getSortLabel(sortBy)}</span>
+                  {getSortIcon(sortBy)}
+                </button>
+              
+              {/* Dropdown de ordenamiento */}
+              {showSortDropdown && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  background: '#fff',
+                  borderRadius: '8px',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                  border: '1px solid #e0e0e0',
+                  zIndex: 1000,
+                  minWidth: '180px',
+                  overflow: 'hidden',
+                  marginTop: '0.5rem'
+                }}>
+                  {[
+                    { type: 'fecha', label: '📅 Fecha', icon: '📅' },
+                    { type: 'servicio', label: '💇 Servicio', icon: '💇' },
+                    { type: 'estado', label: '📊 Estado', icon: '📊' }
+                  ].map((option) => (
+                    <button
+                      key={option.type}
+                      onClick={() => handleSort(option.type)}
+                      style={{
+                        width: '100%',
+                        padding: '0.8rem 1rem',
+                        border: 'none',
+                        background: sortBy === option.type ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#fff',
+                        color: sortBy === option.type ? '#fff' : '#333',
+                        fontSize: '0.9rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        justifyContent: 'space-between',
+                        borderBottom: '1px solid #f0f0f0'
+                      }}
+                      onMouseOver={(e) => {
+                        if (sortBy !== option.type) {
+                          e.currentTarget.style.background = '#f8f9fa';
+                        }
+                      }}
+                      onMouseOut={(e) => {
+                        if (sortBy !== option.type) {
+                          e.currentTarget.style.background = '#fff';
+                        }
+                      }}
+                    >
+                      <span>{option.label}</span>
+                      {getSortIcon(option.type)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
           
 
           
