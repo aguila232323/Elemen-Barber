@@ -366,6 +366,10 @@ public class CitaController {
         @RequestParam(required = false) String userRole // "ADMIN" o "USER"
     ) {
         try {
+            System.out.println("🔍 SOLICITUD DE DISPONIBILIDAD:");
+            System.out.println("   Fecha: " + fecha);
+            System.out.println("   Duración: " + duracion + " minutos");
+            System.out.println("   UserRole: " + userRole);
             // Verificar que el usuario no esté baneado (si no es admin)
             if (!"ADMIN".equals(userRole)) {
                 // Aquí necesitaríamos obtener el usuario del token JWT
@@ -469,19 +473,29 @@ public class CitaController {
                     }
                 }
                 
-                // Comprobar que todos los slots consecutivos están libres
-                for (int j = 0; j < slotsNecesarios; j++) {
-                    LocalDateTime inicio = LocalDateTime.of(dia, slots.get(i + j));
-                    LocalDateTime fin = inicio.plusMinutes(45);
+                                    // Comprobar que el rango completo de la cita está libre
+                    LocalDateTime inicioCita = LocalDateTime.of(dia, slotInicio);
+                    LocalDateTime finCita = inicioCita.plusMinutes(duracion);
                     boolean solapado = citasDia.stream().anyMatch(cita -> {
                         if (cita.getEstado().equals("cancelada")) return false;
                         LocalDateTime cIni = cita.getFechaHora();
                         int dur = cita.getServicio().getDuracionMinutos();
                         LocalDateTime cFin = cIni.plusMinutes(dur);
-                        return !(fin.isBefore(cIni) || inicio.isAfter(cFin.minusMinutes(1)));
+                        // Verificar solapamiento: dos citas se solapan si hay tiempo en común
+                        // Permitir que las citas se toquen exactamente (una termina cuando otra empieza)
+                        boolean haySolapamiento = inicioCita.isBefore(cFin) && finCita.isAfter(cIni);
+                        if (haySolapamiento) {
+                            System.out.println("🔍 CONFLICTO DETECTADO en disponibilidad:");
+                            System.out.println("   Nueva cita: " + inicioCita.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")) + 
+                                             " - " + finCita.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")));
+                            System.out.println("   Cita existente: " + cIni.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")) + 
+                                             " - " + cFin.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")));
+                            System.out.println("   ¿inicioCita.isBefore(cFin)? " + inicioCita.isBefore(cFin));
+                            System.out.println("   ¿finCita.isAfter(cIni)? " + finCita.isAfter(cIni));
+                        }
+                        return haySolapamiento;
                     });
-                    if (solapado) { hueco = false; break; }
-                }
+                    if (solapado) { hueco = false; }
                 if (hueco) {
                     horasLibres.add(slotInicio.toString().substring(0,5));
                 }
@@ -490,6 +504,11 @@ public class CitaController {
             Map<String, Object> respuesta = new java.util.HashMap<>();
             respuesta.put("fecha", fecha);
             respuesta.put("horasLibres", horasLibres);
+            
+            System.out.println("✅ RESPUESTA DE DISPONIBILIDAD:");
+            System.out.println("   Horas libres encontradas: " + horasLibres.size());
+            System.out.println("   Horas: " + horasLibres);
+            
             return ResponseEntity.ok(respuesta);
         } catch (Exception e) {
             Map<String, String> errorResponse = new java.util.HashMap<>();
@@ -600,19 +619,19 @@ public class CitaController {
                         }
                     }
                     
-                    // Comprobar que todos los slots consecutivos están libres
-                    for (int j = 0; j < slotsNecesarios; j++) {
-                        LocalDateTime inicio = LocalDateTime.of(fecha, slots.get(i + j));
-                        LocalDateTime fin = inicio.plusMinutes(45);
-                        boolean solapado = citasDia.stream().anyMatch(cita -> {
-                            if (cita.getEstado().equals("cancelada")) return false;
-                            LocalDateTime cIni = cita.getFechaHora();
-                            int dur = cita.getServicio().getDuracionMinutos();
-                            LocalDateTime cFin = cIni.plusMinutes(dur);
-                            return !(fin.isBefore(cIni) || inicio.isAfter(cFin.minusMinutes(1)));
-                        });
-                        if (solapado) { hueco = false; break; }
-                    }
+                    // Comprobar que el rango completo de la cita está libre
+                    LocalDateTime inicioCita = LocalDateTime.of(fecha, slotInicio);
+                    LocalDateTime finCita = inicioCita.plusMinutes(duracion);
+                    boolean solapado = citasDia.stream().anyMatch(cita -> {
+                        if (cita.getEstado().equals("cancelada")) return false;
+                        LocalDateTime cIni = cita.getFechaHora();
+                        int dur = cita.getServicio().getDuracionMinutos();
+                        LocalDateTime cFin = cIni.plusMinutes(dur);
+                        // Verificar solapamiento: dos citas se solapan si hay tiempo en común
+                        // Permitir que las citas se toquen exactamente (una termina cuando otra empieza)
+                        return inicioCita.isBefore(cFin) && finCita.isAfter(cIni);
+                    });
+                    if (solapado) { hueco = false; }
                     if (hueco) {
                         libres++;
                     }

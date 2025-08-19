@@ -41,7 +41,6 @@ public class ConfiguracionController {
     }
     
     @GetMapping("/tiempo-minimo")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> obtenerTiempoMinimo() {
         try {
             int tiempoMinimo = configuracionService.obtenerTiempoMinimo();

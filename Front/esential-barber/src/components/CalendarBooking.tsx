@@ -188,6 +188,9 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
   const debouncedMes = useDebounce(mes, 300);
   const debouncedAnio = useDebounce(anio, 300);
 
+  // Memoizar el nombre del mes para evitar recálculos
+  const nombreMes = useMemo(() => new Date(anio, mes).toLocaleString('es-ES',{month:'long',year:'numeric'}), [anio, mes]);
+
   // Obtener tiempo mínimo de reserva
   useEffect(() => {
     const fetchTiempoMinimo = async () => {
@@ -720,7 +723,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
             disabled={anio < today.getFullYear() || (anio === today.getFullYear() && mes <= today.getMonth())}
           >&lt;</button>
           <span style={{flex:1, textAlign:'center', fontWeight:800, fontSize:'1.1rem', textTransform:'capitalize', color:'#1976d2', letterSpacing:1, margin:'0 1rem', display:'block'}}>
-            {useMemo(() => new Date(anio, mes).toLocaleString('es-ES',{month:'long',year:'numeric'}), [anio, mes])}
+            {nombreMes}
           </span>
           <button onClick={()=>cambiarMes(1)} style={{background:'none',border:'none',fontSize:18,cursor:'pointer',color:'#1976d2'}}>&gt;</button>
         </div>

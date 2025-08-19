@@ -363,9 +363,10 @@ public class CitaService {
             LocalDateTime fin = inicio.plusMinutes(servicio.getDuracionMinutos());
 
             // Buscar citas que se solapen con el horario solicitado
-            // Usar un rango más amplio para asegurar que no se pierdan conflictos
-            LocalDateTime inicioBusqueda = inicio.minusMinutes(servicio.getDuracionMinutos());
-            LocalDateTime finBusqueda = fin.plusMinutes(servicio.getDuracionMinutos());
+            // Usar un rango más preciso para evitar falsos conflictos
+            // Solo buscar en el rango exacto de la cita más un pequeño margen de seguridad
+            LocalDateTime inicioBusqueda = inicio.minusMinutes(5); // Margen de 5 minutos
+            LocalDateTime finBusqueda = fin.plusMinutes(5); // Margen de 5 minutos
             
             List<Cita> citasExistentes = citaRepository.findByFechaHoraBetween(inicioBusqueda, finBusqueda);
 
@@ -375,11 +376,12 @@ public class CitaService {
                     LocalDateTime inicioExistente = citaExistente.getFechaHora();
                     LocalDateTime finExistente = citaExistente.getFechaHora().plusMinutes(citaExistente.getServicio().getDuracionMinutos());
 
-                    // Verificar si hay solapamiento
-                    // Dos citas se solapan si:
-                    // 1. El inicio de la nueva cita es antes del fin de la existente Y
-                    // 2. El fin de la nueva cita es después del inicio de la existente
-                    if (inicio.isBefore(finExistente) && fin.isAfter(inicioExistente)) {
+                    // Verificar si hay solapamiento real
+                    // Dos citas se solapan si hay un tiempo en común entre ambas
+                    // Permitir que las citas se toquen exactamente (una termina cuando otra empieza)
+                    boolean haySolapamiento = inicio.isBefore(finExistente) && fin.isAfter(inicioExistente);
+                    
+                    if (haySolapamiento) {
                         System.out.println("❌ CONFLICTO: Cita existente #" + citaExistente.getId() + 
                                          " (" + citaExistente.getCliente().getNombre() + " - " + citaExistente.getServicio().getNombre() + ")" +
                                          " de " + inicioExistente.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) + 
