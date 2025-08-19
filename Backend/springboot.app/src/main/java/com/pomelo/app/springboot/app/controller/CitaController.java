@@ -9,6 +9,7 @@ import com.pomelo.app.springboot.app.service.UsuarioService;
 import com.pomelo.app.springboot.app.service.ServicioService;
 import com.pomelo.app.springboot.app.service.ConfiguracionService;
 import com.pomelo.app.springboot.app.service.VacacionesService;
+import com.pomelo.app.springboot.app.service.DiasLaborablesService;
 import com.pomelo.app.springboot.app.service.EmailService;
 import com.pomelo.app.springboot.app.repository.ResenaRepository;
 
@@ -38,15 +39,17 @@ public class CitaController {
     private final ServicioService servicioService;
     private final ConfiguracionService configuracionService;
     private final VacacionesService vacacionesService;
+    private final DiasLaborablesService diasLaborablesService;
     private final EmailService emailService;
     private final ResenaRepository resenaRepository;
 
-    public CitaController(CitaService citaService, UsuarioService usuarioService, ServicioService servicioService, ConfiguracionService configuracionService, VacacionesService vacacionesService, EmailService emailService, ResenaRepository resenaRepository) {
+    public CitaController(CitaService citaService, UsuarioService usuarioService, ServicioService servicioService, ConfiguracionService configuracionService, VacacionesService vacacionesService, DiasLaborablesService diasLaborablesService, EmailService emailService, ResenaRepository resenaRepository) {
         this.citaService = citaService;
         this.usuarioService = usuarioService;
         this.servicioService = servicioService;
         this.configuracionService = configuracionService;
         this.vacacionesService = vacacionesService;
+        this.diasLaborablesService = diasLaborablesService;
         this.emailService = emailService;
         this.resenaRepository = resenaRepository;
     }

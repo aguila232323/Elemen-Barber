@@ -82,6 +82,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/resenas/**").hasRole("ADMIN")
                 .requestMatchers("/api/portfolio/fotos").permitAll()
                 .requestMatchers("/api/portfolio/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/dias-laborables/horario").permitAll() // Horario público
+                .requestMatchers("/api/dias-laborables/verificar/**").permitAll() // Verificar fecha pública
+                .requestMatchers("/api/dias-laborables/no-laborables").permitAll() // Días no laborables públicos
+                .requestMatchers("/api/dias-laborables/admin/**").hasRole("ADMIN") // Admin para gestionar
                 .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll() // Permitir solo GET (servir archivos)
                 .requestMatchers(HttpMethod.POST, "/api/files/**").hasRole("ADMIN") // Solo admin puede subir
                 .requestMatchers(HttpMethod.DELETE, "/api/files/**").hasRole("ADMIN") // Solo admin puede eliminar

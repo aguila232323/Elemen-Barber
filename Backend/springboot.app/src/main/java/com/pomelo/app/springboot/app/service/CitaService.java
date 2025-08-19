@@ -35,6 +35,9 @@ public class CitaService {
     private VacacionesService vacacionesService;
 
     @Autowired
+    private DiasLaborablesService diasLaborablesService;
+
+    @Autowired
     private EmailService emailService;
 
     @Autowired
@@ -57,6 +60,11 @@ public class CitaService {
         LocalDate fechaCita = cita.getFechaHora().toLocalDate();
         if (vacacionesService.esFechaVacaciones(fechaCita)) {
             throw new RuntimeException("No se pueden crear citas en días de vacaciones");
+        }
+        
+        // Validar que sea un día laborable
+        if (!diasLaborablesService.esDiaLaborable(fechaCita)) {
+            throw new RuntimeException("No se pueden crear citas en días no laborables");
         }
         
         // Verificar disponibilidad
