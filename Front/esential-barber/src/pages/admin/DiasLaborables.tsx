@@ -7,30 +7,14 @@ interface DiaLaborable {
   id: number;
   diaSemana: string;
   esLaborable: boolean;
-  horaInicio: string;
-  horaFin: string;
   descripcion?: string;
-}
-
-interface DiaNoLaborable {
-  id: number;
-  fecha: string;
-  descripcion: string;
-  tipo: string;
-  activo: boolean;
 }
 
 const DiasLaborables: React.FC = () => {
   const [diasLaborables, setDiasLaborables] = useState<DiaLaborable[]>([]);
-  const [diasNoLaborables, setDiasNoLaborables] = useState<DiaNoLaborable[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [editingDia, setEditingDia] = useState<DiaLaborable | null>(null);
-  const [newDiaNoLaborable, setNewDiaNoLaborable] = useState({
-    fecha: '',
-    descripcion: '',
-    tipo: 'FESTIVO'
-  });
+  const [hasChanges, setHasChanges] = useState(false);
 
   const diasSemana = [
     { value: 'MONDAY', label: 'Lunes' },
@@ -42,12 +26,7 @@ const DiasLaborables: React.FC = () => {
     { value: 'SUNDAY', label: 'Domingo' }
   ];
 
-  const tiposDiaNoLaborable = [
-    { value: 'FESTIVO', label: 'Festivo' },
-    { value: 'DIA_ESPECIAL', label: 'Día Especial' },
-    { value: 'MANTENIMIENTO', label: 'Mantenimiento' },
-    { value: 'VACACIONES', label: 'Vacaciones' }
-  ];
+
 
   useEffect(() => {
     cargarDatos();
@@ -70,18 +49,6 @@ const DiasLaborables: React.FC = () => {
         setDiasLaborables(laborables);
       }
       
-      // Cargar días no laborables
-      const responseNoLaborables = await fetch(`${config.API_BASE_URL}/api/dias-laborables/no-laborables`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (responseNoLaborables.ok) {
-        const noLaborables = await responseNoLaborables.json();
-        setDiasNoLaborables(noLaborables);
-      }
-      
     } catch (error) {
       setError('Error al cargar los datos');
       console.error('Error:', error);
@@ -101,15 +68,13 @@ const DiasLaborables: React.FC = () => {
         },
         body: JSON.stringify({
           diaSemana: dia.diaSemana,
-          esLaborable: dia.esLaborable,
-          horaInicio: dia.horaInicio,
-          horaFin: dia.horaFin
+          esLaborable: dia.esLaborable
         })
       });
 
       if (response.ok) {
         await cargarDatos();
-        setEditingDia(null);
+        setHasChanges(false);
       } else {
         const errorData = await response.json();
         alert(errorData.message || 'Error al actualizar');
@@ -120,56 +85,45 @@ const DiasLaborables: React.FC = () => {
     }
   };
 
-  const añadirDiaNoLaborable = async () => {
+  const guardarTodosLosCambios = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`${config.API_BASE_URL}/api/dias-laborables/admin/no-laborable`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(newDiaNoLaborable)
-      });
+      let successCount = 0;
+      let errorCount = 0;
 
-      if (response.ok) {
-        await cargarDatos();
-        setNewDiaNoLaborable({ fecha: '', descripcion: '', tipo: 'FESTIVO' });
-      } else {
-        const errorData = await response.json();
-        alert(errorData.message || 'Error al añadir día no laborable');
-      }
-    } catch (error) {
-      alert('Error al añadir día no laborable');
-      console.error('Error:', error);
-    }
-  };
+      for (const dia of diasLaborables) {
+        const response = await fetch(`${config.API_BASE_URL}/api/dias-laborables/admin/dia-semana`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            diaSemana: dia.diaSemana,
+            esLaborable: dia.esLaborable
+          })
+        });
 
-  const eliminarDiaNoLaborable = async (id: number) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este día no laborable?')) {
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`${config.API_BASE_URL}/api/dias-laborables/admin/no-laborable/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
+        if (response.ok) {
+          successCount++;
+        } else {
+          errorCount++;
         }
-      });
+      }
 
-      if (response.ok) {
-        await cargarDatos();
+      if (errorCount === 0) {
+        alert(`✅ Todos los cambios guardados correctamente (${successCount} días actualizados)`);
+        setHasChanges(false);
       } else {
-        const errorData = await response.json();
-        alert(errorData.message || 'Error al eliminar');
+        alert(`⚠️ Se guardaron ${successCount} días, pero hubo ${errorCount} errores`);
       }
     } catch (error) {
-      alert('Error al eliminar el día no laborable');
+      alert('Error al guardar los cambios');
       console.error('Error:', error);
     }
   };
+
+
 
   const inicializarDiasLaborables = async () => {
     try {
@@ -220,122 +174,54 @@ const DiasLaborables: React.FC = () => {
 
       {/* Configuración Semanal */}
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>📅 Horario Semanal</h2>
+        <h2 className={styles.sectionTitle}>📅 Días Laborables</h2>
+        <p className={styles.sectionDescription}>
+          Activa o desactiva los días en los que el negocio estará abierto para recibir citas
+        </p>
         <div className={styles.weekGrid}>
           {diasLaborables.map((dia) => (
             <div key={dia.id} className={`${styles.dayCard} ${!dia.esLaborable ? styles.disabled : ''}`}>
               <div className={styles.dayHeader}>
                 <h3 className={styles.dayName}>{diasSemana.find(d => d.value === dia.diaSemana)?.label}</h3>
-                <div 
-                  className={`${styles.toggleSwitch} ${dia.esLaborable ? styles.active : ''}`}
-                  onClick={() => {
-                    const updatedDia = { ...dia, esLaborable: !dia.esLaborable };
-                    setDiasLaborables(diasLaborables.map(d => d.id === dia.id ? updatedDia : d));
-                  }}
-                />
+                                 <div 
+                   className={`${styles.toggleSwitch} ${dia.esLaborable ? styles.active : ''}`}
+                   onClick={() => {
+                     const updatedDia = { ...dia, esLaborable: !dia.esLaborable };
+                     setDiasLaborables(diasLaborables.map(d => d.id === dia.id ? updatedDia : d));
+                     setHasChanges(true);
+                   }}
+                 />
               </div>
               
-              {dia.esLaborable && (
-                <div className={styles.timeFields}>
-                  <div className={styles.timeField}>
-                    <label>Hora de Inicio:</label>
-                    <input
-                      type="time"
-                      value={dia.horaInicio}
-                      onChange={(e) => {
-                        const updatedDia = { ...dia, horaInicio: e.target.value };
-                        setDiasLaborables(diasLaborables.map(d => d.id === dia.id ? updatedDia : d));
-                      }}
-                    />
-                  </div>
-                  <div className={styles.timeField}>
-                    <label>Hora de Fin:</label>
-                    <input
-                      type="time"
-                      value={dia.horaFin}
-                      onChange={(e) => {
-                        const updatedDia = { ...dia, horaFin: e.target.value };
-                        setDiasLaborables(diasLaborables.map(d => d.id === dia.id ? updatedDia : d));
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-              
-              <button
-                onClick={() => actualizarDiaLaborable(dia)}
-                className={styles.saveButton}
-                style={{ marginTop: '1rem', width: '100%' }}
-              >
-                <FaSave /> Guardar Cambios
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Días No Laborables */}
-      <div className={styles.section}>
-        <div className={styles.specificDaysSection}>
-          <h2 className={styles.sectionTitle}>🚫 Días No Laborables</h2>
-          
-          <div className={styles.addSpecificDayForm}>
-            <h3 className={styles.formTitle}>➕ Añadir Nuevo Día No Laborable</h3>
-            <div className={styles.formGrid}>
-              <div className={styles.formField}>
-                <label>Fecha:</label>
-                <input
-                  type="date"
-                  value={newDiaNoLaborable.fecha}
-                  onChange={(e) => setNewDiaNoLaborable({...newDiaNoLaborable, fecha: e.target.value})}
-                />
+              <div className={styles.dayStatus}>
+                {dia.esLaborable ? (
+                  <span className={styles.statusOpen}>✅ Abierto</span>
+                ) : (
+                  <span className={styles.statusClosed}>❌ Cerrado</span>
+                )}
               </div>
               
-              <div className={styles.formField}>
-                <label>Descripción:</label>
-                <input
-                  type="text"
-                  value={newDiaNoLaborable.descripcion}
-                  onChange={(e) => setNewDiaNoLaborable({...newDiaNoLaborable, descripcion: e.target.value})}
-                  placeholder="Ej: Día de la Constitución"
-                />
-              </div>
+              
             </div>
-            
-            <div className={styles.buttonGroup}>
-              <button onClick={añadirDiaNoLaborable} className={styles.addButton}>
-                <FaPlus /> Añadir Día
-              </button>
-            </div>
-          </div>
-          
-          <div className={styles.specificDaysList}>
-            {diasNoLaborables.map((dia) => (
-              <div key={dia.id} className={styles.specificDayCard}>
-                <div className={styles.specificDayInfo}>
-                  <div className={styles.specificDayDate}>
-                    {new Date(dia.fecha).toLocaleDateString('es-ES', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}
-                  </div>
-                  <div className={styles.specificDayDescription}>
-                    {dia.descripcion} • {tiposDiaNoLaborable.find(t => t.value === dia.tipo)?.label}
-                  </div>
-                </div>
-                <button
-                  onClick={() => eliminarDiaNoLaborable(dia.id)}
-                  className={styles.deleteButton}
-                >
-                  <FaTrash />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+                     ))}
+         </div>
+         
+         {/* Botón universal de guardar */}
+         <div className={styles.universalSaveSection}>
+           <button
+             onClick={guardarTodosLosCambios}
+             className={`${styles.universalSaveButton} ${!hasChanges ? styles.disabled : ''}`}
+             disabled={!hasChanges}
+           >
+             <FaSave /> Guardar Todos los Cambios
+           </button>
+           {hasChanges && (
+             <p className={styles.changesIndicator}>
+               ⚠️ Tienes cambios sin guardar
+             </p>
+           )}
+         </div>
+       </div>
 
 
     </div>

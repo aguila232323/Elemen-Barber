@@ -19,12 +19,6 @@ public class DiasLaborables {
     @Column(name = "es_laborable", nullable = false)
     private boolean esLaborable = true;
     
-    @Column(name = "hora_inicio")
-    private String horaInicio = "09:00";
-    
-    @Column(name = "hora_fin")
-    private String horaFin = "18:00";
-    
     @Column(name = "descripcion")
     private String descripcion;
     
@@ -35,12 +29,7 @@ public class DiasLaborables {
         this.esLaborable = esLaborable;
     }
     
-    public DiasLaborables(DayOfWeek diaSemana, boolean esLaborable, String horaInicio, String horaFin) {
-        this.diaSemana = diaSemana;
-        this.esLaborable = esLaborable;
-        this.horaInicio = horaInicio;
-        this.horaFin = horaFin;
-    }
+
     
     // Getters y Setters
     public Long getId() {
@@ -67,21 +56,7 @@ public class DiasLaborables {
         this.esLaborable = esLaborable;
     }
     
-    public String getHoraInicio() {
-        return horaInicio;
-    }
-    
-    public void setHoraInicio(String horaInicio) {
-        this.horaInicio = horaInicio;
-    }
-    
-    public String getHoraFin() {
-        return horaFin;
-    }
-    
-    public void setHoraFin(String horaFin) {
-        this.horaFin = horaFin;
-    }
+
     
     public String getDescripcion() {
         return descripcion;

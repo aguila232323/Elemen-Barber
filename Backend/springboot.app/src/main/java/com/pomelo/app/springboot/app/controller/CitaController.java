@@ -450,6 +450,11 @@ public class CitaController {
                     continue; // Saltar este slot si el día está en vacaciones
                 }
                 
+                // Comprobar si el día es laborable
+                if (!diasLaborablesService.esDiaLaborable(dia)) {
+                    continue; // Saltar este slot si el día no es laborable
+                }
+                
                 // Comprobar restricción de tiempo mínimo para usuarios no-admin
                 if (!"ADMIN".equals(userRole)) {
                     LocalDateTime fechaHoraSlot = LocalDateTime.of(dia, slotInicio);
@@ -579,6 +584,11 @@ public class CitaController {
                     // Comprobar si el día está en vacaciones
                     if (vacacionesService.esFechaVacaciones(fecha)) {
                         continue; // Saltar este slot si el día está en vacaciones
+                    }
+                    
+                    // Comprobar si el día es laborable
+                    if (!diasLaborablesService.esDiaLaborable(fecha)) {
+                        continue; // Saltar este slot si el día no es laborable
                     }
                     
                     // Comprobar restricción de tiempo mínimo para usuarios no-admin

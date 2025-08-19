@@ -494,3 +494,79 @@
 .dayCard.disabled:hover::after {
   opacity: 1;
 }
+
+/* Descripción de sección */
+.sectionDescription {
+  font-size: 1rem;
+  color: #ccc;
+  margin-bottom: 2rem;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* Estado del día */
+.dayStatus {
+  text-align: center;
+  margin: 1rem 0;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.statusOpen {
+  color: #4caf50;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.statusClosed {
+  color: #f44336;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Botón universal de guardar */
+.universalSaveSection {
+  text-align: center;
+  margin-top: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(25, 118, 210, 0.05) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(25, 118, 210, 0.2);
+}
+
+.universalSaveButton {
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 1.5rem 3rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 auto;
+}
+
+.universalSaveButton:hover:not(.disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(76, 175, 80, 0.4);
+}
+
+.universalSaveButton.disabled {
+  background: linear-gradient(135deg, #666 0%, #555 100%);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.changesIndicator {
+  color: #ff9800;
+  font-weight: 600;
+  margin-top: 1rem;
+  font-size: 1rem;
+}
