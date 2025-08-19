@@ -3,11 +3,13 @@ import styles from './Portafolio.module.css'
 import { useAuth } from '../../../context/AuthContext'
 import { FaPlus, FaTrash, FaTimes } from 'react-icons/fa'
 import { config } from '../../../config/config'
+import { ImageService } from '../../../services/imageService'
+import ImageDisplay from '../../../components/ImageDisplay'
 
 interface Foto {
   id: number;
   nombre: string;
-  imagenBase64: string;
+  imagenUrl: string;
   urlInstagram: string;
   fechaCreacion: string;
   activo: boolean;
@@ -82,31 +84,19 @@ const Portafolio: React.FC = () => {
     }
   };
 
-  const convertToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
-    });
-  };
+
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     if (files.length === 0) return;
 
-    // Validar tipos de archivo
-    const invalidFiles = files.filter(file => !file.type.startsWith('image/'));
-    if (invalidFiles.length > 0) {
-      alert('Por favor selecciona solo archivos de imagen.');
-      return;
-    }
-    
-    // Validar tamaños (máximo 5MB cada uno)
-    const oversizedFiles = files.filter(file => file.size > 5 * 1024 * 1024);
-    if (oversizedFiles.length > 0) {
-      alert('Algunas imágenes son demasiado grandes. Máximo 5MB por imagen.');
-      return;
+    // Validar cada archivo
+    for (const file of files) {
+      const validation = ImageService.validateImageFile(file);
+      if (!validation.isValid) {
+        alert(validation.error);
+        return;
+      }
     }
     
     setSelectedFiles(files);
@@ -126,12 +116,35 @@ const Portafolio: React.FC = () => {
         return;
       }
 
+      let uploadedCount = 0;
+      let errors: string[] = [];
+
       // Subir cada archivo individualmente
       for (const file of selectedFiles) {
         try {
-          const base64 = await convertToBase64(file);
+          // Comprimir la imagen antes de subirla
+          const compressedFile = await ImageService.compressImage(file, 1920, 0.8);
           
-          const response = await fetch(`${config.API_BASE_URL}/api/portfolio/admin/añadir`, {
+          // Subir usando FormData (más eficiente que Base64)
+          const formData = new FormData();
+          formData.append('file', compressedFile);
+
+          const uploadResponse = await fetch(`${config.API_BASE_URL}/api/files/upload`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formData
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error('Error al subir la imagen al servidor');
+          }
+
+          const uploadResult = await uploadResponse.json();
+          
+          // Ahora crear la entrada en el portfolio
+          const portfolioResponse = await fetch(`${config.API_BASE_URL}/api/portfolio/admin/añadir`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -139,21 +152,40 @@ const Portafolio: React.FC = () => {
             },
             body: JSON.stringify({
               nombre: file.name,
-              imagenBase64: base64,
+              imagenUrl: `/api/files/${uploadResult.fileName}`,
               urlInstagram: ''
             })
           });
 
-          if (!response.ok) {
-            // Error al subir archivo
+          if (!portfolioResponse.ok) {
+            // Si falla, eliminar el archivo subido
+            await fetch(`${config.API_BASE_URL}/api/files/${uploadResult.fileName}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+            throw new Error('Error al crear la entrada en el portfolio');
           }
+
+          uploadedCount++;
         } catch (error) {
-          // Error procesando archivo
+          console.error('Error subiendo archivo:', file.name, error);
+          errors.push(`${file.name}: ${error instanceof Error ? error.message : 'Error desconocido'}`);
         }
       }
       
-      // Recargar las fotos
-      await cargarFotos();
+      // Mostrar resultados
+      if (uploadedCount > 0) {
+        alert(`${uploadedCount} imagen(es) subida(s) exitosamente.`);
+        // Recargar las fotos
+        await cargarFotos();
+      }
+      
+      if (errors.length > 0) {
+        console.error('Errores al subir archivos:', errors);
+        alert(`Errores al subir ${errors.length} archivo(s). Revisa la consola para más detalles.`);
+      }
       
       setSelectedFiles([]);
       setAdminModalOpen(false);
@@ -163,6 +195,7 @@ const Portafolio: React.FC = () => {
         fileInputRef.current.value = '';
       }
     } catch (error) {
+      console.error('Error general al procesar las imágenes:', error);
       alert('Error al procesar las imágenes.');
     } finally {
       setUploading(false);
@@ -170,6 +203,10 @@ const Portafolio: React.FC = () => {
   };
 
   const handleDeletePhoto = async (id: number) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar esta foto permanentemente?')) {
+      return;
+    }
+
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
@@ -177,19 +214,22 @@ const Portafolio: React.FC = () => {
         return;
       }
 
-      const response = await fetch(`${config.API_BASE_URL}/api/portfolio/admin/eliminar/${id}`, {
+      const response = await fetch(`${config.API_BASE_URL}/api/portfolio/admin/eliminar-permanente/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
-      if (!response.ok) {
-        throw new Error('Error al eliminar la foto');
+      if (response.ok) {
+        alert('Foto eliminada correctamente.');
+        await cargarFotos();
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || 'Error al eliminar la foto.');
       }
-
-      await cargarFotos();
     } catch (error) {
+      console.error('Error al eliminar la foto:', error);
       alert('Error al eliminar la foto.');
     }
   };
@@ -229,7 +269,6 @@ const Portafolio: React.FC = () => {
               <div
                 key={foto.id}
                 className={`${styles.foto} ${foto.urlInstagram ? styles.fotoClickable : ''}`}
-                style={{backgroundImage: `url(${foto.imagenBase64})`}}
                 onClick={() => handleFotoClick(foto.urlInstagram)}
                 role={foto.urlInstagram ? "button" : undefined}
                 tabIndex={foto.urlInstagram ? 0 : undefined}
@@ -241,6 +280,11 @@ const Portafolio: React.FC = () => {
                 }}
                 aria-label={foto.urlInstagram ? "Ver en Instagram" : "Imagen del portafolio"}
               >
+                <ImageDisplay
+                  src={foto.imagenUrl}
+                  alt={`Portfolio image: ${foto.nombre}`}
+                  className={styles.fotoImage}
+                />
                 {isAdmin && (
                   <button
                     className={styles.deletePhotoBtn}

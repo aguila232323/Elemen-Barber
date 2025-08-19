@@ -82,6 +82,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/resenas/**").hasRole("ADMIN")
                 .requestMatchers("/api/portfolio/fotos").permitAll()
                 .requestMatchers("/api/portfolio/admin/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll() // Permitir solo GET (servir archivos)
+                .requestMatchers(HttpMethod.POST, "/api/files/**").hasRole("ADMIN") // Solo admin puede subir
+                .requestMatchers(HttpMethod.DELETE, "/api/files/**").hasRole("ADMIN") // Solo admin puede eliminar
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers.frameOptions().disable())

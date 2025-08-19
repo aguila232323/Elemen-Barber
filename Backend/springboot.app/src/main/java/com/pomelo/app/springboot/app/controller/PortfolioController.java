@@ -2,6 +2,7 @@ package com.pomelo.app.springboot.app.controller;
 
 import com.pomelo.app.springboot.app.entity.Portfolio;
 import com.pomelo.app.springboot.app.service.PortfolioService;
+import com.pomelo.app.springboot.app.service.FileStorageService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +18,12 @@ import java.util.Map;
 public class PortfolioController {
 
     private final PortfolioService portfolioService;
+    private final FileStorageService fileStorageService;
 
     @Autowired
-    public PortfolioController(PortfolioService portfolioService) {
+    public PortfolioController(PortfolioService portfolioService, FileStorageService fileStorageService) {
         this.portfolioService = portfolioService;
+        this.fileStorageService = fileStorageService;
     }
 
     /**
@@ -147,6 +150,22 @@ public class PortfolioController {
     @DeleteMapping("/admin/eliminar-permanente/{id}")
     public ResponseEntity<?> eliminarFotoPermanente(@PathVariable Long id) {
         try {
+            // Obtener la foto antes de eliminarla para poder eliminar el archivo
+            var foto = portfolioService.obtenerFotoPorId(id);
+            if (foto.isEmpty()) {
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Foto no encontrada");
+                errorResponse.put("message", "No se encontró la foto con el ID especificado");
+                return ResponseEntity.notFound().build();
+            }
+
+            // Extraer el nombre del archivo de la URL
+            String imagenUrl = foto.get().getImagenUrl();
+            if (imagenUrl != null && imagenUrl.startsWith("/api/files/")) {
+                String fileName = imagenUrl.substring("/api/files/".length());
+                fileStorageService.deleteFile(fileName);
+            }
+
             boolean eliminado = portfolioService.eliminarFotoPermanente(id);
             
             if (eliminado) {
@@ -155,9 +174,9 @@ public class PortfolioController {
                 return ResponseEntity.ok(response);
             } else {
                 Map<String, String> errorResponse = new HashMap<>();
-                errorResponse.put("error", "Foto no encontrada");
-                errorResponse.put("message", "No se encontró la foto con el ID especificado");
-                return ResponseEntity.notFound().build();
+                errorResponse.put("error", "Error al eliminar la foto");
+                errorResponse.put("message", "No se pudo eliminar la foto de la base de datos");
+                return ResponseEntity.badRequest().body(errorResponse);
             }
         } catch (Exception e) {
             Map<String, String> errorResponse = new HashMap<>();
