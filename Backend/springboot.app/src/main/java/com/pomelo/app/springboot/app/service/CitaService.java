@@ -62,8 +62,8 @@ public class CitaService {
             throw new RuntimeException("No se pueden crear citas en días de vacaciones");
         }
         
-        // Validar que sea un día laborable
-        if (!diasLaborablesService.esDiaLaborable(fechaCita)) {
+        // Validar que sea un día laborable (solo para usuarios no admin)
+        if (!"ADMIN".equals(rolUsuario) && !diasLaborablesService.esDiaLaborable(fechaCita)) {
             throw new RuntimeException("No se pueden crear citas en días no laborables");
         }
         

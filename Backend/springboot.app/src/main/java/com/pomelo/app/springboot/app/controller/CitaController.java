@@ -450,9 +450,9 @@ public class CitaController {
                     continue; // Saltar este slot si el día está en vacaciones
                 }
                 
-                // Comprobar si el día es laborable
-                if (!diasLaborablesService.esDiaLaborable(dia)) {
-                    continue; // Saltar este slot si el día no es laborable
+                // Comprobar si el día es laborable (solo para usuarios no-admin)
+                if (!"ADMIN".equals(userRole) && !diasLaborablesService.esDiaLaborable(dia)) {
+                    continue; // Saltar este slot si el día no es laborable (solo para usuarios normales)
                 }
                 
                 // Comprobar restricción de tiempo mínimo para usuarios no-admin
@@ -463,18 +463,8 @@ public class CitaController {
                         continue; // Saltar este slot si no cumple el tiempo mínimo
                     }
                     
-                    // Restricciones de días para usuarios normales
-                    DayOfWeek diaSemana = dia.getDayOfWeek();
-                    
-                    // Lunes y domingo cerrado para usuarios normales
-                    if (diaSemana == DayOfWeek.MONDAY || diaSemana == DayOfWeek.SUNDAY) {
-                        continue; // Saltar este slot si es lunes o domingo
-                    }
-                    
-                    // Sábado: permitir solo hasta las 15:00 para usuarios normales
-                    if (diaSemana == DayOfWeek.SATURDAY && slotInicio.isAfter(LocalTime.of(15, 0))) {
-                        continue; // Saltar este slot si es sábado después de las 15:00
-                    }
+                    // Las restricciones de días ahora se manejan a través del sistema de días laborables
+                    // No hay restricciones hardcodeadas aquí
                 }
                 
                                     // Comprobar que el rango completo de la cita está libre
@@ -586,9 +576,9 @@ public class CitaController {
                         continue; // Saltar este slot si el día está en vacaciones
                     }
                     
-                    // Comprobar si el día es laborable
-                    if (!diasLaborablesService.esDiaLaborable(fecha)) {
-                        continue; // Saltar este slot si el día no es laborable
+                    // Comprobar si el día es laborable (solo para usuarios no-admin)
+                    if (!"ADMIN".equals(userRole) && !diasLaborablesService.esDiaLaborable(fecha)) {
+                        continue; // Saltar este slot si el día no es laborable (solo para usuarios normales)
                     }
                     
                     // Comprobar restricción de tiempo mínimo para usuarios no-admin
@@ -599,18 +589,8 @@ public class CitaController {
                             continue; // Saltar este slot si no cumple el tiempo mínimo
                         }
                         
-                        // Restricciones de días para usuarios normales
-                        DayOfWeek diaSemana = fecha.getDayOfWeek();
-                        
-                        // Lunes y domingo cerrado para usuarios normales
-                        if (diaSemana == DayOfWeek.MONDAY || diaSemana == DayOfWeek.SUNDAY) {
-                            continue; // Saltar este slot si es lunes o domingo
-                        }
-                        
-                        // Sábado: permitir solo hasta las 15:00 para usuarios normales
-                        if (diaSemana == DayOfWeek.SATURDAY && slotInicio.isAfter(LocalTime.of(15, 0))) {
-                            continue; // Saltar este slot si es sábado después de las 15:00
-                        }
+                        // Las restricciones de días ahora se manejan a través del sistema de días laborables
+                        // No hay restricciones hardcodeadas aquí
                     }
                     
                     // Comprobar que el rango completo de la cita está libre
