@@ -366,10 +366,6 @@ public class CitaController {
         @RequestParam(required = false) String userRole // "ADMIN" o "USER"
     ) {
         try {
-            System.out.println("🔍 SOLICITUD DE DISPONIBILIDAD:");
-            System.out.println("   Fecha: " + fecha);
-            System.out.println("   Duración: " + duracion + " minutos");
-            System.out.println("   UserRole: " + userRole);
             // Verificar que el usuario no esté baneado (si no es admin)
             if (!"ADMIN".equals(userRole)) {
                 // Aquí necesitaríamos obtener el usuario del token JWT
@@ -483,17 +479,7 @@ public class CitaController {
                         LocalDateTime cFin = cIni.plusMinutes(dur);
                         // Verificar solapamiento: dos citas se solapan si hay tiempo en común
                         // Permitir que las citas se toquen exactamente (una termina cuando otra empieza)
-                        boolean haySolapamiento = inicioCita.isBefore(cFin) && finCita.isAfter(cIni);
-                        if (haySolapamiento) {
-                            System.out.println("🔍 CONFLICTO DETECTADO en disponibilidad:");
-                            System.out.println("   Nueva cita: " + inicioCita.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")) + 
-                                             " - " + finCita.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")));
-                            System.out.println("   Cita existente: " + cIni.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")) + 
-                                             " - " + cFin.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")));
-                            System.out.println("   ¿inicioCita.isBefore(cFin)? " + inicioCita.isBefore(cFin));
-                            System.out.println("   ¿finCita.isAfter(cIni)? " + finCita.isAfter(cIni));
-                        }
-                        return haySolapamiento;
+                        return inicioCita.isBefore(cFin) && finCita.isAfter(cIni);
                     });
                     if (solapado) { hueco = false; }
                 if (hueco) {
@@ -504,11 +490,6 @@ public class CitaController {
             Map<String, Object> respuesta = new java.util.HashMap<>();
             respuesta.put("fecha", fecha);
             respuesta.put("horasLibres", horasLibres);
-            
-            System.out.println("✅ RESPUESTA DE DISPONIBILIDAD:");
-            System.out.println("   Horas libres encontradas: " + horasLibres.size());
-            System.out.println("   Horas: " + horasLibres);
-            
             return ResponseEntity.ok(respuesta);
         } catch (Exception e) {
             Map<String, String> errorResponse = new java.util.HashMap<>();
