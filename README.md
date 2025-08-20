@@ -24,15 +24,15 @@ git clone https://github.com/tu-usuario/esential-barber-backend.git
 cd esential-barber-backend
 
 # 2. Configurar variables de entorno
-cp .env.example .env.prod
+cp env.example .env.prod
 nano .env.prod
 
 # 3. Desplegar
-docker-compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 ### Variables de entorno requeridas
-Ver archivo `.env.example` para todas las variables necesarias.
+Ver archivo `env.example` para todas las variables necesarias.
 
 ## 📁 Estructura del proyecto
 ```
@@ -41,7 +41,7 @@ springboot.app/
 ├── pom.xml                # Dependencias Maven
 ├── Dockerfile             # Configuración Docker
 ├── docker-compose.prod.yml # Docker Compose para producción
-├── .env.example           # Variables de entorno de ejemplo
+├── env.example           # Variables de entorno de ejemplo
 └── README.md              # Este archivo
 ```
 
