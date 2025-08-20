@@ -223,7 +223,6 @@ public class EmailService {
                 <div class=\"container\">
                     <div class=\"header\">
                         <img src=\"https://elemenbarber.com/logoElemental.png\" alt=\"Elemen\" style=\"width:80px; border-radius:8px;\">
-                        <h1>Elemen</h1>
                         <p>Tu opinión nos ayuda a mejorar</p>
                     </div>
                     <div class=\"content\">
@@ -235,7 +234,7 @@ public class EmailService {
                         <p class=\"note\">Gracias por confiar en nosotros.</p>
                     </div>
                     <div class=\"footer\">
-                        <div>Elemen · +34 683 23 55 47 · elemenbarber@gmail.com</div>
+                        <div>+34 683 23 55 47 · elemenbarber@gmail.com</div>
                     </div>
                 </div>
             </body>
@@ -365,7 +364,6 @@ public class EmailService {
                 <div class="container">
                     <div class="header">
                         <img src="https://elemenbarber.com/logoElemental.png" alt="Elemen" class="logo">
-                        <h1>Elemen</h1>
                         <p>Tu cita ha sido confirmada</p>
                     </div>
                     
@@ -402,7 +400,6 @@ public class EmailService {
                     </div>
                     
                     <div class="footer">
-                        <div class="footer-logo">Elemen</div>
                         <p>¡Gracias por elegir nuestros servicios!</p>
                         <div class="contact-info">
                             📞 Contacto: +34 683 23 55 47<br>
@@ -537,7 +534,6 @@ public class EmailService {
                 <div class="container">
                     <div class="header">
                         <img src="https://elemenbarber.com/logoElemental.png" alt="Elemen" class="logo">
-                        <h1>Elemen</h1>
                         <p>Recordatorio de tu cita</p>
                     </div>
                     
@@ -574,7 +570,6 @@ public class EmailService {
                     </div>
                     
                     <div class="footer">
-                        <div class="footer-logo">Elemen</div>
                         <p>¡Te esperamos!</p>
                         <div class="contact-info">
                             📞 Contacto: +34 683 23 55 47<br>
@@ -691,7 +686,6 @@ public class EmailService {
                 <div class="container">
                     <div class="header">
                         <img src="https://elemenbarber.com/logoElemental.png" alt="Elemen" class="logo">
-                        <h1>Elemen</h1>
                         <p>Verificación de tu cuenta</p>
                     </div>
                     
@@ -723,7 +717,6 @@ public class EmailService {
                     </div>
                     
                     <div class="footer">
-                        <div class="footer-logo">Elemen</div>
                         <p>¡Gracias por registrarte!</p>
                         <div class="contact-info">
                             📞 Contacto: +34 683 23 55 47<br>
@@ -838,7 +831,6 @@ public class EmailService {
                 <div class="container">
                     <div class="header">
                         <img src="https://elemenbarber.com/logoElemental.png" alt="Elemen" class="logo">
-                        <h1>Elemen</h1>
                         <p>Recuperación de Contraseña</p>
                     </div>
                     
@@ -886,7 +878,6 @@ public class EmailService {
                     </div>
                     
                     <div class="footer">
-                        <div class="footer-logo">Elemen</div>
                         <p>¡Gracias por ser parte de Elemen!</p>
                         <div class="contact-info">
                             📞 Contacto: +34 683 23 55 47<br>
@@ -1052,7 +1043,6 @@ public class EmailService {
                 <div class="container">
                     <div class="header">
                         <img src="https://elemenbarber.com/logoElemental.png" alt="Elemen" class="logo">
-                        <h1>Elemen</h1>
                         <p>🔄 Cita Periódica Creada</p>
                     </div>
                     
@@ -1113,7 +1103,6 @@ public class EmailService {
                     </div>
                     
                     <div class="footer">
-                        <div class="footer-logo">Elemen</div>
                         <p>¡Gracias por confiar en Elemen!</p>
                         <div class="contact-info">
                             📞 Contacto: +34 683 23 55 47<br>
@@ -1232,7 +1221,6 @@ public class EmailService {
         html.append("<div class=\"container\">");
         html.append("<div class=\"header\">");
         html.append("<img src=\"https://elemenbarber.com/logoElemental.png\" alt=\"Elemen\" class=\"logo\">");
-        html.append("<h1>Elemen</h1>");
         html.append("<p>❌ Cita Cancelada</p>");
         html.append("</div>");
         html.append("<div class=\"content\">");
@@ -1273,7 +1261,6 @@ public class EmailService {
         html.append("</p>");
         html.append("</div>");
         html.append("<div class=\"footer\">");
-        html.append("<div class=\"footer-logo\">Elemen</div>");
         html.append("<p>¡Gracias por tu comprensión!</p>");
         html.append("<div class=\"contact-info\">");
         html.append("📞 Contacto: +34 683 23 55 47<br>");
@@ -1328,7 +1315,6 @@ public class EmailService {
         html.append("<div class=\"container\">");
         html.append("<div class=\"header\">");
         html.append("<img src=\"https://elemenbarber.com/logoElemental.png\" alt=\"Elemen\" class=\"logo\">");
-        html.append("<h1>Elemen</h1>");
         html.append("<p>🔄 Cita Periódica Cancelada</p>");
         html.append("</div>");
         html.append("<div class=\"content\">");
@@ -1350,7 +1336,7 @@ public class EmailService {
         html.append("</ul></div>");
         html.append("<p style=\"color: #6c757d; font-size: 14px;\">Para crear una nueva cita periódica, visita nuestra aplicación o contacta con nosotros directamente.</p>");
         html.append("</div>");
-        html.append("<div class=\"footer\"><div class=\"footer-logo\">Elemen</div><p>¡Gracias por tu comprensión!</p><div class=\"contact-info\">📞 Contacto: +34 683 23 55 47<br>📧 Email: elemenbarber@gmail.com</div></div>");
+        html.append("<div class=\"footer\"><p>¡Gracias por tu comprensión!</p><div class=\"contact-info\">📞 Contacto: +34 683 23 55 47<br>📧 Email: elemenbarber@gmail.com</div></div>");
         html.append("</div>");
         html.append("</body>");
         html.append("</html>");

@@ -138,10 +138,10 @@ const Inicio: React.FC = () => {
           </span>
           <span className={styles.infoContent}>
             <span className={styles.infoTitle}>Horario</span>
-            <span className={styles.infoSubtitle}>
-              <span className={styles.desktopText}>Mar-Sáb: 9:00-19:00 | Sáb: 9:00-15:00</span>
-              <span className={styles.mobileText}>Mar-Sáb: 9:00-19:00</span>
-            </span>
+                         <span className={styles.infoSubtitle}>
+               <span className={styles.desktopText}>Mar-Sáb: 9:00-21:15 | Sáb: 9:00-15:00</span>
+               <span className={styles.mobileText}>Mar-Sáb: 9:00-21:15</span>
+             </span>
           </span>
         </span>
         
