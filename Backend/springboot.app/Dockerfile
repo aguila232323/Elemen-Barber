@@ -5,9 +5,9 @@
 # Etapa de construcción
 FROM maven:3.8.4-openjdk-17 AS build
 WORKDIR /app
-COPY springboot.app/pom.xml .
-COPY springboot.app/src ./src
-COPY springboot.app/libs ./libs
+COPY Backend/springboot.app/pom.xml .
+COPY Backend/springboot.app/src ./src
+COPY Backend/springboot.app/libs ./libs
 RUN mvn clean package -DskipTests
 
 # Etapa de ejecución
