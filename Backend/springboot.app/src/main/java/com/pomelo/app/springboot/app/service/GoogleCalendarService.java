@@ -447,7 +447,6 @@ public class GoogleCalendarService {
             event.add("end", end);
             
             String eventJson = new Gson().toJson(event);
-            System.out.println("📝 JSON del evento: " + eventJson);
             
             // Crear la petición HTTP
             java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
@@ -458,21 +457,12 @@ public class GoogleCalendarService {
                     .POST(java.net.http.HttpRequest.BodyPublishers.ofString(eventJson))
                     .build();
             
-            System.out.println("📡 Enviando petición HTTP a Google Calendar API...");
             java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
             
-            System.out.println("📊 Respuesta del servidor:");
-            System.out.println("   - Status Code: " + response.statusCode());
-            System.out.println("   - Response Body: " + response.body());
-            
             if (response.statusCode() == 200 || response.statusCode() == 201) {
-                System.out.println("✅ Evento creado exitosamente en Google Calendar");
-                System.out.println("   Usuario: " + usuario.getEmail());
-                System.out.println("   Cita: " + cita.getServicio().getNombre() + " - " + cita.getFechaHora());
+                System.out.println("✅ Evento creado en Google Calendar para " + usuario.getEmail());
             } else {
-                System.err.println("❌ Error al crear evento en Google Calendar");
-                System.err.println("   Status Code: " + response.statusCode());
-                System.err.println("   Response: " + response.body());
+                System.err.println("❌ Error al crear evento en Google Calendar: " + response.statusCode());
             }
             
         } catch (Exception e) {
@@ -664,7 +654,6 @@ public class GoogleCalendarService {
             event.add("end", end);
             
             String eventJson = new Gson().toJson(event);
-            System.out.println("📝 JSON del evento para admin: " + eventJson);
             
             // Crear la petición HTTP
             java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
@@ -675,22 +664,12 @@ public class GoogleCalendarService {
                     .POST(java.net.http.HttpRequest.BodyPublishers.ofString(eventJson))
                     .build();
             
-            System.out.println("📡 Enviando petición HTTP a Google Calendar API (Admin)...");
             java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
             
-            System.out.println("📊 Respuesta del servidor (Admin):");
-            System.out.println("   - Status Code: " + response.statusCode());
-            System.out.println("   - Response Body: " + response.body());
-            
             if (response.statusCode() == 200 || response.statusCode() == 201) {
-                System.out.println("✅ Evento creado exitosamente en Google Calendar del Admin");
-                System.out.println("   Admin: " + adminUser.getEmail());
-                System.out.println("   Cliente: " + cliente.getEmail());
-                System.out.println("   Cita: " + cita.getServicio().getNombre() + " - " + cita.getFechaHora());
+                System.out.println("✅ Evento creado en Google Calendar del Admin");
             } else {
-                System.err.println("❌ Error al crear evento en Google Calendar del Admin");
-                System.err.println("   Status Code: " + response.statusCode());
-                System.err.println("   Response: " + response.body());
+                System.err.println("❌ Error al crear evento en Google Calendar del Admin: " + response.statusCode());
             }
             
         } catch (Exception e) {

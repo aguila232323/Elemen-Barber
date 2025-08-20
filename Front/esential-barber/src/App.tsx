@@ -92,11 +92,12 @@ function AppContent() {
               <Configuracion />
             </PrivateRoute>
           } />
-          <Route path="/admin/dias-laborables" element={
-            <PrivateRoute requiredRole="ADMIN">
-              <DiasLaborables />
-            </PrivateRoute>
-          } />
+                          <Route path="/admin/dias-laborables" element={
+                  <PrivateRoute requiredRole="ADMIN">
+                    <DiasLaborables />
+                  </PrivateRoute>
+                } />
+
         </Routes>
       </main>
       {!loading && user && (

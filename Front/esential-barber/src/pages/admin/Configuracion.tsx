@@ -1568,7 +1568,7 @@ const Configuracion: React.FC = () => {
          <div className={styles.buttonGroup}>
            <button className={`${styles.configBtn} ${styles.editBtn}`} onClick={() => window.location.href = '/admin/dias-laborables'}>
              <FaCog className={styles.btnIcon} />
-             <span>Configurar Días Laborables</span>
+             <span>Gestionar Días Laborables</span>
            </button>
          </div>
        </div>

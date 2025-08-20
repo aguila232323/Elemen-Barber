@@ -79,6 +79,11 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
     
     // Consultas de citas canceladas
     @Query("SELECT c FROM Cita c WHERE c.fechaHora BETWEEN :fechaInicio AND :fechaFin AND c.estado = 'cancelada'")
+    List<Cita> findByFechaHoraBetweenAndEstadoCancelada(@Param("fechaInicio") LocalDateTime fechaInicio, 
+                                                         @Param("fechaFin") LocalDateTime fechaFin);
+    
+    // Consulta para encontrar citas en un rango de fechas que NO tengan un estado específico
+    @Query("SELECT c FROM Cita c WHERE c.fechaHora BETWEEN :fechaInicio AND :fechaFin AND c.estado != :estado")
     List<Cita> findByFechaHoraBetweenAndEstadoNot(@Param("fechaInicio") LocalDateTime fechaInicio, 
                                                    @Param("fechaFin") LocalDateTime fechaFin, 
                                                    @Param("estado") String estado);

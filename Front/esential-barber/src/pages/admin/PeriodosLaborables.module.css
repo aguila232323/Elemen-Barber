@@ -1,0 +1,386 @@
+/* Contenedor principal */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  min-height: 100vh;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+  border-radius: 16px;
+  color: white;
+  box-shadow: 0 8px 32px rgba(25, 118, 210, 0.3);
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.header p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+/* Mensajes de estado */
+.error, .success {
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  animation: slideIn 0.3s ease;
+}
+
+.error {
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  color: #c62828;
+  border: 1px solid #ef5350;
+}
+
+.success {
+  background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+  color: #2e7d32;
+  border: 1px solid #66bb6a;
+}
+
+/* Secciones */
+.periodosSection, .nuevoPeriodoSection {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(25, 118, 210, 0.1);
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1976d2;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(25, 118, 210, 0.2);
+}
+
+/* Lista de períodos */
+.periodosList {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.periodoCard {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 2px solid rgba(25, 118, 210, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.periodoCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #1976d2, #42a5f5);
+}
+
+.periodoCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(25, 118, 210, 0.15);
+  border-color: rgba(25, 118, 210, 0.4);
+}
+
+.periodoCard.inactivo {
+  opacity: 0.7;
+  background: linear-gradient(135deg, #f5f5f5 0%, #eeeeee 100%);
+}
+
+.periodoCard.inactivo::before {
+  background: linear-gradient(90deg, #666, #999);
+}
+
+/* Header del período */
+.periodoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.periodoNombre {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1976d2;
+}
+
+.periodoEstado {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.estadoActivo {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+  color: white;
+}
+
+.estadoInactivo {
+  background: linear-gradient(135deg, #f44336 0%, #ef5350 100%);
+  color: white;
+}
+
+/* Fechas del período */
+.periodoFechas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.fechaItem {
+  padding: 0.5rem;
+  background: rgba(25, 118, 210, 0.1);
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+/* Días laborables */
+.periodoDias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.diaTag {
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Descripción */
+.periodoDescripcion {
+  background: rgba(25, 118, 210, 0.05);
+  padding: 0.8rem;
+  border-radius: 8px;
+  font-style: italic;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+/* Acciones */
+.periodoActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Formulario */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formLabel {
+  font-weight: 600;
+  color: #333;
+  font-size: 1rem;
+}
+
+.formInput, .formTextarea {
+  padding: 0.8rem 1rem;
+  border: 2px solid rgba(25, 118, 210, 0.2);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+  color: #333;
+}
+
+.formInput:focus, .formTextarea:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+  color: #333;
+}
+
+.formTextarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Placeholder text color */
+.formInput::placeholder, .formTextarea::placeholder {
+  color: #999;
+  opacity: 1;
+}
+
+/* Selector de días */
+.diasSelector {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
+}
+
+.diaCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem;
+  border: 2px solid rgba(25, 118, 210, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+  font-weight: 500;
+  color: #333;
+}
+
+.diaCheckbox:hover {
+  border-color: #1976d2;
+  background: rgba(25, 118, 210, 0.05);
+}
+
+.diaCheckbox.selected {
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+  color: white;
+  border-color: #1976d2;
+}
+
+.diaCheckbox input[type="checkbox"] {
+  display: none;
+}
+
+/* Calendar icon styling */
+.diaCheckbox svg {
+  color: #1976d2;
+  font-size: 1.1rem;
+}
+
+.diaCheckbox.selected svg {
+  color: white;
+}
+
+/* Botones */
+.btn, .btnCrear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.btnCrear {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+  color: white;
+  margin-top: 1rem;
+}
+
+.btnCrear:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+}
+
+.btnCrear:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btnEliminar {
+  background: linear-gradient(135deg, #f44336 0%, #ef5350 100%);
+  color: white;
+}
+
+.btnEliminar:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  font-size: 1.2rem;
+  color: #1976d2;
+  font-weight: 600;
+}
+
+/* Animaciones */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .header h1 {
+    font-size: 2rem;
+  }
+  
+  .periodoFechas {
+    grid-template-columns: 1fr;
+  }
+  
+  .diasSelector {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .periodoHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
