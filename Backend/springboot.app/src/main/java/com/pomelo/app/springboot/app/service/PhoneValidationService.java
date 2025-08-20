@@ -17,7 +17,7 @@ public class PhoneValidationService {
     }
 
     /**
-     * Valida si un número de teléfono tiene el formato correcto para España
+     * Valida si un número de teléfono tiene el formato correcto (internacional)
      * @param phone Número de teléfono a validar
      * @return true si es válido, false en caso contrario
      */
@@ -28,30 +28,34 @@ public class PhoneValidationService {
 
         String cleanPhone = cleanPhoneNumber(phone);
         
-        // Patrones válidos para España:
-        // - 9 dígitos: 6XXXXXXXX, 7XXXXXXXX, 8XXXXXXXX, 9XXXXXXXX
-        // - 9 dígitos con prefijo: +346XXXXXXXX, +347XXXXXXXX, etc.
-        // - 9 dígitos con prefijo 00: 00346XXXXXXXX, 00347XXXXXXXX, etc.
+        // Patrones válidos para números internacionales:
+        // - 7-15 dígitos (rango estándar internacional)
+        // - Números españoles: 9 dígitos empezando por 6, 7, 9
+        // - Números con prefijo internacional: +34, +1, +44, etc.
         
-        Pattern[] patterns = {
-            Pattern.compile("^[679]\\d{8}$"),           // 9 dígitos empezando por 6, 7, 9
-            Pattern.compile("^\\+34[679]\\d{8}$"),       // +34 seguido de 9 dígitos
-            Pattern.compile("^0034[679]\\d{8}$"),        // 0034 seguido de 9 dígitos
-        };
-        
-        for (Pattern pattern : patterns) {
-            if (pattern.matcher(cleanPhone).matches()) {
-                return true;
-            }
+        // Validación básica: entre 7 y 15 dígitos
+        if (cleanPhone.length() < 7 || cleanPhone.length() > 15) {
+            return false;
         }
         
-        return false;
+        // Para números españoles (9 dígitos), verificar que empiece por 6, 7 o 9
+        if (cleanPhone.length() == 9) {
+            return Pattern.compile("^[679]\\d{8}$").matcher(cleanPhone).matches();
+        }
+        
+        // Para números con prefijo internacional, verificar formato
+        if (cleanPhone.startsWith("34") && cleanPhone.length() == 11) {
+            return Pattern.compile("^34[679]\\d{8}$").matcher(cleanPhone).matches();
+        }
+        
+        // Para otros prefijos internacionales, solo verificar longitud
+        return true;
     }
 
     /**
      * Normaliza un número de teléfono para almacenar en la base de datos
      * @param phone Número de teléfono a normalizar
-     * @return Número normalizado (solo dígitos con prefijo 34)
+     * @return Número normalizado (solo dígitos)
      */
     public String normalizePhoneForStorage(String phone) {
         if (phone == null || phone.trim().isEmpty()) {
@@ -70,11 +74,12 @@ public class PhoneValidationService {
             return cleanPhone.substring(2);
         }
         
-        // Para números de 9 dígitos, agregar el prefijo 34
-        if (cleanPhone.length() == 9) {
+        // Para números de 9 dígitos españoles, agregar el prefijo 34
+        if (cleanPhone.length() == 9 && Pattern.compile("^[679]\\d{8}$").matcher(cleanPhone).matches()) {
             return "34" + cleanPhone;
         }
         
+        // Para otros números, mantener como están (solo dígitos)
         return cleanPhone;
     }
 
@@ -131,7 +136,7 @@ public class PhoneValidationService {
         }
         
         if (!validateSpanishPhone(phone)) {
-            return "El número de teléfono debe tener 9 dígitos y empezar por 6, 7 o 9";
+            return "El número de teléfono debe tener entre 7 y 15 dígitos. Para números españoles debe empezar por 6, 7 o 9";
         }
         
         return null;

@@ -2,8 +2,8 @@ package com.pomelo.app.springboot.app.controller;
 
 import com.pomelo.app.springboot.app.entity.Portfolio;
 import com.pomelo.app.springboot.app.service.PortfolioService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import com.pomelo.app.springboot.app.service.FileStorageService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,24 +15,52 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/portfolio")
 @CrossOrigin(origins = "*")
-@Tag(name = "Portfolio", description = "Endpoints para gestionar las fotos del portfolio")
 public class PortfolioController {
 
     private final PortfolioService portfolioService;
+    private final FileStorageService fileStorageService;
 
     @Autowired
-    public PortfolioController(PortfolioService portfolioService) {
+    public PortfolioController(PortfolioService portfolioService, FileStorageService fileStorageService) {
         this.portfolioService = portfolioService;
+        this.fileStorageService = fileStorageService;
+    }
+
+    /**
+     * Obtiene fotos optimizadas para móviles (máximo 5 fotos)
+     */
+    @GetMapping("/fotos-mobile")
+    public ResponseEntity<?> obtenerFotosMobile() {
+        try {
+            List<Portfolio> fotos = portfolioService.obtenerFotosActivas();
+            
+            // Limitamos a 5 fotos para móviles
+            if (fotos.size() > 5) {
+                fotos = fotos.subList(0, 5);
+            }
+            
+            return ResponseEntity.ok(fotos);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Error al obtener las fotos del portfolio");
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
     }
 
     /**
      * Obtiene todas las fotos activas del portfolio (público)
      */
     @GetMapping("/fotos")
-    @Operation(summary = "Obtener fotos del portfolio", description = "Obtiene todas las fotos activas del portfolio")
     public ResponseEntity<?> obtenerFotos() {
         try {
             List<Portfolio> fotos = portfolioService.obtenerFotosActivas();
+            
+            // Optimización: limitar a 10 fotos más recientes para móviles
+            if (fotos.size() > 10) {
+                fotos = fotos.subList(0, 10);
+            }
+            
             return ResponseEntity.ok(fotos);
         } catch (Exception e) {
             Map<String, String> errorResponse = new HashMap<>();
@@ -46,7 +74,6 @@ public class PortfolioController {
      * Obtiene todas las fotos del portfolio (solo para administradores)
      */
     @GetMapping("/admin/todas")
-    @Operation(summary = "Todas las fotos del portfolio", description = "Obtiene todas las fotos del portfolio (solo para administradores)")
     public ResponseEntity<?> obtenerTodasLasFotos() {
         try {
             List<Portfolio> fotos = portfolioService.obtenerTodasLasFotos();
@@ -63,21 +90,20 @@ public class PortfolioController {
      * Añade una nueva foto al portfolio (solo para administradores)
      */
     @PostMapping("/admin/añadir")
-    @Operation(summary = "Añadir foto al portfolio", description = "Añade una nueva foto al portfolio (solo para administradores)")
     public ResponseEntity<?> añadirFoto(@RequestBody Map<String, String> request) {
         try {
             String nombre = request.get("nombre");
-            String imagenBase64 = request.get("imagenBase64");
+            String imagenUrl = request.get("imagenUrl");
             String urlInstagram = request.get("urlInstagram");
 
-            if (nombre == null || imagenBase64 == null) {
+            if (nombre == null || imagenUrl == null) {
                 Map<String, String> errorResponse = new HashMap<>();
                 errorResponse.put("error", "Datos incompletos");
-                errorResponse.put("message", "El nombre y la imagen son obligatorios");
+                errorResponse.put("message", "El nombre y la URL de la imagen son obligatorios");
                 return ResponseEntity.badRequest().body(errorResponse);
             }
 
-            Portfolio nuevaFoto = portfolioService.añadirFoto(nombre, imagenBase64, urlInstagram != null ? urlInstagram : "");
+            Portfolio nuevaFoto = portfolioService.añadirFoto(nombre, imagenUrl, urlInstagram != null ? urlInstagram : "");
             
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Foto añadida correctamente");
@@ -96,7 +122,6 @@ public class PortfolioController {
      * Elimina una foto del portfolio (solo para administradores)
      */
     @DeleteMapping("/admin/eliminar/{id}")
-    @Operation(summary = "Eliminar foto del portfolio", description = "Elimina una foto del portfolio (solo para administradores)")
     public ResponseEntity<?> eliminarFoto(@PathVariable Long id) {
         try {
             boolean eliminado = portfolioService.eliminarFoto(id);
@@ -123,9 +148,24 @@ public class PortfolioController {
      * Elimina permanentemente una foto del portfolio (solo para administradores)
      */
     @DeleteMapping("/admin/eliminar-permanente/{id}")
-    @Operation(summary = "Eliminar foto permanentemente", description = "Elimina permanentemente una foto del portfolio (solo para administradores)")
     public ResponseEntity<?> eliminarFotoPermanente(@PathVariable Long id) {
         try {
+            // Obtener la foto antes de eliminarla para poder eliminar el archivo
+            var foto = portfolioService.obtenerFotoPorId(id);
+            if (foto.isEmpty()) {
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Foto no encontrada");
+                errorResponse.put("message", "No se encontró la foto con el ID especificado");
+                return ResponseEntity.notFound().build();
+            }
+
+            // Extraer el nombre del archivo de la URL
+            String imagenUrl = foto.get().getImagenUrl();
+            if (imagenUrl != null && imagenUrl.startsWith("/api/files/")) {
+                String fileName = imagenUrl.substring("/api/files/".length());
+                fileStorageService.deleteFile(fileName);
+            }
+
             boolean eliminado = portfolioService.eliminarFotoPermanente(id);
             
             if (eliminado) {
@@ -134,9 +174,9 @@ public class PortfolioController {
                 return ResponseEntity.ok(response);
             } else {
                 Map<String, String> errorResponse = new HashMap<>();
-                errorResponse.put("error", "Foto no encontrada");
-                errorResponse.put("message", "No se encontró la foto con el ID especificado");
-                return ResponseEntity.notFound().build();
+                errorResponse.put("error", "Error al eliminar la foto");
+                errorResponse.put("message", "No se pudo eliminar la foto de la base de datos");
+                return ResponseEntity.badRequest().body(errorResponse);
             }
         } catch (Exception e) {
             Map<String, String> errorResponse = new HashMap<>();
@@ -150,7 +190,6 @@ public class PortfolioController {
      * Actualiza una foto del portfolio (solo para administradores)
      */
     @PutMapping("/admin/actualizar/{id}")
-    @Operation(summary = "Actualizar foto del portfolio", description = "Actualiza una foto del portfolio (solo para administradores)")
     public ResponseEntity<?> actualizarFoto(@PathVariable Long id, @RequestBody Map<String, String> request) {
         try {
             String nombre = request.get("nombre");
@@ -188,7 +227,6 @@ public class PortfolioController {
      * Obtiene estadísticas del portfolio (solo para administradores)
      */
     @GetMapping("/admin/estadisticas")
-    @Operation(summary = "Estadísticas del portfolio", description = "Obtiene estadísticas del portfolio (solo para administradores)")
     public ResponseEntity<?> obtenerEstadisticas() {
         try {
             long totalFotos = portfolioService.contarFotosActivas();

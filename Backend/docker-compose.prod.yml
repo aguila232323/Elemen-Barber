@@ -1,17 +1,20 @@
+version: '3.8'
+
 services:
   # Base de datos PostgreSQL
   postgres:
     image: postgres:15-alpine
-    container_name: elemen-barber-db
+    container_name: esential-barber-db
     environment:
       POSTGRES_DB: esentialbarber
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: ElemenBarber2024!
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./springboot.app/apply-database-indexes.sql:/docker-entrypoint-initdb.d/01-init.sql
     networks:
-      - elemen-network
+      - esential-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d esentialbarber"]
@@ -23,8 +26,8 @@ services:
   backend:
     build:
       context: .
-      dockerfile: ./springboot.app/Dockerfile
-    container_name: elemen-barber-backend
+      dockerfile: springboot.app/Dockerfile
+    container_name: esential-barber-backend
     env_file:
       - .env.prod
     ports:
@@ -33,7 +36,7 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - elemen-network
+      - esential-network
     restart: unless-stopped
     volumes:
       - ./springboot.app/logs:/app/logs
@@ -49,5 +52,5 @@ volumes:
     driver: local
 
 networks:
-  elemen-network:
+  esential-network:
     driver: bridge

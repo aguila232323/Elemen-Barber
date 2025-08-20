@@ -3,8 +3,7 @@ package com.pomelo.app.springboot.app.controller;
 import com.pomelo.app.springboot.app.entity.Resena;
 import com.pomelo.app.springboot.app.service.ResenaService;
 import com.pomelo.app.springboot.app.service.UsuarioService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,7 +20,6 @@ import java.time.LocalDateTime;
 @RestController
 @RequestMapping("/api/resenas")
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"}, allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
-@Tag(name = "Reseñas", description = "Endpoints para gestión de reseñas")
 public class ResenaController {
 
     @Autowired
@@ -31,7 +29,6 @@ public class ResenaController {
     private UsuarioService usuarioService;
 
     @PostMapping
-    @Operation(summary = "Crear reseña", description = "Crea una nueva reseña para una cita completada")
     public ResponseEntity<?> crearResena(
             @RequestBody Map<String, Object> request,
             @AuthenticationPrincipal UserDetails user) {
@@ -62,7 +59,6 @@ public class ResenaController {
     }
 
     @GetMapping("/mis-resenas")
-    @Operation(summary = "Mis reseñas", description = "Obtiene las reseñas del usuario autenticado")
     public ResponseEntity<?> obtenerMisResenas(@AuthenticationPrincipal UserDetails user) {
         try {
             var usuario = usuarioService.findByEmail(user.getUsername());
@@ -81,7 +77,6 @@ public class ResenaController {
     }
 
     @GetMapping("/todas")
-    @Operation(summary = "Todas las reseñas", description = "Obtiene todas las reseñas (solo para administradores)")
     public ResponseEntity<?> obtenerTodasLasResenas() {
         try {
             List<Resena> resenas = resenaService.obtenerTodasLasResenas();
@@ -117,7 +112,6 @@ public class ResenaController {
     }
 
     @GetMapping("/publicas")
-    @Operation(summary = "Reseñas públicas", description = "Obtiene las reseñas públicas para mostrar en la página principal")
     public ResponseEntity<?> obtenerResenasPublicas() {
         try {
             List<Resena> resenas = resenaService.obtenerResenasPublicasLimitadas(6);
@@ -166,7 +160,6 @@ public class ResenaController {
     }
 
     @GetMapping("/puede-resenar/{citaId}")
-    @Operation(summary = "Verificar si puede reseñar", description = "Verifica si una cita puede tener reseña")
     public ResponseEntity<?> puedeResenar(@PathVariable Long citaId, @AuthenticationPrincipal UserDetails user) {
         try {
             var usuario = usuarioService.findByEmail(user.getUsername());
@@ -189,7 +182,6 @@ public class ResenaController {
     }
 
     @GetMapping("/por-cita/{citaId}")
-    @Operation(summary = "Obtener reseña por cita", description = "Obtiene la reseña de una cita específica")
     public ResponseEntity<?> obtenerResenaPorCita(@PathVariable Long citaId, @AuthenticationPrincipal UserDetails user) {
         try {
             var usuario = usuarioService.findByEmail(user.getUsername());
@@ -218,7 +210,6 @@ public class ResenaController {
     }
 
     @PutMapping("/{resenaId}")
-    @Operation(summary = "Actualizar reseña", description = "Actualiza una reseña existente")
     public ResponseEntity<?> actualizarResena(
             @PathVariable Long resenaId,
             @RequestBody Map<String, Object> request,
@@ -249,7 +240,6 @@ public class ResenaController {
     }
 
     @DeleteMapping("/{resenaId}")
-    @Operation(summary = "Eliminar reseña", description = "Elimina una reseña")
     public ResponseEntity<?> eliminarResena(@PathVariable Long resenaId, @AuthenticationPrincipal UserDetails user) {
         try {
             var usuario = usuarioService.findByEmail(user.getUsername());
@@ -273,7 +263,6 @@ public class ResenaController {
 
     // Endpoint de debug temporal
     @GetMapping("/debug/cita/{citaId}")
-    @Operation(summary = "Debug cita", description = "Información de debug para una cita")
     public ResponseEntity<?> debugCita(@PathVariable Long citaId, @AuthenticationPrincipal UserDetails user) {
         try {
             var usuario = usuarioService.findByEmail(user.getUsername());

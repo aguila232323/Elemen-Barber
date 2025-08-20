@@ -9,10 +9,10 @@ import com.pomelo.app.springboot.app.service.UsuarioService;
 import com.pomelo.app.springboot.app.service.ServicioService;
 import com.pomelo.app.springboot.app.service.ConfiguracionService;
 import com.pomelo.app.springboot.app.service.VacacionesService;
+import com.pomelo.app.springboot.app.service.DiasLaborablesService;
 import com.pomelo.app.springboot.app.service.EmailService;
 import com.pomelo.app.springboot.app.repository.ResenaRepository;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,7 +32,6 @@ import java.time.DayOfWeek;
 @RestController
 @RequestMapping("/api/citas")
 @CrossOrigin(origins = "*")
-@Tag(name = "Citas", description = "Endpoints para gestión de citas")
 public class CitaController {
 
     private final CitaService citaService;
@@ -40,21 +39,22 @@ public class CitaController {
     private final ServicioService servicioService;
     private final ConfiguracionService configuracionService;
     private final VacacionesService vacacionesService;
+    private final DiasLaborablesService diasLaborablesService;
     private final EmailService emailService;
     private final ResenaRepository resenaRepository;
 
-    public CitaController(CitaService citaService, UsuarioService usuarioService, ServicioService servicioService, ConfiguracionService configuracionService, VacacionesService vacacionesService, EmailService emailService, ResenaRepository resenaRepository) {
+    public CitaController(CitaService citaService, UsuarioService usuarioService, ServicioService servicioService, ConfiguracionService configuracionService, VacacionesService vacacionesService, DiasLaborablesService diasLaborablesService, EmailService emailService, ResenaRepository resenaRepository) {
         this.citaService = citaService;
         this.usuarioService = usuarioService;
         this.servicioService = servicioService;
         this.configuracionService = configuracionService;
         this.vacacionesService = vacacionesService;
+        this.diasLaborablesService = diasLaborablesService;
         this.emailService = emailService;
         this.resenaRepository = resenaRepository;
     }
 
     @PostMapping
-    @Operation(summary = "Crear cita", description = "Crea una nueva cita para el usuario autenticado o para un cliente específico si es admin")
     public ResponseEntity<?> crearCita(@RequestBody CitaRequest citaRequest, @AuthenticationPrincipal UserDetails user) {
         try {
             // Obtener el rol del usuario
@@ -116,7 +116,6 @@ public class CitaController {
     }
 
     @GetMapping("/mis-citas")
-    @Operation(summary = "Mis citas", description = "Lista las citas del usuario autenticado")
     public ResponseEntity<?> listarCitasUsuario(@AuthenticationPrincipal UserDetails user) {
         try {
             // Buscar usuario por email para obtener el ID
@@ -151,6 +150,8 @@ public class CitaController {
                 ));
                 citaMap.put("fechaHora", cita.getFechaHora());
                 citaMap.put("comentario", cita.getComentario());
+                citaMap.put("fija", cita.isFija());
+                citaMap.put("periodicidadDias", cita.getPeriodicidadDias());
                 
                 String estado = cita.getEstado();
                 // Si la cita está pendiente y ya pasó la fecha, marcarla como completada
@@ -182,7 +183,6 @@ public class CitaController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Cancelar cita", description = "Cancela una cita específica")
     public ResponseEntity<?> cancelarCita(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
         try {
             // Verificar que el usuario no esté baneado
@@ -199,13 +199,21 @@ public class CitaController {
             Map<String, String> errorResponse = new java.util.HashMap<>();
             errorResponse.put("error", "Error al cancelar la cita");
             errorResponse.put("message", e.getMessage());
+            
+            // Si el error es porque ya fue cancelada, devolver 200 OK con mensaje informativo
+            if (e.getMessage() != null && e.getMessage().contains("ya fue cancelada")) {
+                Map<String, String> infoResponse = new java.util.HashMap<>();
+                infoResponse.put("message", e.getMessage());
+                infoResponse.put("info", "Las citas ya habían sido canceladas anteriormente");
+                return ResponseEntity.ok(infoResponse);
+            }
+            
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Reprogramar cita", description = "Actualiza la fecha y hora de una cita")
     public ResponseEntity<?> reprogramarCita(
             @PathVariable Long id,
             @RequestBody Map<String, Object> request
@@ -238,7 +246,6 @@ public class CitaController {
     // Para admin
     @GetMapping("/todas")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Todas las citas", description = "Lista todas las citas (solo para administradores)")
     public ResponseEntity<?> listarTodas() {
         try {
             List<Cita> citas = citaService.listarTodasLasCitas();
@@ -284,7 +291,6 @@ public class CitaController {
 
     @PostMapping("/fija")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Crear cita fija", description = "Crea una cita fija con periodicidad especificada")
     public ResponseEntity<?> crearCitaFija(@RequestBody Map<String, Object> request, @RequestParam int periodicidadDias) {
         try {
             // Log para debugging
@@ -332,13 +338,8 @@ public class CitaController {
             
             Cita nuevaCita = citaService.crearCitaFija(cita, periodicidadDias);
             
-            // Enviar email de confirmación para la primera cita de la serie
-            try {
-                emailService.enviarConfirmacionCita(nuevaCita);
-            } catch (Exception e) {
-                System.err.println("Error al enviar email de confirmación: " + e.getMessage());
-                // No fallar la creación de la cita si falla el email
-            }
+            // El servicio ya envía el email de notificación de cita periódica
+            // No es necesario enviar un email adicional aquí
             
             return ResponseEntity.ok(nuevaCita);
         } catch (Exception e) {
@@ -351,7 +352,6 @@ public class CitaController {
 
     @DeleteMapping("/fija/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Borrar cita fija", description = "Borra una cita fija por su ID")
     public ResponseEntity<?> borrarCitaFija(@PathVariable Long id) {
         try {
             citaService.borrarCitaFija(id);
@@ -369,7 +369,6 @@ public class CitaController {
     // (Constante no usada eliminada)
 
     @GetMapping("/disponibilidad")
-    @Operation(summary = "Disponibilidad de citas", description = "Devuelve los slots libres para un día y duración concreta")
     public ResponseEntity<?> disponibilidad(
         @RequestParam String fecha,
         @RequestParam int duracion, // en minutos
@@ -457,6 +456,11 @@ public class CitaController {
                     continue; // Saltar este slot si el día está en vacaciones
                 }
                 
+                // Comprobar si el día es laborable (solo para usuarios no-admin)
+                if (!"ADMIN".equals(userRole) && !diasLaborablesService.esDiaLaborable(dia)) {
+                    continue; // Saltar este slot si el día no es laborable (solo para usuarios normales)
+                }
+                
                 // Comprobar restricción de tiempo mínimo para usuarios no-admin
                 if (!"ADMIN".equals(userRole)) {
                     LocalDateTime fechaHoraSlot = LocalDateTime.of(dia, slotInicio);
@@ -465,33 +469,23 @@ public class CitaController {
                         continue; // Saltar este slot si no cumple el tiempo mínimo
                     }
                     
-                    // Restricciones de días para usuarios normales
-                    DayOfWeek diaSemana = dia.getDayOfWeek();
-                    
-                    // Lunes y domingo cerrado para usuarios normales
-                    if (diaSemana == DayOfWeek.MONDAY || diaSemana == DayOfWeek.SUNDAY) {
-                        continue; // Saltar este slot si es lunes o domingo
-                    }
-                    
-                    // Sábado: permitir solo hasta las 15:00 para usuarios normales
-                    if (diaSemana == DayOfWeek.SATURDAY && slotInicio.isAfter(LocalTime.of(15, 0))) {
-                        continue; // Saltar este slot si es sábado después de las 15:00
-                    }
+                    // Las restricciones de días ahora se manejan a través del sistema de días laborables
+                    // No hay restricciones hardcodeadas aquí
                 }
                 
-                // Comprobar que todos los slots consecutivos están libres
-                for (int j = 0; j < slotsNecesarios; j++) {
-                    LocalDateTime inicio = LocalDateTime.of(dia, slots.get(i + j));
-                    LocalDateTime fin = inicio.plusMinutes(45);
+                                    // Comprobar que el rango completo de la cita está libre
+                    LocalDateTime inicioCita = LocalDateTime.of(dia, slotInicio);
+                    LocalDateTime finCita = inicioCita.plusMinutes(duracion);
                     boolean solapado = citasDia.stream().anyMatch(cita -> {
                         if (cita.getEstado().equals("cancelada")) return false;
                         LocalDateTime cIni = cita.getFechaHora();
                         int dur = cita.getServicio().getDuracionMinutos();
                         LocalDateTime cFin = cIni.plusMinutes(dur);
-                        return !(fin.isBefore(cIni) || inicio.isAfter(cFin.minusMinutes(1)));
+                        // Verificar solapamiento: dos citas se solapan si hay tiempo en común
+                        // Permitir que las citas se toquen exactamente (una termina cuando otra empieza)
+                        return inicioCita.isBefore(cFin) && finCita.isAfter(cIni);
                     });
-                    if (solapado) { hueco = false; break; }
-                }
+                    if (solapado) { hueco = false; }
                 if (hueco) {
                     horasLibres.add(slotInicio.toString().substring(0,5));
                 }
@@ -510,7 +504,6 @@ public class CitaController {
     }
 
     @GetMapping("/disponibilidad-mes")
-    @Operation(summary = "Disponibilidad mensual de citas", description = "Devuelve la disponibilidad de todos los días de un mes para una duración concreta")
     public ResponseEntity<?> disponibilidadMes(
         @RequestParam int anio,
         @RequestParam int mes, // 1-12
@@ -589,6 +582,11 @@ public class CitaController {
                         continue; // Saltar este slot si el día está en vacaciones
                     }
                     
+                    // Comprobar si el día es laborable (solo para usuarios no-admin)
+                    if (!"ADMIN".equals(userRole) && !diasLaborablesService.esDiaLaborable(fecha)) {
+                        continue; // Saltar este slot si el día no es laborable (solo para usuarios normales)
+                    }
+                    
                     // Comprobar restricción de tiempo mínimo para usuarios no-admin
                     if (!"ADMIN".equals(userRole)) {
                         LocalDateTime fechaHoraSlot = LocalDateTime.of(fecha, slotInicio);
@@ -597,33 +595,23 @@ public class CitaController {
                             continue; // Saltar este slot si no cumple el tiempo mínimo
                         }
                         
-                        // Restricciones de días para usuarios normales
-                        DayOfWeek diaSemana = fecha.getDayOfWeek();
-                        
-                        // Lunes y domingo cerrado para usuarios normales
-                        if (diaSemana == DayOfWeek.MONDAY || diaSemana == DayOfWeek.SUNDAY) {
-                            continue; // Saltar este slot si es lunes o domingo
-                        }
-                        
-                        // Sábado: permitir solo hasta las 15:00 para usuarios normales
-                        if (diaSemana == DayOfWeek.SATURDAY && slotInicio.isAfter(LocalTime.of(15, 0))) {
-                            continue; // Saltar este slot si es sábado después de las 15:00
-                        }
+                        // Las restricciones de días ahora se manejan a través del sistema de días laborables
+                        // No hay restricciones hardcodeadas aquí
                     }
                     
-                    // Comprobar que todos los slots consecutivos están libres
-                    for (int j = 0; j < slotsNecesarios; j++) {
-                        LocalDateTime inicio = LocalDateTime.of(fecha, slots.get(i + j));
-                        LocalDateTime fin = inicio.plusMinutes(45);
-                        boolean solapado = citasDia.stream().anyMatch(cita -> {
-                            if (cita.getEstado().equals("cancelada")) return false;
-                            LocalDateTime cIni = cita.getFechaHora();
-                            int dur = cita.getServicio().getDuracionMinutos();
-                            LocalDateTime cFin = cIni.plusMinutes(dur);
-                            return !(fin.isBefore(cIni) || inicio.isAfter(cFin.minusMinutes(1)));
-                        });
-                        if (solapado) { hueco = false; break; }
-                    }
+                    // Comprobar que el rango completo de la cita está libre
+                    LocalDateTime inicioCita = LocalDateTime.of(fecha, slotInicio);
+                    LocalDateTime finCita = inicioCita.plusMinutes(duracion);
+                    boolean solapado = citasDia.stream().anyMatch(cita -> {
+                        if (cita.getEstado().equals("cancelada")) return false;
+                        LocalDateTime cIni = cita.getFechaHora();
+                        int dur = cita.getServicio().getDuracionMinutos();
+                        LocalDateTime cFin = cIni.plusMinutes(dur);
+                        // Verificar solapamiento: dos citas se solapan si hay tiempo en común
+                        // Permitir que las citas se toquen exactamente (una termina cuando otra empieza)
+                        return inicioCita.isBefore(cFin) && finCita.isAfter(cIni);
+                    });
+                    if (solapado) { hueco = false; }
                     if (hueco) {
                         libres++;
                     }

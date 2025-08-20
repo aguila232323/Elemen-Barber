@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 @Service
 public class ResenaService {
@@ -77,15 +79,14 @@ public class ResenaService {
 
     // Obtener todas las reseñas públicas
     public List<Resena> obtenerResenasPublicas() {
-        return resenaRepository.findResenasPublicas();
+        // Usar el método optimizado con paginación
+        Page<Resena> page = resenaRepository.findResenasPublicas(PageRequest.of(0, 1000));
+        return page.getContent();
     }
 
     // Obtener reseñas públicas limitadas
     public List<Resena> obtenerResenasPublicasLimitadas(int limit) {
-        List<Resena> todasLasResenas = resenaRepository.findResenasPublicas();
-        return todasLasResenas.stream()
-            .limit(limit)
-            .collect(Collectors.toList());
+        return resenaRepository.findResenasPublicasLimitadas(limit);
     }
 
     // Obtener todas las reseñas (para administradores)

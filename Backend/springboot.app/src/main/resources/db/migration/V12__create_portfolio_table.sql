@@ -1,10 +1,10 @@
 -- Crear tabla portfolio
 CREATE TABLE portfolio (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     nombre VARCHAR(255) NOT NULL,
-    imagen_base64 LONGTEXT,
+    imagen_base64 TEXT,
     url_instagram VARCHAR(500),
-    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     activo BOOLEAN DEFAULT TRUE
 );
 

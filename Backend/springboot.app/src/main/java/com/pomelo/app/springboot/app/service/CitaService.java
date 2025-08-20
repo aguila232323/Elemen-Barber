@@ -14,10 +14,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 @Service
 public class CitaService {
+    
+    // Set para rastrear usuarios que ya recibieron correo de cancelación de cita periódica
+    private final Set<String> usuariosConCorreoCancelacionEnviado = new HashSet<>();
 
     @Autowired
     private CitaRepository citaRepository;
@@ -33,6 +38,9 @@ public class CitaService {
 
     @Autowired
     private VacacionesService vacacionesService;
+
+    @Autowired
+    private DiasLaborablesService diasLaborablesService;
 
     @Autowired
     private EmailService emailService;
@@ -59,6 +67,11 @@ public class CitaService {
             throw new RuntimeException("No se pueden crear citas en días de vacaciones");
         }
         
+        // Validar que sea un día laborable (solo para usuarios no admin)
+        if (!"ADMIN".equals(rolUsuario) && !diasLaborablesService.esDiaLaborable(fechaCita)) {
+            throw new RuntimeException("No se pueden crear citas en días no laborables");
+        }
+        
         // Verificar disponibilidad
         if (!verificarDisponibilidad(cita)) {
             throw new RuntimeException("No hay disponibilidad para la fecha y hora seleccionada");
@@ -67,24 +80,27 @@ public class CitaService {
         cita.setEstado("confirmada");
         Cita citaGuardada = citaRepository.save(cita);
         
-        // Intentar crear eventos en Google Calendar para usuarios de Google y admin
-        try {
-            System.out.println("🎯 Intentando crear eventos en Google Calendar...");
-            
-            // Recargar el usuario desde la base de datos para obtener los tokens más recientes
-            Usuario usuarioActualizado = usuarioRepository.findByEmail(citaGuardada.getCliente().getEmail()).orElse(citaGuardada.getCliente());
-            
-            googleCalendarService.createCalendarEventsForUserAndAdmin(citaGuardada, usuarioActualizado);
-            System.out.println("✅ Eventos de Google Calendar creados exitosamente");
-        } catch (Exception e) {
-            // No fallar la creación de la cita si falla el Google Calendar
-            System.err.println("❌ Error al crear eventos en Google Calendar: " + e.getMessage());
-            System.err.println("⚠️ La cita se creó correctamente, pero falló la integración con Google Calendar");
-            // No hacer e.printStackTrace() para evitar logs muy largos
-        } catch (Error e) {
-            // Capturar también errores de inicialización de clases
-            System.err.println("❌ Error de inicialización en Google Calendar: " + e.getMessage());
-            System.err.println("⚠️ La cita se creó correctamente, pero falló la integración con Google Calendar");
+        // Solo crear eventos en Google Calendar si NO es una cita periódica
+        if (!cita.isFija() || cita.getPeriodicidadDias() == null || cita.getPeriodicidadDias() <= 0) {
+            try {
+                System.out.println("🎯 Intentando crear eventos en Google Calendar...");
+                
+                // Recargar el usuario desde la base de datos para obtener los tokens más recientes
+                Usuario usuarioActualizado = usuarioRepository.findByEmail(citaGuardada.getCliente().getEmail()).orElse(citaGuardada.getCliente());
+                
+                googleCalendarService.createCalendarEventsForUserAndAdmin(citaGuardada, usuarioActualizado);
+                System.out.println("✅ Eventos de Google Calendar creados exitosamente");
+            } catch (Exception e) {
+                // No fallar la creación de la cita si falla el Google Calendar
+                System.err.println("❌ Error al crear eventos en Google Calendar: " + e.getMessage());
+                System.err.println("⚠️ La cita se creó correctamente, pero falló la integración con Google Calendar");
+            } catch (Error e) {
+                // Capturar también errores de inicialización de clases
+                System.err.println("❌ Error de inicialización en Google Calendar: " + e.getMessage());
+                System.err.println("⚠️ La cita se creó correctamente, pero falló la integración con Google Calendar");
+            }
+        } else {
+            System.out.println("ℹ️ Cita periódica creada - No se añade a Google Calendar para optimizar rendimiento");
         }
         
         return citaGuardada;
@@ -115,6 +131,27 @@ public class CitaService {
         try {
             Cita cita = citaRepository.findById(citaId)
                     .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
+            
+            // Si es una cita periódica, verificar si ya fue procesada
+            if (cita.isFija() && cita.getPeriodicidadDias() != null && cita.getPeriodicidadDias() > 0) {
+                // Verificar si esta cita específica ya fue cancelada
+                if ("cancelada".equals(cita.getEstado())) {
+                    System.out.println("⏭️ Cita periódica ID " + citaId + " ya fue cancelada anteriormente");
+                    throw new RuntimeException("Esta cita periódica ya fue cancelada anteriormente");
+                }
+                
+                // Verificar si ya se envió un correo de cancelación para este cliente recientemente
+                // Buscar citas periódicas del mismo cliente que aún no estén canceladas
+                List<Cita> citasPeriodicasActivas = citaRepository.findCitasFijasByCliente(cita.getCliente())
+                    .stream()
+                    .filter(c -> !"cancelada".equals(c.getEstado()))
+                    .toList();
+                
+                if (citasPeriodicasActivas.isEmpty()) {
+                    System.out.println("⏭️ No hay citas periódicas activas para cancelar");
+                    throw new RuntimeException("No hay citas periódicas activas para cancelar");
+                }
+            }
 
             if (cita.getFechaHora().isBefore(LocalDateTime.now())) {
                 throw new RuntimeException("No se pueden cancelar citas pasadas");
@@ -131,34 +168,97 @@ public class CitaService {
 
             // Si es una cita periódica, borrar todas las citas periódicas del usuario
             if (cita.isFija() && cita.getPeriodicidadDias() != null && cita.getPeriodicidadDias() > 0) {
-                List<Cita> citasPeriodicas = citaRepository.findByClienteAndFijaTrueAndPeriodicidadDiasIsNotNull(cita.getCliente());
+                List<Cita> citasPeriodicas = citaRepository.findCitasFijasByCliente(cita.getCliente());
                 
-                // Intentar eliminar eventos de Google Calendar para todas las citas periódicas
-                for (Cita citaPeriodica : citasPeriodicas) {
-                    try {
-                        googleCalendarService.deleteCalendarEventsForUserAndAdmin(citaPeriodica, citaPeriodica.getCliente());
-                    } catch (Exception e) {
-                        System.err.println("Error al eliminar eventos de Google Calendar: " + e.getMessage());
-                    }
-                }
+                // Eliminar duplicados por ID para evitar eliminaciones múltiples
+                List<Cita> citasUnicas = citasPeriodicas.stream()
+                    .collect(java.util.stream.Collectors.toMap(
+                        Cita::getId,
+                        c -> c,
+                        (existing, replacement) -> existing
+                    ))
+                    .values()
+                    .stream()
+                    .toList();
                 
-                // Enviar email de cancelación para citas periódicas
+                System.out.println("🔄 Cancelando " + citasUnicas.size() + " citas periódicas únicas para " + cita.getCliente().getNombre());
+                System.out.println("📋 IDs de citas periódicas a eliminar: " + citasUnicas.stream().map(Cita::getId).toList());
+                
+                // Las citas periódicas NO se añaden a Google Calendar, por lo que no hay eventos que eliminar
+                System.out.println("ℹ️ Las citas periódicas no están en Google Calendar - No hay eventos que eliminar");
+                
+                // Enviar email de cancelación específico para citas periódicas (solo una vez)
                 try {
-                    emailService.enviarCancelacionCita(
-                        cita.getCliente().getEmail(),
-                        cita.getCliente().getNombre(),
-                        cita.getServicio().getNombre(),
-                        cita.getFechaHora(),
-                        cita.getServicio().getDuracionMinutos(),
-                        cita.getServicio().getPrecio()
-                    );
-                    System.out.println("✅ Email de cancelación de cita periódica enviado a: " + cita.getCliente().getEmail());
+                    String emailUsuario = cita.getCliente().getEmail();
+                    
+                    // Verificar si ya se envió un correo de cancelación a este usuario recientemente
+                    synchronized (usuariosConCorreoCancelacionEnviado) {
+                        if (usuariosConCorreoCancelacionEnviado.contains(emailUsuario)) {
+                            System.out.println("⏭️ Ya se envió un correo de cancelación a " + emailUsuario + " recientemente, saltando...");
+                        } else {
+                            emailService.enviarCancelacionCitaPeriodica(
+                                emailUsuario,
+                                cita.getCliente().getNombre(),
+                                cita.getServicio().getNombre(),
+                                cita.getPeriodicidadDias(),
+                                citasUnicas.size()
+                            );
+                            System.out.println("✅ Email de cancelación de cita periódica enviado a: " + emailUsuario);
+                            
+                            // Agregar al set y programar su eliminación después de 5 minutos
+                            usuariosConCorreoCancelacionEnviado.add(emailUsuario);
+                            new java.util.Timer().schedule(new java.util.TimerTask() {
+                                @Override
+                                public void run() {
+                                    synchronized (usuariosConCorreoCancelacionEnviado) {
+                                        usuariosConCorreoCancelacionEnviado.remove(emailUsuario);
+                                        System.out.println("🔄 Removido bloqueo de correo para: " + emailUsuario);
+                                    }
+                                }
+                            }, 5 * 60 * 1000); // 5 minutos
+                        }
+                    }
                 } catch (Exception e) {
                     System.err.println("❌ Error al enviar email de cancelación de cita periódica: " + e.getMessage());
-                    // No fallar la cancelación si falla el email
                 }
                 
-                citaRepository.deleteAll(citasPeriodicas);
+                // Eliminar todas las citas de la base de datos una por una para mejor control
+                int citasEliminadas = 0;
+                Set<Long> idsEliminados = new java.util.HashSet<>();
+                
+                for (Cita citaPeriodica : citasUnicas) {
+                    // Verificar que no se haya eliminado ya
+                    if (idsEliminados.contains(citaPeriodica.getId())) {
+                        System.out.println("⏭️ Cita periódica ID " + citaPeriodica.getId() + " ya fue eliminada, saltando...");
+                        continue;
+                    }
+                    
+                    try {
+                        citaRepository.delete(citaPeriodica);
+                        citasEliminadas++;
+                        idsEliminados.add(citaPeriodica.getId());
+                        System.out.println("🗑️ Cita periódica eliminada ID: " + citaPeriodica.getId());
+                    } catch (Exception e) {
+                        if (e.getMessage().contains("Batch update returned unexpected row count from update [0]")) {
+                            System.out.println("ℹ️ Cita periódica ID " + citaPeriodica.getId() + " ya fue eliminada anteriormente");
+                            citasEliminadas++; // Contar como eliminada
+                        } else {
+                            System.err.println("❌ Error al eliminar cita periódica ID " + citaPeriodica.getId() + ": " + e.getMessage());
+                        }
+                    }
+                }
+                System.out.println("✅ " + citasEliminadas + " de " + citasUnicas.size() + " citas periódicas eliminadas de la base de datos");
+                
+                // Verificar que las citas se eliminaron correctamente
+                List<Cita> citasRestantes = citaRepository.findCitasFijasByCliente(cita.getCliente());
+                if (!citasRestantes.isEmpty()) {
+                    System.err.println("⚠️ ADVERTENCIA: Aún quedan " + citasRestantes.size() + " citas periódicas en la base de datos");
+                    System.err.println("📋 IDs restantes: " + citasRestantes.stream().map(Cita::getId).toList());
+                } else {
+                    System.out.println("✅ Verificación: Todas las citas periódicas han sido eliminadas correctamente");
+                }
+                
+
             } else {
                 // Si no es periódica, solo cambiar el estado
                 cita.setEstado("cancelada");
@@ -220,12 +320,12 @@ public class CitaService {
                 System.out.println("⚠️  Cita inicial omitida (horario ocupado): " + cita.getFechaHora());
             }
             
-            // Crear citas adicionales para los próximos 6 meses (aproximadamente 26 semanas)
+            // Crear citas adicionales para los próximos 12 meses (aproximadamente 52 semanas)
             LocalDateTime fechaActual = cita.getFechaHora();
             
             System.out.println("Creando citas periódicas cada " + periodicidadDias + " días...");
             
-            for (int i = 1; i <= 26; i++) {
+            for (int i = 1; i <= 52; i++) {
                 LocalDateTime nuevaFecha = fechaActual.plusDays(periodicidadDias * i);
                 
                 // Solo crear citas futuras
@@ -280,7 +380,7 @@ public class CitaService {
             // Si no se creó la cita inicial, devolver la primera cita creada
             if (citaGuardada == null) {
                 // Buscar la primera cita creada en el bucle
-                List<Cita> citasCreadasEnBD = citaRepository.findByClienteAndFijaTrueAndPeriodicidadDiasIsNotNull(cita.getCliente());
+                List<Cita> citasCreadasEnBD = citaRepository.findCitasFijasByCliente(cita.getCliente());
                 if (!citasCreadasEnBD.isEmpty()) {
                     citaGuardada = citasCreadasEnBD.get(0);
                 }
@@ -322,7 +422,63 @@ public class CitaService {
                 throw new RuntimeException("La cita no es fija");
             }
 
-            citaRepository.delete(cita);
+            // Si es una cita periódica, eliminar todas las citas periódicas del usuario
+            if (cita.isFija() && cita.getPeriodicidadDias() != null && cita.getPeriodicidadDias() > 0) {
+                List<Cita> citasPeriodicas = citaRepository.findCitasFijasByCliente(cita.getCliente());
+                
+                System.out.println("🗑️ Eliminando " + citasPeriodicas.size() + " citas periódicas para " + cita.getCliente().getNombre());
+                
+                // Enviar email de cancelación específico para citas periódicas
+                try {
+                    String emailUsuario = cita.getCliente().getEmail();
+                    
+                    // Verificar si ya se envió un correo de cancelación a este usuario recientemente
+                    synchronized (usuariosConCorreoCancelacionEnviado) {
+                        if (usuariosConCorreoCancelacionEnviado.contains(emailUsuario)) {
+                            System.out.println("⏭️ Ya se envió un correo de cancelación a " + emailUsuario + " recientemente, saltando...");
+                        } else {
+                            emailService.enviarCancelacionCitaPeriodica(
+                                emailUsuario,
+                                cita.getCliente().getNombre(),
+                                cita.getServicio().getNombre(),
+                                cita.getPeriodicidadDias(),
+                                citasPeriodicas.size()
+                            );
+                            System.out.println("✅ Email de cancelación de cita periódica enviado a: " + emailUsuario);
+                            
+                            // Agregar al set y programar su eliminación después de 5 minutos
+                            usuariosConCorreoCancelacionEnviado.add(emailUsuario);
+                            new java.util.Timer().schedule(new java.util.TimerTask() {
+                                @Override
+                                public void run() {
+                                    synchronized (usuariosConCorreoCancelacionEnviado) {
+                                        usuariosConCorreoCancelacionEnviado.remove(emailUsuario);
+                                        System.out.println("🔄 Removido bloqueo de correo para: " + emailUsuario);
+                                    }
+                                }
+                            }, 5 * 60 * 1000); // 5 minutos
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("❌ Error al enviar email de cancelación de cita periódica: " + e.getMessage());
+                }
+                
+                // Eliminar todas las citas periódicas
+                for (Cita citaPeriodica : citasPeriodicas) {
+                    try {
+                        citaRepository.delete(citaPeriodica);
+                        System.out.println("🗑️ Cita periódica eliminada ID: " + citaPeriodica.getId());
+                    } catch (Exception e) {
+                        System.err.println("❌ Error al eliminar cita periódica ID " + citaPeriodica.getId() + ": " + e.getMessage());
+                    }
+                }
+                
+                System.out.println("✅ Todas las citas periódicas han sido eliminadas correctamente");
+            } else {
+                // Si no es periódica, solo eliminar la cita individual
+                citaRepository.delete(cita);
+                System.out.println("🗑️ Cita individual eliminada ID: " + cita.getId());
+            }
         } catch (Exception e) {
             throw new RuntimeException("Error al borrar cita fija: " + e.getMessage(), e);
         }
@@ -364,9 +520,10 @@ public class CitaService {
             LocalDateTime fin = inicio.plusMinutes(servicio.getDuracionMinutos());
 
             // Buscar citas que se solapen con el horario solicitado
-            // Usar un rango más amplio para asegurar que no se pierdan conflictos
-            LocalDateTime inicioBusqueda = inicio.minusMinutes(servicio.getDuracionMinutos());
-            LocalDateTime finBusqueda = fin.plusMinutes(servicio.getDuracionMinutos());
+            // Usar un rango más preciso para evitar falsos conflictos
+            // Solo buscar en el rango exacto de la cita más un pequeño margen de seguridad
+            LocalDateTime inicioBusqueda = inicio.minusMinutes(5); // Margen de 5 minutos
+            LocalDateTime finBusqueda = fin.plusMinutes(5); // Margen de 5 minutos
             
             List<Cita> citasExistentes = citaRepository.findByFechaHoraBetween(inicioBusqueda, finBusqueda);
 
@@ -376,11 +533,12 @@ public class CitaService {
                     LocalDateTime inicioExistente = citaExistente.getFechaHora();
                     LocalDateTime finExistente = citaExistente.getFechaHora().plusMinutes(citaExistente.getServicio().getDuracionMinutos());
 
-                    // Verificar si hay solapamiento
-                    // Dos citas se solapan si:
-                    // 1. El inicio de la nueva cita es antes del fin de la existente Y
-                    // 2. El fin de la nueva cita es después del inicio de la existente
-                    if (inicio.isBefore(finExistente) && fin.isAfter(inicioExistente)) {
+                    // Verificar si hay solapamiento real
+                    // Dos citas se solapan si hay un tiempo en común entre ambas
+                    // Permitir que las citas se toquen exactamente (una termina cuando otra empieza)
+                    boolean haySolapamiento = inicio.isBefore(finExistente) && fin.isAfter(inicioExistente);
+                    
+                    if (haySolapamiento) {
                         System.out.println("❌ CONFLICTO: Cita existente #" + citaExistente.getId() + 
                                          " (" + citaExistente.getCliente().getNombre() + " - " + citaExistente.getServicio().getNombre() + ")" +
                                          " de " + inicioExistente.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) + 

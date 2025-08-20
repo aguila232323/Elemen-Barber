@@ -14,14 +14,28 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.beans.factory.annotation.Autowired;
 import com.pomelo.app.springboot.app.config.JwtFilter;
 import org.springframework.http.HttpMethod;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtFilter jwtFilter;
+    private final JwtFilter jwtFilter;
+    private final CorsConfigurationSource corsConfigurationSource;
+    private final OncePerRequestFilter securityHeadersFilter;
+    private final OncePerRequestFilter rateLimitFilter;
+
+    public SecurityConfig(JwtFilter jwtFilter, 
+                         CorsConfigurationSource corsConfigurationSource,
+                         OncePerRequestFilter securityHeadersFilter,
+                         OncePerRequestFilter rateLimitFilter) {
+        this.jwtFilter = jwtFilter;
+        this.corsConfigurationSource = corsConfigurationSource;
+        this.securityHeadersFilter = securityHeadersFilter;
+        this.rateLimitFilter = rateLimitFilter;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -37,13 +51,15 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
+            .addFilterBefore(securityHeadersFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Permitir preflight CORS
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/verificacion/**").permitAll() // Permitir endpoints de verificación
                 .requestMatchers("/h2-console/**").permitAll()
-                .requestMatchers("/test", "/").permitAll()
-                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/v3/api-docs/**").permitAll()
+
                 .requestMatchers("/api/servicios").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/servicios").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/servicios/**").hasRole("ADMIN")
@@ -66,6 +82,13 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/resenas/**").hasRole("ADMIN")
                 .requestMatchers("/api/portfolio/fotos").permitAll()
                 .requestMatchers("/api/portfolio/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/dias-laborables/horario").permitAll() // Horario público
+                .requestMatchers("/api/dias-laborables/verificar/**").permitAll() // Verificar fecha pública
+                .requestMatchers("/api/dias-laborables/no-laborables").permitAll() // Días no laborables públicos
+                .requestMatchers("/api/dias-laborables/admin/**").hasRole("ADMIN") // Admin para gestionar
+                .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll() // Permitir solo GET (servir archivos)
+                .requestMatchers(HttpMethod.POST, "/api/files/**").hasRole("ADMIN") // Solo admin puede subir
+                .requestMatchers(HttpMethod.DELETE, "/api/files/**").hasRole("ADMIN") // Solo admin puede eliminar
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers.frameOptions().disable())

@@ -34,8 +34,8 @@ public class PortfolioService {
     /**
      * Añade una nueva foto al portfolio
      */
-    public Portfolio añadirFoto(String nombre, String imagenBase64, String urlInstagram) {
-        Portfolio nuevaFoto = new Portfolio(nombre, imagenBase64, urlInstagram);
+    public Portfolio añadirFoto(String nombre, String imagenUrl, String urlInstagram) {
+        Portfolio nuevaFoto = new Portfolio(nombre, imagenUrl, urlInstagram);
         return portfolioRepository.save(nuevaFoto);
     }
     
@@ -73,6 +73,10 @@ public class PortfolioService {
             Portfolio fotoEncontrada = foto.get();
             fotoEncontrada.setNombre(nombre);
             fotoEncontrada.setUrlInstagram(urlInstagram);
+            // Si no tiene imagenUrl, crear una basada en el nombre
+            if (fotoEncontrada.getImagenUrl() == null || fotoEncontrada.getImagenUrl().isEmpty()) {
+                fotoEncontrada.setImagenUrl("/images/portfolio/" + nombre);
+            }
             return Optional.of(portfolioRepository.save(fotoEncontrada));
         }
         return Optional.empty();

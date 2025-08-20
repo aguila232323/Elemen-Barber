@@ -33,6 +33,8 @@ public class RecordatorioService {
             LocalDateTime ahora = LocalDateTime.now();
             LocalDateTime unaHoraDespues = ahora.plusHours(1);
             
+
+            
             // Formatear fechas para logging
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
             String ahoraFormateado = ahora.format(formatter);
@@ -46,41 +48,13 @@ public class RecordatorioService {
             System.out.println("📅 CitaRepository disponible: " + (citaRepository != null ? "✅" : "❌"));
             System.out.println("=".repeat(80));
             
-            // Buscar citas que están programadas para dentro de 1 hora
+            // Buscar citas que están programadas para dentro de 1 hora y que aún no han recibido recordatorio
             List<Cita> citasProximas = citaRepository.findCitasProximas(ahora, unaHoraDespues);
             
             System.out.println("📅 Citas encontradas para recordatorio: " + citasProximas.size());
             
             if (citasProximas.isEmpty()) {
-                System.out.println("ℹ️ No hay citas próximas que requieran recordatorio");
-                System.out.println("🔍 Verificando todas las citas confirmadas...");
-                
-                // Buscar algunas citas confirmadas para debug (sin tocar relaciones perezosas)
-                List<Cita> todasLasCitas = citaRepository.findAll();
-                System.out.println("📊 Total de citas en la base de datos: " + todasLasCitas.size());
-                
-                long citasConfirmadas = todasLasCitas.stream()
-                    .filter(cita -> esEstadoElegible(cita.getEstado()))
-                    .count();
-                System.out.println("✅ Citas confirmadas/pendientes: " + citasConfirmadas);
-                
-                // Mostrar algunas citas para debug
-                todasLasCitas.stream()
-                    .filter(cita -> esEstadoElegible(cita.getEstado()))
-                    .limit(5)
-                    .forEach(cita -> {
-                        String clienteInfo;
-                        try {
-                            // Evitar inicializar perezosos, mostrar solo IDs si no están cargados
-                            clienteInfo = cita.getCliente() != null ? ("ClienteID=" + cita.getCliente().getId()) : "Cliente=null";
-                        } catch (Exception ex) {
-                            clienteInfo = "Cliente(lazy)";
-                        }
-                        System.out.println("📋 Cita ID: " + cita.getId() +
-                                " | Fecha: " + cita.getFechaHora().format(formatter) +
-                                " | Estado: " + cita.getEstado() +
-                                " | " + clienteInfo);
-                    });
+                System.out.println("ℹ️ No hay citas programadas para dentro de 1 hora que requieran recordatorio");
             } else {
                 for (Cita cita : citasProximas) {
                     try {

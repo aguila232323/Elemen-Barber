@@ -3,8 +3,7 @@ package com.pomelo.app.springboot.app.controller;
 import com.pomelo.app.springboot.app.entity.Usuario;
 import com.pomelo.app.springboot.app.service.UsuarioService;
 import com.pomelo.app.springboot.app.repository.UsuarioRepository;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,7 +15,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/usuarios")
 @CrossOrigin(origins = "*")
-@Tag(name = "Usuarios", description = "Gestión de perfiles de usuario")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
@@ -28,7 +26,6 @@ public class UsuarioController {
     }
 
     @GetMapping("/perfil")
-    @Operation(summary = "Obtener perfil", description = "Obtiene el perfil del usuario autenticado")
     public ResponseEntity<Usuario> obtenerPerfil(@AuthenticationPrincipal UserDetails userDetails) {
         try {
             // Buscar usuario por email para obtener el ID
@@ -45,7 +42,6 @@ public class UsuarioController {
     }
 
     @PutMapping("/perfil")
-    @Operation(summary = "Modificar perfil", description = "Modifica el perfil del usuario autenticado")
     public ResponseEntity<Map<String, Object>> modificarPerfil(@AuthenticationPrincipal UserDetails userDetails, @RequestBody Usuario datosActualizados) {
         try {
             // Buscar usuario por email para obtener el ID
@@ -69,7 +65,6 @@ public class UsuarioController {
     }
 
     @DeleteMapping("/eliminar-cuenta")
-    @Operation(summary = "Eliminar cuenta", description = "Elimina la cuenta del usuario autenticado")
     public ResponseEntity<Map<String, Object>> eliminarCuenta(@AuthenticationPrincipal UserDetails userDetails, @RequestBody Map<String, String> request) {
         try {
             String password = request.get("password");
@@ -119,7 +114,6 @@ public class UsuarioController {
     }
 
     @PutMapping("/cambiar-password")
-    @Operation(summary = "Cambiar contraseña", description = "Cambia la contraseña del usuario autenticado")
     public ResponseEntity<Map<String, String>> cambiarPassword(@AuthenticationPrincipal UserDetails userDetails, @RequestBody Map<String, String> request) {
         try {
             // Buscar usuario por email para obtener el ID
@@ -147,7 +141,6 @@ public class UsuarioController {
     }
 
     @GetMapping("/estado")
-    @Operation(summary = "Verificar estado del usuario", description = "Verifica el estado del usuario autenticado")
     public ResponseEntity<?> verificarEstado(@AuthenticationPrincipal UserDetails userDetails) {
         try {
             Usuario usuario = usuarioService.findByEmail(userDetails.getUsername());
@@ -171,7 +164,6 @@ public class UsuarioController {
 
     // (Opcional) solo para admin
     @GetMapping
-    @Operation(summary = "Listar usuarios", description = "Lista todos los usuarios (solo para administradores)")
     public ResponseEntity<?> listarUsuarios() {
         try {
             return ResponseEntity.ok(usuarioService.listarUsuarios());
@@ -183,7 +175,6 @@ public class UsuarioController {
     }
 
     @PostMapping("/{id}/banear")
-    @Operation(summary = "Banear usuario", description = "Banea un usuario específico (solo para administradores)")
     public ResponseEntity<Map<String, String>> banearUsuario(@PathVariable Long id) {
         try {
             usuarioService.banearUsuario(id);
@@ -198,7 +189,6 @@ public class UsuarioController {
     }
 
     @PostMapping("/{id}/desbanear")
-    @Operation(summary = "Desbanear usuario", description = "Desbanea un usuario específico (solo para administradores)")
     public ResponseEntity<Map<String, String>> desbanearUsuario(@PathVariable Long id) {
         try {
             usuarioService.desbanearUsuario(id);
@@ -213,7 +203,6 @@ public class UsuarioController {
     }
 
     @PutMapping("/avatar")
-    @Operation(summary = "Actualizar avatar", description = "Actualiza el avatar del usuario autenticado")
     public ResponseEntity<Map<String, Object>> actualizarAvatar(@AuthenticationPrincipal UserDetails userDetails, @RequestBody Map<String, String> request) {
         try {
             String avatar = request.get("avatar");
@@ -242,7 +231,6 @@ public class UsuarioController {
     }
 
     @PutMapping("/google-picture")
-    @Operation(summary = "Actualizar imagen de Google", description = "Actualiza la imagen de Google del usuario autenticado")
     public ResponseEntity<Map<String, Object>> actualizarGooglePicture(@AuthenticationPrincipal UserDetails userDetails, @RequestBody Map<String, String> request) {
         try {
             // Buscar usuario por email para obtener el ID

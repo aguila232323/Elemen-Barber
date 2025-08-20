@@ -78,20 +78,13 @@ public class GoogleCalendarService {
      * Obtiene el color para un servicio específico desde la base de datos
      */
     private String getServiceColor(String serviceName) {
-        System.out.println("🎨 DEBUG getServiceColor - Buscando color para: '" + serviceName + "'");
-        
         if (serviceName == null || serviceName.trim().isEmpty()) {
-            System.out.println("⚠️ Nombre de servicio vacío, usando color por defecto");
             return "#4285F4"; // Color por defecto azul
         }
         
         // Buscar el servicio en la base de datos
         try {
             var servicios = servicioRepository.findAll();
-            System.out.println("📋 Servicios disponibles en DB: " + servicios.size());
-            for (var servicio : servicios) {
-                System.out.println("   - " + servicio.getNombre() + " (Color: " + servicio.getColorGoogleCalendar() + ")");
-            }
             
             // Buscar por nombre exacto
             for (var servicio : servicios) {
@@ -199,8 +192,6 @@ public class GoogleCalendarService {
      * Google Calendar usa colorId del 1 al 11, cada uno con un color predefinido
      */
     private String getColorId(String hexColor) {
-        System.out.println("🎨 DEBUG getColorId - Convirtiendo color hexadecimal: " + hexColor);
-        
         // Mapa inteligente que convierte colores personalizados a los 11 colores de Google Calendar
         java.util.Map<String, String> colorMap = new java.util.HashMap<>();
         
@@ -264,14 +255,11 @@ public class GoogleCalendarService {
         
         // Si el color no está en el mapa, usar el color más cercano basado en el primer carácter
         if (!colorMap.containsKey(hexColor)) {
-            System.out.println("⚠️ Color personalizado no encontrado: " + hexColor + ", usando mapeo inteligente");
             String colorId = getClosestGoogleColor(hexColor);
-            System.out.println("🎨 Color más cercano para " + hexColor + ": " + colorId);
             return colorId;
         }
         
         String colorId = colorMap.get(hexColor);
-        System.out.println("🎨 Color ID asignado para " + hexColor + ": " + colorId);
         return colorId;
     }
     
@@ -354,11 +342,7 @@ public class GoogleCalendarService {
      * Verifica si un usuario es un usuario de Google (tiene contraseña GOOGLE_AUTH)
      */
     public boolean isGoogleUser(Usuario usuario) {
-        boolean isGoogle = "GOOGLE_AUTH".equals(usuario.getPassword());
-        System.out.println("🔍 DEBUG isGoogleUser para " + usuario.getEmail() + ":");
-        System.out.println("   - Password: " + usuario.getPassword());
-        System.out.println("   - isGoogle: " + isGoogle);
-        return isGoogle;
+        return "GOOGLE_AUTH".equals(usuario.getPassword());
     }
 
     /**
@@ -366,19 +350,8 @@ public class GoogleCalendarService {
      */
     public boolean isCalendarAuthorized(Usuario usuario) {
         boolean hasToken = usuario.getGoogleCalendarToken() != null && !usuario.getGoogleCalendarToken().isEmpty();
-        boolean hasRefreshToken = usuario.getGoogleCalendarRefreshToken() != null && !usuario.getGoogleCalendarRefreshToken().isEmpty();
         boolean tokenNotExpired = usuario.getGoogleCalendarTokenExpiry() == null || 
                                  usuario.getGoogleCalendarTokenExpiry().isAfter(LocalDateTime.now());
-        
-        System.out.println("🔍 DEBUG isCalendarAuthorized para " + usuario.getEmail() + ":");
-        System.out.println("   - Google Calendar Token: " + (usuario.getGoogleCalendarToken() != null ? "SÍ" : "NO"));
-        System.out.println("   - Google Calendar Refresh Token: " + (usuario.getGoogleCalendarRefreshToken() != null ? "SÍ" : "NO"));
-        System.out.println("   - Token Expiry: " + usuario.getGoogleCalendarTokenExpiry());
-        System.out.println("   - Current Time: " + LocalDateTime.now());
-        System.out.println("   - Token Not Expired: " + tokenNotExpired);
-        System.out.println("   - Has Token: " + hasToken);
-        System.out.println("   - Has Refresh Token: " + hasRefreshToken);
-        System.out.println("   - Is Authorized: " + (hasToken && tokenNotExpired));
         
         return hasToken && tokenNotExpired;
     }
@@ -387,17 +360,10 @@ public class GoogleCalendarService {
      * Guarda los tokens de Google Calendar para un usuario
      */
     public void saveCalendarTokens(Usuario usuario, String accessToken, String refreshToken, LocalDateTime expiry) {
-        System.out.println("💾 Guardando tokens de Calendar para usuario: " + usuario.getEmail());
-        System.out.println("   - Access Token: " + (accessToken != null ? "SÍ" : "NO"));
-        System.out.println("   - Refresh Token: " + (refreshToken != null ? "SÍ" : "NO"));
-        System.out.println("   - Expiry: " + expiry);
-        
         usuario.setGoogleCalendarToken(accessToken);
         usuario.setGoogleCalendarRefreshToken(refreshToken);
         usuario.setGoogleCalendarTokenExpiry(expiry);
         usuarioRepository.save(usuario);
-        
-        System.out.println("✅ Tokens guardados correctamente");
     }
 
     /**
@@ -426,23 +392,11 @@ public class GoogleCalendarService {
      */
     public void createCalendarEvent(Cita cita, Usuario usuario) {
         try {
-            System.out.println("🎯 Intentando crear evento en Calendar para usuario: " + usuario.getEmail());
-            System.out.println("   - Nombre: " + usuario.getNombre());
-            System.out.println("   - Password: " + usuario.getPassword());
-            System.out.println("   - Google Picture URL: " + usuario.getGooglePictureUrl());
-            System.out.println("   - Google Calendar Token: " + (usuario.getGoogleCalendarToken() != null ? "SÍ" : "NO"));
-            System.out.println("   - Google Calendar Refresh Token: " + (usuario.getGoogleCalendarRefreshToken() != null ? "SÍ" : "NO"));
-            System.out.println("   - Token Expiry: " + usuario.getGoogleCalendarTokenExpiry());
-            
             if (!isGoogleUser(usuario)) {
-                System.out.println("❌ Usuario no es de Google, saltando creación de evento en Calendar");
                 return;
             }
-
-            System.out.println("✅ Usuario es de Google, verificando autorización de Calendar...");
             
             if (!isCalendarAuthorized(usuario)) {
-                System.out.println("❌ Usuario no autorizado para Google Calendar: " + usuario.getEmail());
                 return;
             }
 
@@ -493,7 +447,6 @@ public class GoogleCalendarService {
             event.add("end", end);
             
             String eventJson = new Gson().toJson(event);
-            System.out.println("📝 JSON del evento: " + eventJson);
             
             // Crear la petición HTTP
             java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
@@ -504,21 +457,12 @@ public class GoogleCalendarService {
                     .POST(java.net.http.HttpRequest.BodyPublishers.ofString(eventJson))
                     .build();
             
-            System.out.println("📡 Enviando petición HTTP a Google Calendar API...");
             java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
             
-            System.out.println("📊 Respuesta del servidor:");
-            System.out.println("   - Status Code: " + response.statusCode());
-            System.out.println("   - Response Body: " + response.body());
-            
             if (response.statusCode() == 200 || response.statusCode() == 201) {
-                System.out.println("✅ Evento creado exitosamente en Google Calendar");
-                System.out.println("   Usuario: " + usuario.getEmail());
-                System.out.println("   Cita: " + cita.getServicio().getNombre() + " - " + cita.getFechaHora());
+                System.out.println("✅ Evento creado en Google Calendar para " + usuario.getEmail());
             } else {
-                System.err.println("❌ Error al crear evento en Google Calendar");
-                System.err.println("   Status Code: " + response.statusCode());
-                System.err.println("   Response: " + response.body());
+                System.err.println("❌ Error al crear evento en Google Calendar: " + response.statusCode());
             }
             
         } catch (Exception e) {
@@ -558,8 +502,6 @@ public class GoogleCalendarService {
      */
     private void deleteCalendarEventWithHttp(Cita cita, Usuario usuario) {
         try {
-            System.out.println("🔧 Eliminando evento usando HTTP directo...");
-            
             // Buscar eventos que coincidan con la fecha y hora de la cita
             LocalDateTime fechaHora = cita.getFechaHora();
             ZonedDateTime zonedDateTime = fechaHora.atZone(ZoneId.of("Europe/Madrid"));
@@ -579,9 +521,6 @@ public class GoogleCalendarService {
                 java.net.URLEncoder.encode("Cita en Esential Barber", "UTF-8")
             );
             
-            System.out.println("🔍 Buscando eventos en Google Calendar...");
-            System.out.println("   - URL: " + searchUrl);
-            
             // Crear la petición HTTP para buscar eventos
             java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
             java.net.http.HttpRequest searchRequest = java.net.http.HttpRequest.newBuilder()
@@ -592,30 +531,20 @@ public class GoogleCalendarService {
             
             java.net.http.HttpResponse<String> searchResponse = client.send(searchRequest, java.net.http.HttpResponse.BodyHandlers.ofString());
             
-            System.out.println("📊 Respuesta de búsqueda:");
-            System.out.println("   - Status Code: " + searchResponse.statusCode());
-            System.out.println("   - Response Body: " + searchResponse.body());
-            
             if (searchResponse.statusCode() == 200) {
                 // Parsear la respuesta para encontrar eventos
                 JsonObject responseJson = new Gson().fromJson(searchResponse.body(), JsonObject.class);
                 if (responseJson.has("items")) {
                     var items = responseJson.getAsJsonArray("items");
-                    System.out.println("🔍 Encontrados " + items.size() + " eventos");
                     
                     for (var item : items) {
                         JsonObject event = item.getAsJsonObject();
                         String eventId = event.get("id").getAsString();
                         String summary = event.has("summary") ? event.get("summary").getAsString() : "";
                         
-                        System.out.println("   - Event ID: " + eventId);
-                        System.out.println("   - Summary: " + summary);
-                        
                         // Verificar si es el evento que queremos eliminar
                         if (summary.contains("Cita en Esential Barber") && 
                             summary.contains(cita.getServicio().getNombre())) {
-                            
-                            System.out.println("🗑️ Eliminando evento: " + eventId);
                             
                             // Crear petición para eliminar el evento
                             String deleteUrl = "https://www.googleapis.com/calendar/v3/calendars/primary/events/" + eventId;
@@ -627,27 +556,16 @@ public class GoogleCalendarService {
                             
                             java.net.http.HttpResponse<String> deleteResponse = client.send(deleteRequest, java.net.http.HttpResponse.BodyHandlers.ofString());
                             
-                            System.out.println("📊 Respuesta de eliminación:");
-                            System.out.println("   - Status Code: " + deleteResponse.statusCode());
-                            
                             if (deleteResponse.statusCode() == 204) {
-                                System.out.println("✅ Evento eliminado exitosamente de Google Calendar");
-                                System.out.println("   Usuario: " + usuario.getEmail());
-                                System.out.println("   Cita: " + cita.getServicio().getNombre() + " - " + cita.getFechaHora());
-                                System.out.println("   Event ID: " + eventId);
+                                System.out.println("✅ Evento eliminado de Google Calendar: " + usuario.getEmail());
                             } else {
-                                System.err.println("❌ Error al eliminar evento de Google Calendar");
-                                System.err.println("   Status Code: " + deleteResponse.statusCode());
-                                System.err.println("   Response: " + deleteResponse.body());
+                                System.err.println("❌ Error al eliminar evento de Google Calendar: " + deleteResponse.statusCode());
                             }
                         }
                     }
-                } else {
-                    System.out.println("ℹ️ No se encontraron eventos para eliminar");
                 }
             } else {
-                System.err.println("❌ Error al buscar eventos en Google Calendar");
-                System.err.println("   Status Code: " + searchResponse.statusCode());
+                System.err.println("❌ Error al buscar eventos en Google Calendar: " + searchResponse.statusCode());
                 System.err.println("   Response: " + searchResponse.body());
             }
             
@@ -736,7 +654,6 @@ public class GoogleCalendarService {
             event.add("end", end);
             
             String eventJson = new Gson().toJson(event);
-            System.out.println("📝 JSON del evento para admin: " + eventJson);
             
             // Crear la petición HTTP
             java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
@@ -747,22 +664,12 @@ public class GoogleCalendarService {
                     .POST(java.net.http.HttpRequest.BodyPublishers.ofString(eventJson))
                     .build();
             
-            System.out.println("📡 Enviando petición HTTP a Google Calendar API (Admin)...");
             java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
             
-            System.out.println("📊 Respuesta del servidor (Admin):");
-            System.out.println("   - Status Code: " + response.statusCode());
-            System.out.println("   - Response Body: " + response.body());
-            
             if (response.statusCode() == 200 || response.statusCode() == 201) {
-                System.out.println("✅ Evento creado exitosamente en Google Calendar del Admin");
-                System.out.println("   Admin: " + adminUser.getEmail());
-                System.out.println("   Cliente: " + cliente.getEmail());
-                System.out.println("   Cita: " + cita.getServicio().getNombre() + " - " + cita.getFechaHora());
+                System.out.println("✅ Evento creado en Google Calendar del Admin");
             } else {
-                System.err.println("❌ Error al crear evento en Google Calendar del Admin");
-                System.err.println("   Status Code: " + response.statusCode());
-                System.err.println("   Response: " + response.body());
+                System.err.println("❌ Error al crear evento en Google Calendar del Admin: " + response.statusCode());
             }
             
         } catch (Exception e) {
@@ -776,8 +683,6 @@ public class GoogleCalendarService {
      */
     public void deleteCalendarEventsForUserAndAdmin(Cita cita, Usuario usuario) {
         try {
-            System.out.println("🗑️ Eliminando eventos de Calendar para usuario y admin...");
-            
             // Eliminar evento del calendario del usuario
             deleteCalendarEvent(cita, usuario);
             
@@ -785,18 +690,12 @@ public class GoogleCalendarService {
             if (adminCalendarEnabled) {
                 Usuario adminUser = getAdminUser();
                 if (adminUser != null && isGoogleUser(adminUser) && isCalendarAuthorized(adminUser)) {
-                    System.out.println("👨‍💼 Eliminando evento del calendario del admin...");
                     deleteCalendarEventForAdmin(cita, adminUser, usuario);
-                } else {
-                    System.out.println("⚠️ Admin no configurado para Google Calendar o no autorizado");
                 }
-            } else {
-                System.out.println("ℹ️ Calendario del admin deshabilitado");
             }
             
         } catch (Exception e) {
             System.err.println("❌ Error al eliminar eventos de Calendar: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -805,8 +704,6 @@ public class GoogleCalendarService {
      */
     private void deleteCalendarEventForAdmin(Cita cita, Usuario adminUser, Usuario cliente) {
         try {
-            System.out.println("🔧 Eliminando evento del admin usando HTTP directo...");
-            
             // Buscar eventos que coincidan con la fecha y hora de la cita
             LocalDateTime fechaHora = cita.getFechaHora();
             ZonedDateTime zonedDateTime = fechaHora.atZone(ZoneId.of("Europe/Madrid"));
@@ -826,9 +723,6 @@ public class GoogleCalendarService {
                 java.net.URLEncoder.encode(cliente.getNombre(), "UTF-8")
             );
             
-            System.out.println("🔍 Buscando eventos del admin en Google Calendar...");
-            System.out.println("   - URL: " + searchUrl);
-            
             // Crear la petición HTTP para buscar eventos
             java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
             java.net.http.HttpRequest searchRequest = java.net.http.HttpRequest.newBuilder()
@@ -839,31 +733,21 @@ public class GoogleCalendarService {
             
             java.net.http.HttpResponse<String> searchResponse = client.send(searchRequest, java.net.http.HttpResponse.BodyHandlers.ofString());
             
-            System.out.println("📊 Respuesta de búsqueda (Admin):");
-            System.out.println("   - Status Code: " + searchResponse.statusCode());
-            System.out.println("   - Response Body: " + searchResponse.body());
-            
             if (searchResponse.statusCode() == 200) {
                 // Parsear la respuesta para encontrar eventos
                 JsonObject responseJson = new Gson().fromJson(searchResponse.body(), JsonObject.class);
                 if (responseJson.has("items")) {
                     var items = responseJson.getAsJsonArray("items");
-                    System.out.println("🔍 Encontrados " + items.size() + " eventos del admin");
                     
                     for (var item : items) {
                         JsonObject event = item.getAsJsonObject();
                         String eventId = event.get("id").getAsString();
                         String summary = event.has("summary") ? event.get("summary").getAsString() : "";
                         
-                        System.out.println("   - Event ID: " + eventId);
-                        System.out.println("   - Summary: " + summary);
-                        
                         // Verificar si es el evento que queremos eliminar
                         if (summary.contains("CITA") && 
                             summary.contains(cita.getServicio().getNombre()) &&
                             summary.contains(cliente.getNombre())) {
-                            
-                            System.out.println("🗑️ Eliminando evento del admin: " + eventId);
                             
                             // Crear petición para eliminar el evento
                             String deleteUrl = "https://www.googleapis.com/calendar/v3/calendars/primary/events/" + eventId;

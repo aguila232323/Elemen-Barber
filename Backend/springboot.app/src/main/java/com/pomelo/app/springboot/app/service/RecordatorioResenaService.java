@@ -20,7 +20,7 @@ public class RecordatorioResenaService {
     @Autowired
     private EmailService emailService;
 
-    @Value("${app.frontend.base-url:https://esentialbarber.com}")
+    @Value("${app.frontend.base-url:https://elemenbarber.com}")
     private String frontendBaseUrl;
 
     // Ejecuta cada hora
@@ -56,7 +56,7 @@ public class RecordatorioResenaService {
     }
 
     private String construirReviewUrl(Long citaId) {
-        String base = frontendBaseUrl != null ? frontendBaseUrl : "https://esentialbarber.com";
+        String base = frontendBaseUrl != null ? frontendBaseUrl : "https://elemenbarber.com";
         return base + "/perfil?reviewCitaId=" + citaId;
     }
 }
