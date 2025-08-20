@@ -4,7 +4,7 @@ import fotoLuis from '../../../assets/images/luis.jpg';
 import SeleccionarServicioModal from '../../../components/SeleccionarServicioModal';
 import CalendarBooking from '../../../components/CalendarBooking';
 import ResenaModal from '../../../components/ResenaModal';
-import { FaSave, FaTimes, FaUserPlus, FaStar } from 'react-icons/fa';
+import { FaSave, FaTimes, FaUserPlus, FaStar, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import { config } from '../../../config/config';
 
 interface Cita {
@@ -17,6 +17,8 @@ interface Cita {
   estado?: 'pendiente' | 'confirmada' | 'completada' | 'cancelada' | 'finalizada';
   comentario?: string;
   reseñada?: boolean;
+  fija?: boolean; // Nuevo campo para indicar si es una cita fija
+  periodicidadDias?: number; // Nuevo campo para indicar la periodicidad en días
 }
 
 interface Servicio {
@@ -73,25 +75,34 @@ const Citas: React.FC<CitasProps> = () => {
   const [citaParaResenar, setCitaParaResenar] = useState<Cita | null>(null);
   const [guardandoResena, setGuardandoResena] = useState(false);
 
+  // Estados para ordenamiento
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [sortBy, setSortBy] = useState<string>('fecha');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [citasOriginales, setCitasOriginales] = useState<Cita[]>([]);
+
+  // Función para cargar citas
+  const fetchCitas = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch(`${config.API_BASE_URL}/api/citas/mis-citas`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      if (!res.ok) throw new Error('No se pudieron cargar tus citas');
+      const data = await res.json();
+      setCitas(data);
+      setCitasOriginales(data);
+      
+    } catch (err: any) {
+      setError(err.message || 'Error al cargar tus citas');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchCitas = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const token = localStorage.getItem('authToken');
-        const res = await fetch(`${config.API_BASE_URL}/api/citas/mis-citas`, {
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-        });
-        if (!res.ok) throw new Error('No se pudieron cargar tus citas');
-        const data = await res.json();
-        setCitas(data);
-        
-      } catch (err: any) {
-        setError(err.message || 'Error al cargar tus citas');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchCitas();
   }, []);
 
@@ -111,6 +122,24 @@ const Citas: React.FC<CitasProps> = () => {
       fetchServicios();
     }
   }, [isAdmin]);
+
+  // Cerrar dropdown cuando se hace clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('[data-sort-dropdown]')) {
+        setShowSortDropdown(false);
+      }
+    };
+
+    if (showSortDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showSortDropdown]);
 
   // Función para obtener lista de usuarios
   const fetchUsuarios = async () => {
@@ -252,19 +281,33 @@ const Citas: React.FC<CitasProps> = () => {
 
     try {
       const token = localStorage.getItem('authToken');
-              const res = await fetch(`${config.API_BASE_URL}/api/citas/${citaACancelar.id}`, {
+      const res = await fetch(`${config.API_BASE_URL}/api/citas/${citaACancelar.id}`, {
         method: 'DELETE',
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Error al cancelar la cita');
-      }
+      const responseData = await res.json();
 
-      // Actualizar la lista de citas
-      setCitas(citas.filter(cita => cita.id !== citaACancelar.id));
-      alert('Cita cancelada correctamente');
+      if (!res.ok) {
+        // Verificar si el error es porque ya fue cancelada
+        if (responseData.message && responseData.message.includes("ya fue cancelada")) {
+          // Si ya fue cancelada, recargar la lista y mostrar mensaje informativo
+          await fetchCitas();
+          alert('Las citas periódicas ya habían sido canceladas anteriormente');
+        } else {
+          throw new Error(responseData.message || 'Error al cancelar la cita');
+        }
+      } else {
+        // Éxito - recargar la lista completa para asegurar sincronización
+        await fetchCitas();
+        
+        // Mostrar mensaje apropiado según el tipo de cita
+        if (citaACancelar.fija && citaACancelar.periodicidadDias) {
+          alert('Citas periódicas canceladas correctamente');
+        } else {
+          alert('Cita cancelada correctamente');
+        }
+      }
     } catch (err: any) {
       setErrorCancelacion(err.message || 'Error al cancelar la cita');
     } finally {
@@ -282,6 +325,57 @@ const Citas: React.FC<CitasProps> = () => {
     setShowCalendario(false);
     // Recargar las citas después de una reserva exitosa
     window.location.reload();
+  };
+
+  // Funciones de ordenamiento
+  const handleSort = (sortType: string) => {
+    let newSortOrder: 'asc' | 'desc' = 'asc';
+    
+    // Si ya está ordenado por este criterio, cambiar el orden
+    if (sortBy === sortType) {
+      newSortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+    }
+    
+    setSortBy(sortType);
+    setSortOrder(newSortOrder);
+    setShowSortDropdown(false);
+    
+    // Aplicar ordenamiento
+    const sortedCitas = [...citasOriginales].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortType) {
+        case 'fecha':
+          comparison = new Date(a.fechaHora).getTime() - new Date(b.fechaHora).getTime();
+          break;
+        case 'servicio':
+          comparison = (a.servicio?.nombre || '').localeCompare(b.servicio?.nombre || '');
+          break;
+        case 'estado':
+          comparison = (a.estado || '').localeCompare(b.estado || '');
+          break;
+        default:
+          comparison = 0;
+      }
+      
+      return newSortOrder === 'asc' ? comparison : -comparison;
+    });
+    
+    setCitas(sortedCitas);
+  };
+
+  const getSortIcon = (sortType: string) => {
+    if (sortBy !== sortType) return <FaSort />;
+    return sortOrder === 'asc' ? <FaSortUp /> : <FaSortDown />;
+  };
+
+  const getSortLabel = (sortType: string) => {
+    switch (sortType) {
+      case 'fecha': return 'Fecha';
+      case 'servicio': return 'Servicio';
+      case 'estado': return 'Estado';
+      default: return 'Ordenar';
+    }
   };
 
 
@@ -333,7 +427,107 @@ const Citas: React.FC<CitasProps> = () => {
     <>
       <div className={styles.citasHistorialBg}>
         <div className={styles.citasHistorialCont}>
-          <h2 className={styles.citasHistorialTitle}>Mis citas</h2>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '1.5rem',
+            flexWrap: 'wrap',
+            gap: '1rem'
+          }}>
+            <h2 className={styles.citasHistorialTitle}>Mis citas</h2>
+            
+            {/* Botón de ordenamiento */}
+            <div style={{ position: 'relative' }} data-sort-dropdown>
+              <button
+                onClick={() => setShowSortDropdown(!showSortDropdown)}
+                style={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '0.7rem 1.2rem',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                  minWidth: '140px',
+                  justifyContent: 'space-between'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+                }}
+                              >
+                  <span>Ordenar por {getSortLabel(sortBy)}</span>
+                  {getSortIcon(sortBy)}
+                </button>
+              
+              {/* Dropdown de ordenamiento */}
+              {showSortDropdown && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  background: '#fff',
+                  borderRadius: '8px',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                  border: '1px solid #e0e0e0',
+                  zIndex: 1000,
+                  minWidth: '180px',
+                  overflow: 'hidden',
+                  marginTop: '0.5rem'
+                }}>
+                  {[
+                    { type: 'fecha', label: '📅 Fecha', icon: '📅' },
+                    { type: 'servicio', label: '💇 Servicio', icon: '💇' },
+                    { type: 'estado', label: '📊 Estado', icon: '📊' }
+                  ].map((option) => (
+                    <button
+                      key={option.type}
+                      onClick={() => handleSort(option.type)}
+                      style={{
+                        width: '100%',
+                        padding: '0.8rem 1rem',
+                        border: 'none',
+                        background: sortBy === option.type ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#fff',
+                        color: sortBy === option.type ? '#fff' : '#333',
+                        fontSize: '0.9rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        justifyContent: 'space-between',
+                        borderBottom: '1px solid #f0f0f0'
+                      }}
+                      onMouseOver={(e) => {
+                        if (sortBy !== option.type) {
+                          e.currentTarget.style.background = '#f8f9fa';
+                        }
+                      }}
+                      onMouseOut={(e) => {
+                        if (sortBy !== option.type) {
+                          e.currentTarget.style.background = '#fff';
+                        }
+                      }}
+                    >
+                      <span>{option.label}</span>
+                      {getSortIcon(option.type)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
           
 
           

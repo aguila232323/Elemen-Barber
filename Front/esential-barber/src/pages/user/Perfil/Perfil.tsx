@@ -817,117 +817,152 @@ const Perfil: React.FC = () => {
           </div>
         </div>
 
-        {/* Campo Contraseña */}
-        <div className={styles.campoContainer}>
-          <div className={styles.campoHeader}>
-            <FaLock className={styles.campoIcon} />
-            <span className={styles.campoLabel}>Contraseña</span>
+        {/* Campo Contraseña - Solo para usuarios que NO usan Google Auth */}
+        {!isGoogleUser() && (
+          <div className={styles.campoContainer}>
+            <div className={styles.campoHeader}>
+              <FaLock className={styles.campoIcon} />
+              <span className={styles.campoLabel}>Contraseña</span>
+            </div>
+            <div className={styles.campoContent}>
+              {campoEditando.password ? (
+                <div className={styles.campoEditando}>
+                  <div className={styles.passwordFields}>
+                    {/* Contraseña Actual */}
+                    <div className={styles.passwordField}>
+                      <label className={styles.passwordLabel}>Contraseña Actual</label>
+                      <div className={styles.passwordInputContainer}>
+                        <input
+                          className={styles.campoInput}
+                          type={showPasswords.actual ? "text" : "password"}
+                          name="passwordActual"
+                          value={passwordData.passwordActual}
+                          onChange={handlePasswordChange}
+                          placeholder="Ingresa tu contraseña actual"
+                          required
+                        />
+                        <button
+                          type="button"
+                          className={styles.passwordToggle}
+                          onClick={() => togglePasswordVisibility('actual')}
+                        >
+                          {showPasswords.actual ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Nueva Contraseña */}
+                    <div className={styles.passwordField}>
+                      <label className={styles.passwordLabel}>Nueva Contraseña</label>
+                      <div className={styles.passwordInputContainer}>
+                        <input
+                          className={styles.campoInput}
+                          type={showPasswords.nueva ? "text" : "password"}
+                          name="passwordNueva"
+                          value={passwordData.passwordNueva}
+                          onChange={handlePasswordChange}
+                          placeholder="Ingresa tu nueva contraseña"
+                          required
+                        />
+                        <button
+                          type="button"
+                          className={styles.passwordToggle}
+                          onClick={() => togglePasswordVisibility('nueva')}
+                        >
+                          {showPasswords.nueva ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Confirmar Nueva Contraseña */}
+                    <div className={styles.passwordField}>
+                      <label className={styles.passwordLabel}>Confirmar Nueva Contraseña</label>
+                      <div className={styles.passwordInputContainer}>
+                        <input
+                          className={styles.campoInput}
+                          type={showPasswords.confirmar ? "text" : "password"}
+                          name="passwordConfirmar"
+                          value={passwordData.passwordConfirmar}
+                          onChange={handlePasswordChange}
+                          placeholder="Confirma tu nueva contraseña"
+                          required
+                        />
+                        <button
+                          type="button"
+                          className={styles.passwordToggle}
+                          onClick={() => togglePasswordVisibility('confirmar')}
+                        >
+                          {showPasswords.confirmar ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={styles.campoBotones}>
+                    <button 
+                      type="button" 
+                      className={styles.btnGuardar}
+                      onClick={() => guardarCampo('password')}
+                      disabled={guardando === 'password'}
+                    >
+                      {guardando === 'password' ? 'Guardando...' : <FaSave />}
+                    </button>
+                    <button 
+                      type="button" 
+                      className={styles.btnCancelar}
+                      onClick={() => cancelarEdicion('password')}
+                    >
+                      <FaTimes />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className={styles.campoMostrar}>
+                  <span className={styles.campoValor}>••••••••</span>
+                  <button 
+                    type="button" 
+                    className={styles.btnEditar}
+                    onClick={() => iniciarEdicion('password')}
+                  >
+                    <FaEdit />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-          <div className={styles.campoContent}>
-            {campoEditando.password ? (
-              <div className={styles.campoEditando}>
-                <div className={styles.passwordFields}>
-                  {/* Contraseña Actual */}
-                  <div className={styles.passwordField}>
-                    <label className={styles.passwordLabel}>Contraseña Actual</label>
-                    <div className={styles.passwordInputContainer}>
-                      <input
-                        className={styles.campoInput}
-                        type={showPasswords.actual ? "text" : "password"}
-                        name="passwordActual"
-                        value={passwordData.passwordActual}
-                        onChange={handlePasswordChange}
-                        placeholder="Ingresa tu contraseña actual"
-                        required
-                      />
-                      <button
-                        type="button"
-                        className={styles.passwordToggle}
-                        onClick={() => togglePasswordVisibility('actual')}
-                      >
-                        {showPasswords.actual ? <FaEyeSlash /> : <FaEye />}
-                      </button>
-                    </div>
-                  </div>
+        )}
 
-                  {/* Nueva Contraseña */}
-                  <div className={styles.passwordField}>
-                    <label className={styles.passwordLabel}>Nueva Contraseña</label>
-                    <div className={styles.passwordInputContainer}>
-                      <input
-                        className={styles.campoInput}
-                        type={showPasswords.nueva ? "text" : "password"}
-                        name="passwordNueva"
-                        value={passwordData.passwordNueva}
-                        onChange={handlePasswordChange}
-                        placeholder="Ingresa tu nueva contraseña"
-                        required
-                      />
-                      <button
-                        type="button"
-                        className={styles.passwordToggle}
-                        onClick={() => togglePasswordVisibility('nueva')}
-                      >
-                        {showPasswords.nueva ? <FaEyeSlash /> : <FaEye />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Confirmar Nueva Contraseña */}
-                  <div className={styles.passwordField}>
-                    <label className={styles.passwordLabel}>Confirmar Nueva Contraseña</label>
-                    <div className={styles.passwordInputContainer}>
-                      <input
-                        className={styles.campoInput}
-                        type={showPasswords.confirmar ? "text" : "password"}
-                        name="passwordConfirmar"
-                        value={passwordData.passwordConfirmar}
-                        onChange={handlePasswordChange}
-                        placeholder="Confirma tu nueva contraseña"
-                        required
-                      />
-                      <button
-                        type="button"
-                        className={styles.passwordToggle}
-                        onClick={() => togglePasswordVisibility('confirmar')}
-                      >
-                        {showPasswords.confirmar ? <FaEyeSlash /> : <FaEye />}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className={styles.campoBotones}>
-                  <button 
-                    type="button" 
-                    className={styles.btnGuardar}
-                    onClick={() => guardarCampo('password')}
-                    disabled={guardando === 'password'}
-                  >
-                    {guardando === 'password' ? 'Guardando...' : <FaSave />}
-                  </button>
-                  <button 
-                    type="button" 
-                    className={styles.btnCancelar}
-                    onClick={() => cancelarEdicion('password')}
-                  >
-                    <FaTimes />
-                  </button>
-                </div>
-              </div>
-            ) : (
+        {/* Información para usuarios de Google */}
+        {isGoogleUser() && (
+          <div className={styles.campoContainer}>
+            <div className={styles.campoHeader}>
+              <FaLock className={styles.campoIcon} />
+              <span className={styles.campoLabel}>Autenticación</span>
+            </div>
+            <div className={styles.campoContent}>
               <div className={styles.campoMostrar}>
-                <span className={styles.campoValor}>••••••••</span>
-                <button 
-                  type="button" 
-                  className={styles.btnEditar}
-                  onClick={() => iniciarEdicion('password')}
-                >
-                  <FaEdit />
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className={styles.campoValor}>Google Auth</span>
+                  <FaCheckCircle 
+                    style={{ 
+                      color: '#28a745', 
+                      fontSize: '16px',
+                      filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))'
+                    }} 
+                    title="Autenticado con Google"
+                  />
+                </div>
+                <div style={{ 
+                  fontSize: '12px', 
+                  color: '#6c757d', 
+                  fontStyle: 'italic',
+                  marginTop: '4px'
+                }}>
+                  Tu contraseña se gestiona a través de Google
+                </div>
               </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {mensaje && <div className={styles.perfilMsg}>{mensaje}</div>}

@@ -137,11 +137,11 @@ const Inicio: React.FC = () => {
             <FaClock />
           </span>
           <span className={styles.infoContent}>
-            <span className={styles.infoTitle}>Martes - Sábado</span>
-            <span className={styles.infoSubtitle}>
-              <span className={styles.desktopText}>9:00 - 21:15 (Sábados hasta 15:00)</span>
-              <span className={styles.mobileText}>9:00 - 21:15</span>
-            </span>
+            <span className={styles.infoTitle}>Horario</span>
+                         <span className={styles.infoSubtitle}>
+               <span className={styles.desktopText}>Mar-Sáb: 9:00-21:15 | Sáb: 9:00-15:00</span>
+               <span className={styles.mobileText}>Mar-Sáb: 9:00-21:15</span>
+             </span>
           </span>
         </span>
         

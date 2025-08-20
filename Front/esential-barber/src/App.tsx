@@ -18,6 +18,8 @@ import GoogleCallback from './pages/auth/GoogleCallback';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import CitasAdmin from './pages/admin/CitasAdmin';
 import Configuracion from './pages/admin/Configuracion';
+import DiasLaborables from './pages/admin/DiasLaborables';
+import PrivateRoute from './components/PrivateRoute';
 
 function AppContent() {
   const location = useLocation();
@@ -49,6 +51,7 @@ function AppContent() {
   const goToPerfil = () => navigate('/perfil');
   const goToInicio = () => navigate('/');
   const goToConfig = () => navigate('/admin/configuracion');
+  const goToDiasLaborables = () => navigate('/admin/dias-laborables');
 
   // Determinar si mostrar la barra superior
   const shouldShowNavbar = true; // Mostrar navbar superior en todas las páginas
@@ -57,7 +60,7 @@ function AppContent() {
   let activeTab: 'inicio' | 'citas' | 'perfil' | 'config' = 'inicio';
   if (location.pathname.startsWith('/citas')) activeTab = 'citas';
   else if (location.pathname.startsWith('/perfil')) activeTab = 'perfil';
-  else if (location.pathname.startsWith('/admin/configuracion')) activeTab = 'config';
+  else if (location.pathname.startsWith('/admin/configuracion') || location.pathname.startsWith('/admin/dias-laborables')) activeTab = 'config';
 
   return (
     <div className="main-container">
@@ -74,9 +77,27 @@ function AppContent() {
           <Route path="/register" element={<Register />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/auth/google/callback" element={<GoogleCallback />} />
-          <Route path="/citas" element={user && user.rol === 'ADMIN' ? <CitasAdmin /> : <Citas onLoginSuccess={handleLoginSuccess} />} />
-          <Route path="/perfil" element={<Perfil />} />
-          <Route path="/admin/configuracion" element={<Configuracion />} />
+          <Route path="/citas" element={
+            <PrivateRoute>
+              {user && user.rol === 'ADMIN' ? <CitasAdmin /> : <Citas onLoginSuccess={handleLoginSuccess} />}
+            </PrivateRoute>
+          } />
+          <Route path="/perfil" element={
+            <PrivateRoute>
+              <Perfil />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/configuracion" element={
+            <PrivateRoute requiredRole="ADMIN">
+              <Configuracion />
+            </PrivateRoute>
+          } />
+                          <Route path="/admin/dias-laborables" element={
+                  <PrivateRoute requiredRole="ADMIN">
+                    <DiasLaborables />
+                  </PrivateRoute>
+                } />
+
         </Routes>
       </main>
       {!loading && user && (

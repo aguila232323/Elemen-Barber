@@ -47,8 +47,8 @@ const ContactoResenas: React.FC = () => {
                 <FaInstagram />
               </span>
               <span className={styles.contactoTexto}>
-                <a href="https://www.instagram.com/luisilloobarber/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)', textDecoration: 'none', fontWeight: 700 }}>
-                  @luisilloobarber
+                <a href="https://www.instagram.com/elemenbarberstudio/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)', textDecoration: 'none', fontWeight: 700 }}>
+                  @elemenbarberstudio
                 </a><br/>
                 <span className={styles.contactoSubtitulo}>Instagram</span>
               </span>

@@ -1558,6 +1558,21 @@ const Configuracion: React.FC = () => {
          </div>
        </div>
 
+       {/* Sección de Gestión de Días Laborables */}
+       <div className={styles.serviciosSection} style={{ marginTop: '2rem' }}>
+         <div className={styles.header}>
+           <FaCalendarCheck className={styles.calendarIcon} />
+           <h2>Gestionar Días Laborables</h2>
+         </div>
+         
+         <div className={styles.buttonGroup}>
+           <button className={`${styles.configBtn} ${styles.editBtn}`} onClick={() => window.location.href = '/admin/dias-laborables'}>
+             <FaCog className={styles.btnIcon} />
+             <span>Gestionar Días Laborables</span>
+           </button>
+         </div>
+       </div>
+
 
 
 
