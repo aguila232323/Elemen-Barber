@@ -17,6 +17,8 @@ interface Cita {
   estado?: 'pendiente' | 'confirmada' | 'completada' | 'cancelada' | 'finalizada';
   comentario?: string;
   reseñada?: boolean;
+  fija?: boolean; // Nuevo campo para indicar si es una cita fija
+  periodicidadDias?: number; // Nuevo campo para indicar la periodicidad en días
 }
 
 interface Servicio {
@@ -79,26 +81,28 @@ const Citas: React.FC<CitasProps> = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [citasOriginales, setCitasOriginales] = useState<Cita[]>([]);
 
+  // Función para cargar citas
+  const fetchCitas = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch(`${config.API_BASE_URL}/api/citas/mis-citas`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      if (!res.ok) throw new Error('No se pudieron cargar tus citas');
+      const data = await res.json();
+      setCitas(data);
+      setCitasOriginales(data);
+      
+    } catch (err: any) {
+      setError(err.message || 'Error al cargar tus citas');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchCitas = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const token = localStorage.getItem('authToken');
-        const res = await fetch(`${config.API_BASE_URL}/api/citas/mis-citas`, {
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-        });
-        if (!res.ok) throw new Error('No se pudieron cargar tus citas');
-        const data = await res.json();
-        setCitas(data);
-        setCitasOriginales(data);
-        
-      } catch (err: any) {
-        setError(err.message || 'Error al cargar tus citas');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchCitas();
   }, []);
 
@@ -277,19 +281,33 @@ const Citas: React.FC<CitasProps> = () => {
 
     try {
       const token = localStorage.getItem('authToken');
-              const res = await fetch(`${config.API_BASE_URL}/api/citas/${citaACancelar.id}`, {
+      const res = await fetch(`${config.API_BASE_URL}/api/citas/${citaACancelar.id}`, {
         method: 'DELETE',
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Error al cancelar la cita');
-      }
+      const responseData = await res.json();
 
-      // Actualizar la lista de citas
-      setCitas(citas.filter(cita => cita.id !== citaACancelar.id));
-      alert('Cita cancelada correctamente');
+      if (!res.ok) {
+        // Verificar si el error es porque ya fue cancelada
+        if (responseData.message && responseData.message.includes("ya fue cancelada")) {
+          // Si ya fue cancelada, recargar la lista y mostrar mensaje informativo
+          await fetchCitas();
+          alert('Las citas periódicas ya habían sido canceladas anteriormente');
+        } else {
+          throw new Error(responseData.message || 'Error al cancelar la cita');
+        }
+      } else {
+        // Éxito - recargar la lista completa para asegurar sincronización
+        await fetchCitas();
+        
+        // Mostrar mensaje apropiado según el tipo de cita
+        if (citaACancelar.fija && citaACancelar.periodicidadDias) {
+          alert('Citas periódicas canceladas correctamente');
+        } else {
+          alert('Cita cancelada correctamente');
+        }
+      }
     } catch (err: any) {
       setErrorCancelacion(err.message || 'Error al cancelar la cita');
     } finally {

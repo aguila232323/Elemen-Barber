@@ -150,6 +150,8 @@ public class CitaController {
                 ));
                 citaMap.put("fechaHora", cita.getFechaHora());
                 citaMap.put("comentario", cita.getComentario());
+                citaMap.put("fija", cita.isFija());
+                citaMap.put("periodicidadDias", cita.getPeriodicidadDias());
                 
                 String estado = cita.getEstado();
                 // Si la cita está pendiente y ya pasó la fecha, marcarla como completada
@@ -197,6 +199,15 @@ public class CitaController {
             Map<String, String> errorResponse = new java.util.HashMap<>();
             errorResponse.put("error", "Error al cancelar la cita");
             errorResponse.put("message", e.getMessage());
+            
+            // Si el error es porque ya fue cancelada, devolver 200 OK con mensaje informativo
+            if (e.getMessage() != null && e.getMessage().contains("ya fue cancelada")) {
+                Map<String, String> infoResponse = new java.util.HashMap<>();
+                infoResponse.put("message", e.getMessage());
+                infoResponse.put("info", "Las citas ya habían sido canceladas anteriormente");
+                return ResponseEntity.ok(infoResponse);
+            }
+            
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }
@@ -327,13 +338,8 @@ public class CitaController {
             
             Cita nuevaCita = citaService.crearCitaFija(cita, periodicidadDias);
             
-            // Enviar email de confirmación para la primera cita de la serie
-            try {
-                emailService.enviarConfirmacionCita(nuevaCita);
-            } catch (Exception e) {
-                System.err.println("Error al enviar email de confirmación: " + e.getMessage());
-                // No fallar la creación de la cita si falla el email
-            }
+            // El servicio ya envía el email de notificación de cita periódica
+            // No es necesario enviar un email adicional aquí
             
             return ResponseEntity.ok(nuevaCita);
         } catch (Exception e) {
