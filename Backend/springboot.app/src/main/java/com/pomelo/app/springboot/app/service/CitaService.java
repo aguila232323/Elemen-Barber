@@ -320,12 +320,12 @@ public class CitaService {
                 System.out.println("⚠️  Cita inicial omitida (horario ocupado): " + cita.getFechaHora());
             }
             
-            // Crear citas adicionales para los próximos 6 meses (aproximadamente 26 semanas)
+            // Crear citas adicionales para los próximos 12 meses (aproximadamente 52 semanas)
             LocalDateTime fechaActual = cita.getFechaHora();
             
             System.out.println("Creando citas periódicas cada " + periodicidadDias + " días...");
             
-            for (int i = 1; i <= 26; i++) {
+            for (int i = 1; i <= 52; i++) {
                 LocalDateTime nuevaFecha = fechaActual.plusDays(periodicidadDias * i);
                 
                 // Solo crear citas futuras
