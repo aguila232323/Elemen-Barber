@@ -4,18 +4,26 @@
   "description": "Barbería profesional con servicios de calidad en Begíjar, Andalucía",
   "icons": [
     {
-      "src": "/logoElemental.png",
+      "src": "/android-chrome-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "/logoElemental.png",
+      "src": "/android-chrome-512x512.png",
       "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
       "type": "image/png"
     }
   ],
   "theme_color": "#2c3e50",
   "background_color": "#ffffff",
   "display": "standalone",
-  "start_url": "/"
+  "start_url": "/",
+  "orientation": "portrait"
 }
