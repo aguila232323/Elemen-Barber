@@ -9,6 +9,7 @@ import com.pomelo.app.springboot.app.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -34,17 +35,35 @@ public class DiasLaborablesService {
     private EmailService emailService;
     
     /**
+     * Inicializa automáticamente los días laborables al arrancar la aplicación
+     */
+    @PostConstruct
+    public void inicializarAutomaticamente() {
+        try {
+            System.out.println("🔄 Inicializando días laborables...");
+            inicializarDiasLaborables();
+            System.out.println("✅ Días laborables inicializados correctamente");
+        } catch (Exception e) {
+            System.err.println("❌ Error al inicializar días laborables: " + e.getMessage());
+        }
+    }
+    
+    /**
      * Inicializa los días laborables por defecto (Lunes a Viernes)
      */
     public void inicializarDiasLaborables() {
         // Verificar si ya existen registros
         if (diasLaborablesRepository.count() == 0) {
+            System.out.println("📅 Creando configuración por defecto de días laborables...");
             // Crear configuración por defecto: Lunes a Viernes laborables
             for (DayOfWeek dia : DayOfWeek.values()) {
                 boolean esLaborable = dia != DayOfWeek.SATURDAY && dia != DayOfWeek.SUNDAY;
                 DiasLaborables diaLaborable = new DiasLaborables(dia, esLaborable);
                 diasLaborablesRepository.save(diaLaborable);
+                System.out.println("✅ Día " + dia + " configurado como " + (esLaborable ? "laborable" : "no laborable"));
             }
+        } else {
+            System.out.println("ℹ️ Los días laborables ya están configurados");
         }
     }
     
