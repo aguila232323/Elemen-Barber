@@ -9,6 +9,7 @@ import com.pomelo.app.springboot.app.service.AuthService;
 import com.pomelo.app.springboot.app.service.GoogleAuthService;
 import com.pomelo.app.springboot.app.service.GoogleCalendarService;
 import com.pomelo.app.springboot.app.service.UsuarioService;
+import com.pomelo.app.springboot.app.service.LoginRateLimitService;
 import com.pomelo.app.springboot.app.repository.UsuarioRepository;
 import com.pomelo.app.springboot.app.config.JwtUtils;
 
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,17 +30,19 @@ public class AuthController {
     private final GoogleAuthService googleAuthService;
     private final GoogleCalendarService googleCalendarService;
     private final UsuarioService usuarioService;
+    private final LoginRateLimitService loginRateLimitService;
     private final UsuarioRepository usuarioRepository;
     private final JwtUtils jwtUtils;
     
     @Value("${app.google.redirect-uri}")
     private String googleRedirectUri;
 
-    public AuthController(AuthService authService, GoogleAuthService googleAuthService, GoogleCalendarService googleCalendarService, UsuarioService usuarioService, UsuarioRepository usuarioRepository, JwtUtils jwtUtils) {
+    public AuthController(AuthService authService, GoogleAuthService googleAuthService, GoogleCalendarService googleCalendarService, UsuarioService usuarioService, LoginRateLimitService loginRateLimitService, UsuarioRepository usuarioRepository, JwtUtils jwtUtils) {
         this.authService = authService;
         this.googleAuthService = googleAuthService;
         this.googleCalendarService = googleCalendarService;
         this.usuarioService = usuarioService;
+        this.loginRateLimitService = loginRateLimitService;
         this.usuarioRepository = usuarioRepository;
         this.jwtUtils = jwtUtils;
     }
@@ -90,20 +94,47 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+        String clientIp = getClientIpAddress(httpRequest);
+        
+        // Verificar si la IP está bloqueada
+        if (loginRateLimitService.isBlocked(clientIp)) {
+            return ResponseEntity.status(429).body(Map.of(
+                "error", "Demasiados intentos de login fallidos. Intente más tarde.",
+                "remainingTime", "15 minutos"
+            ));
+        }
+        
         try {
             JwtResponse response = authService.login(request);
+            
+            // Login exitoso - limpiar intentos fallidos
+            loginRateLimitService.clearAttempts(clientIp);
+            
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
+            // Login fallido - registrar intento
+            loginRateLimitService.recordFailedAttempt(clientIp);
+            
             if (e.getMessage().contains("no está verificada")) {
                 return ResponseEntity.status(401).body(Map.of(
                     "error", "EMAIL_NOT_VERIFIED",
-                    "message", e.getMessage()
+                    "message", e.getMessage(),
+                    "remainingAttempts", loginRateLimitService.getRemainingAttempts(clientIp)
                 ));
             }
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", e.getMessage(),
+                "remainingAttempts", loginRateLimitService.getRemainingAttempts(clientIp)
+            ));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Error al iniciar sesión: " + e.getMessage()));
+            // Login fallido - registrar intento
+            loginRateLimitService.recordFailedAttempt(clientIp);
+            
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", "Error al iniciar sesión: " + e.getMessage(),
+                "remainingAttempts", loginRateLimitService.getRemainingAttempts(clientIp)
+            ));
         }
     }
 
@@ -417,5 +448,22 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", "Error al debuggear usuario: " + e.getMessage()));
         }
+    }
+
+    /**
+     * Obtiene la dirección IP real del cliente
+     */
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isEmpty()) {
+            return xRealIp;
+        }
+        
+        return request.getRemoteAddr();
     }
 }

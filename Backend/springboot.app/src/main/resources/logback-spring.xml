@@ -16,7 +16,7 @@
         <logger name="com.pomelo.app" level="DEBUG" />
     </springProfile>
     
-        <!-- Perfil de producción - SOLO CONSOLA -->
+    <!-- Perfil de producción - SOLO CONSOLA -->
     <springProfile name="prod">
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
