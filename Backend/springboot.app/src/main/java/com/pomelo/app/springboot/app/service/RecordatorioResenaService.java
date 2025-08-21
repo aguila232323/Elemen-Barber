@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -27,7 +28,9 @@ public class RecordatorioResenaService {
     @Scheduled(fixedRate = 3600000)
     public void enviarRecordatoriosResena() {
         try {
-            LocalDateTime ahora = LocalDateTime.now();
+            // Usar zona horaria de Madrid para evitar problemas de hora
+            ZoneId zonaMadrid = ZoneId.of("Europe/Madrid");
+            LocalDateTime ahora = LocalDateTime.now(zonaMadrid);
             List<Cita> candidatas = citaRepository.findCitasPendientesDeResena(ahora);
             System.out.println("⭐ Citas candidatas a recordatorio de reseña: " + candidatas.size());
 
@@ -42,7 +45,7 @@ public class RecordatorioResenaService {
                     );
 
                     cita.setRecordatorioResenaEnviado(true);
-                    cita.setFechaRecordatorioResena(LocalDateTime.now());
+                    cita.setFechaRecordatorioResena(LocalDateTime.now(zonaMadrid));
                     citaRepository.save(cita);
                 } catch (Exception e) {
                     System.err.println("❌ Error enviando recordatorio de reseña para cita ID " + cita.getId() + ": " + e.getMessage());

@@ -7,6 +7,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -30,7 +32,9 @@ public class RecordatorioService {
     @Scheduled(fixedRate = 300000) // 5 minutos = 300,000 ms
     public void enviarRecordatoriosAutomaticos() {
         try {
-            LocalDateTime ahora = LocalDateTime.now();
+            // Usar zona horaria de Madrid para evitar problemas de hora
+            ZoneId zonaMadrid = ZoneId.of("Europe/Madrid");
+            LocalDateTime ahora = LocalDateTime.now(zonaMadrid);
             LocalDateTime unaHoraDespues = ahora.plusHours(1);
             
 
@@ -69,7 +73,7 @@ public class RecordatorioService {
                             emailService.enviarRecordatorioCita(cita);
                             // Marcar como enviado para evitar duplicados
                             cita.setRecordatorioCitaEnviado(true);
-                            cita.setFechaRecordatorioCita(LocalDateTime.now());
+                            cita.setFechaRecordatorioCita(LocalDateTime.now(zonaMadrid));
                             citaRepository.save(cita);
 
                             System.out.println("✅ Recordatorio enviado exitosamente (marcado como enviado)");
@@ -106,7 +110,10 @@ public class RecordatorioService {
             Cita cita = citaRepository.findById(citaId).orElse(null);
             if (cita != null) {
                 System.out.println("👤 Cliente: " + cita.getCliente().getNombre());
-                System.out.println("📅 Fecha: " + cita.getFechaHora().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+                // Formatear fecha con zona horaria de Madrid para logging
+            ZoneId zonaMadrid = ZoneId.of("Europe/Madrid");
+            String fechaFormateada = cita.getFechaHora().atZone(zonaMadrid).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+            System.out.println("📅 Fecha: " + fechaFormateada);
                 System.out.println("📧 Email: " + cita.getCliente().getEmail());
                 System.out.println("📋 Estado: " + cita.getEstado());
                 
