@@ -32,14 +32,30 @@ public class JwtUtils {
     }
 
     public String getUserNameFromJwtToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(getSigningKey()).build()
-                .parseClaimsJws(token).getBody().getSubject();
+        try {
+            return Jwts.parserBuilder().setSigningKey(getSigningKey()).build()
+                    .parseClaimsJws(token).getBody().getSubject();
+        } catch (ExpiredJwtException e) {
+            // Token expirado - comportamiento esperado
+            return null;
+        } catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException e) {
+            // Token malformado o inválido - comportamiento esperado
+            return null;
+        }
     }
 
     public String getNombreFromJwtToken(String token) {
-        Claims claims = Jwts.parserBuilder().setSigningKey(getSigningKey()).build()
-                .parseClaimsJws(token).getBody();
-        return claims.get("nombre", String.class);
+        try {
+            Claims claims = Jwts.parserBuilder().setSigningKey(getSigningKey()).build()
+                    .parseClaimsJws(token).getBody();
+            return claims.get("nombre", String.class);
+        } catch (ExpiredJwtException e) {
+            // Token expirado - comportamiento esperado
+            return null;
+        } catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException e) {
+            // Token malformado o inválido - comportamiento esperado
+            return null;
+        }
     }
 
     public boolean validateJwtToken(String authToken) {

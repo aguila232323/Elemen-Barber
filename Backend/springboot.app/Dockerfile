@@ -15,7 +15,9 @@ FROM eclipse-temurin:17-jre-jammy
 
 # Variables de entorno optimizadas para producción
 ENV SPRING_PROFILES_ACTIVE=prod
-ENV JAVA_OPTS="-Xmx2g -Xms1g -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -XX:+OptimizeStringConcat -XX:+UseCompressedOops -XX:+UseCompressedClassPointers -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+ENV JAVA_HEAP_MAX=${JAVA_HEAP_MAX:-5g}
+ENV JAVA_HEAP_MIN=${JAVA_HEAP_MIN:-2g}
+ENV JAVA_OPTS="-Xmx${JAVA_HEAP_MAX} -Xms${JAVA_HEAP_MIN} -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -XX:+OptimizeStringConcat -XX:+UseCompressedOops -XX:+UseCompressedClassPointers -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
 ENV JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
 
 # Usuario no root

@@ -32,19 +32,38 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            username = jwtUtils.getUserNameFromJwtToken(token);
+            
+            // Validar el token antes de intentar extraer el username
+            if (jwtUtils.validateJwtToken(token)) {
+                try {
+                    username = jwtUtils.getUserNameFromJwtToken(token);
+                } catch (Exception e) {
+                    // Log silencioso para tokens expirados o inválidos
+                    // No es necesario loggear como error ya que es un comportamiento esperado
+                    logger.debug("Token JWT inválido o expirado: " + e.getMessage());
+                }
+            } else {
+                // Token inválido - log silencioso
+                logger.debug("Token JWT no válido");
+            }
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (jwtUtils.validateJwtToken(token)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities()
-                );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+            try {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                if (jwtUtils.validateJwtToken(token)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            } catch (Exception e) {
+                // Log silencioso para errores de usuario no encontrado
+                logger.debug("Error al cargar usuario: " + e.getMessage());
             }
         }
+        
         filterChain.doFilter(request, response);
     }
 }

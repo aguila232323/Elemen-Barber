@@ -14,6 +14,10 @@
         </root>
         
         <logger name="com.pomelo.app" level="DEBUG" />
+        
+        <!-- Suprimir logs de excepciones JWT esperadas -->
+        <logger name="io.jsonwebtoken" level="WARN" />
+        <logger name="org.springframework.security" level="WARN" />
     </springProfile>
     
     <!-- Perfil de producción - SOLO CONSOLA -->
@@ -35,6 +39,12 @@
 
         <!-- Logger para Spring -->
         <logger name="org.springframework" level="WARN" />
+        
+        <!-- Suprimir logs de excepciones JWT esperadas -->
+        <logger name="io.jsonwebtoken" level="ERROR" />
+        
+        <!-- Suprimir logs de excepciones de autenticación esperadas -->
+        <logger name="org.springframework.security.authentication" level="ERROR" />
 
         <!-- Root logger - SOLO CONSOLA -->
         <root level="INFO">
