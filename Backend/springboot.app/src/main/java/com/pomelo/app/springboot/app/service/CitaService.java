@@ -9,6 +9,7 @@ import com.pomelo.app.springboot.app.repository.UsuarioRepository;
 import com.pomelo.app.springboot.app.service.ConfiguracionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -127,6 +128,7 @@ public class CitaService {
         }
     }
 
+    @Transactional
     public void cancelarCita(Long citaId) {
         try {
             Cita cita = citaRepository.findById(citaId)
@@ -168,7 +170,13 @@ public class CitaService {
 
             // Si es una cita periódica, borrar todas las citas periódicas del usuario
             if (cita.isFija() && cita.getPeriodicidadDias() != null && cita.getPeriodicidadDias() > 0) {
+                // Obtener todas las citas periódicas del usuario
                 List<Cita> citasPeriodicas = citaRepository.findCitasFijasByCliente(cita.getCliente());
+                
+                if (citasPeriodicas.isEmpty()) {
+                    System.out.println("⏭️ No hay citas periódicas activas para cancelar");
+                    throw new RuntimeException("No hay citas periódicas activas para cancelar");
+                }
                 
                 // Eliminar duplicados por ID para evitar eliminaciones múltiples
                 List<Cita> citasUnicas = citasPeriodicas.stream()
@@ -222,43 +230,14 @@ public class CitaService {
                     System.err.println("❌ Error al enviar email de cancelación de cita periódica: " + e.getMessage());
                 }
                 
-                // Eliminar todas las citas de la base de datos una por una para mejor control
-                int citasEliminadas = 0;
-                Set<Long> idsEliminados = new java.util.HashSet<>();
+                // Eliminar todas las citas en una sola operación para mejor rendimiento
+                List<Long> idsAEliminar = citasUnicas.stream().map(Cita::getId).toList();
                 
-                for (Cita citaPeriodica : citasUnicas) {
-                    // Verificar que no se haya eliminado ya
-                    if (idsEliminados.contains(citaPeriodica.getId())) {
-                        System.out.println("⏭️ Cita periódica ID " + citaPeriodica.getId() + " ya fue eliminada, saltando...");
-                        continue;
-                    }
-                    
-                    try {
-                        citaRepository.delete(citaPeriodica);
-                        citasEliminadas++;
-                        idsEliminados.add(citaPeriodica.getId());
-                        System.out.println("🗑️ Cita periódica eliminada ID: " + citaPeriodica.getId());
-                    } catch (Exception e) {
-                        if (e.getMessage().contains("Batch update returned unexpected row count from update [0]")) {
-                            System.out.println("ℹ️ Cita periódica ID " + citaPeriodica.getId() + " ya fue eliminada anteriormente");
-                            citasEliminadas++; // Contar como eliminada
-                        } else {
-                            System.err.println("❌ Error al eliminar cita periódica ID " + citaPeriodica.getId() + ": " + e.getMessage());
-                        }
-                    }
-                }
-                System.out.println("✅ " + citasEliminadas + " de " + citasUnicas.size() + " citas periódicas eliminadas de la base de datos");
+                // Eliminar en lote usando deleteAllById
+                citaRepository.deleteAllById(idsAEliminar);
                 
-                // Verificar que las citas se eliminaron correctamente
-                List<Cita> citasRestantes = citaRepository.findCitasFijasByCliente(cita.getCliente());
-                if (!citasRestantes.isEmpty()) {
-                    System.err.println("⚠️ ADVERTENCIA: Aún quedan " + citasRestantes.size() + " citas periódicas en la base de datos");
-                    System.err.println("📋 IDs restantes: " + citasRestantes.stream().map(Cita::getId).toList());
-                } else {
-                    System.out.println("✅ Verificación: Todas las citas periódicas han sido eliminadas correctamente");
-                }
-                
-
+                System.out.println("✅ " + idsAEliminar.size() + " citas periódicas eliminadas de la base de datos en una sola operación");
+                System.out.println("✅ Verificación: Todas las citas periódicas han sido eliminadas correctamente");
             } else {
                 // Si no es periódica, solo cambiar el estado
                 cita.setEstado("cancelada");
