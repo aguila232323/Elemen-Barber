@@ -390,10 +390,16 @@ public class CitaController {
             int tiempoMinimo = configuracionService.obtenerTiempoMinimo();
             
             // Generar todos los slots de inicio cada 45 min
-            List<LocalTime[]> tramos = List.of(
-                new LocalTime[]{LocalTime.of(9,0), LocalTime.of(15,0)},
-                new LocalTime[]{LocalTime.of(16,0), LocalTime.of(21,15)}
-            );
+            // Para sábados solo horario de mañana hasta las 15:00, para otros días mañana hasta 14:15 + tarde
+            List<LocalTime[]> tramos = new ArrayList<>();
+            if (dia.getDayOfWeek() == DayOfWeek.SATURDAY) {
+                // Sábados: solo horario de mañana hasta las 15:00
+                tramos.add(new LocalTime[]{LocalTime.of(9,0), LocalTime.of(15,0)});
+            } else {
+                // Resto de días: mañana hasta 14:15 + tarde desde 16:00
+                tramos.add(new LocalTime[]{LocalTime.of(9,0), LocalTime.of(14,15)});
+                tramos.add(new LocalTime[]{LocalTime.of(16,0), LocalTime.of(21,15)});
+            }
             List<LocalTime> slots = new ArrayList<>();
             
             // Añadir slot especial de 8:15 solo para administradores (al principio)
@@ -427,11 +433,7 @@ public class CitaController {
                 boolean hueco = true;
                 LocalTime slotInicio = slots.get(i);
                 LocalTime slotFin = slotInicio.plusMinutes(45 * slotsNecesarios);
-                // Ocultar 14:15 en días que no sean sábado (aplica a todos los roles)
-                DayOfWeek diaSemanaGeneral = dia.getDayOfWeek();
-                if (diaSemanaGeneral != DayOfWeek.SATURDAY && slotInicio.equals(LocalTime.of(14, 15))) {
-                    continue;
-                }
+
                 
                 // Comprobar que el rango completo cabe dentro de algún tramo
                 boolean dentroHorario = false;
@@ -521,10 +523,16 @@ public class CitaController {
             for (int dia = 1; dia <= diasEnMes; dia++) {
                 LocalDate fecha = LocalDate.of(anio, mes, dia);
                 // Generar slots igual que en /disponibilidad
-                List<LocalTime[]> tramos = List.of(
-                    new LocalTime[]{LocalTime.of(9,0), LocalTime.of(15,0)},
-                    new LocalTime[]{LocalTime.of(16,0), LocalTime.of(21,15)}
-                );
+                // Para sábados solo horario de mañana hasta las 15:00, para otros días mañana hasta 14:15 + tarde
+                List<LocalTime[]> tramos = new ArrayList<>();
+                if (fecha.getDayOfWeek() == DayOfWeek.SATURDAY) {
+                    // Sábados: solo horario de mañana hasta las 15:00
+                    tramos.add(new LocalTime[]{LocalTime.of(9,0), LocalTime.of(15,0)});
+                } else {
+                    // Resto de días: mañana hasta 14:15 + tarde desde 16:00
+                    tramos.add(new LocalTime[]{LocalTime.of(9,0), LocalTime.of(14,15)});
+                    tramos.add(new LocalTime[]{LocalTime.of(16,0), LocalTime.of(21,15)});
+                }
                 List<LocalTime> slots = new ArrayList<>();
                 
                 // Añadir slot especial de 8:15 solo para administradores (al principio)
@@ -555,11 +563,7 @@ public class CitaController {
                     boolean hueco = true;
                     LocalTime slotInicio = slots.get(i);
                     LocalTime slotFin = slotInicio.plusMinutes(45 * slotsNecesarios);
-                    // Ocultar 14:15 en días que no sean sábado (aplica a todos los roles)
-                    DayOfWeek diaSemanaGeneral = fecha.getDayOfWeek();
-                    if (diaSemanaGeneral != DayOfWeek.SATURDAY && slotInicio.equals(LocalTime.of(14, 15))) {
-                        continue;
-                    }
+
                     boolean dentroHorario = false;
                     for (LocalTime[] tramo : tramos) {
                         if (!slotInicio.isBefore(tramo[0]) && !slotFin.isAfter(tramo[1])) {
