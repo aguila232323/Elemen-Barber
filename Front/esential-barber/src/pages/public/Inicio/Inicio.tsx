@@ -399,9 +399,9 @@ const Inicio: React.FC = () => {
                 {servicio.emoji || '💇'}
               </span>
             </div>
-            <div className={styles.serviceTitle}>{servicio.nombre.toUpperCase()}</div>
+            <div className={styles.serviceTitle}>{(servicio.nombre || 'Servicio').toUpperCase()}</div>
             <div className={styles.serviceDesc}>
-              {servicio.textoDescriptivo || servicio.descripcion || `Servicio profesional de ${servicio.nombre.toLowerCase()} con técnicas modernas y acabado impecable.`}
+              {servicio.textoDescriptivo || servicio.descripcion || `Servicio profesional de ${servicio.nombre?.toLowerCase() || 'barbería'} con técnicas modernas y acabado impecable.`}
             </div>
           </div>
         ))}

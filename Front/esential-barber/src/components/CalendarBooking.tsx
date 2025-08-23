@@ -556,8 +556,8 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
                     }}>
                       {usuarios
                         .filter(usuario => 
-                          usuario.nombre.toLowerCase().includes(busquedaUsuario.toLowerCase()) ||
-                          usuario.email.toLowerCase().includes(busquedaUsuario.toLowerCase())
+                          (usuario.nombre?.toLowerCase() || '').includes(busquedaUsuario.toLowerCase()) ||
+                          (usuario.email?.toLowerCase() || '').includes(busquedaUsuario.toLowerCase())
                         )
                         .map(usuario => (
                           <div
@@ -604,7 +604,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
                               boxShadow: '0 2px 8px rgba(25, 118, 210, 0.3)',
                               border: '2px solid rgba(255,255,255,0.1)'
                             }}>
-                              {usuario.nombre.charAt(0).toUpperCase()}
+                              {(usuario.nombre?.charAt(0) || 'U').toUpperCase()}
                             </div>
                             
                             {/* Información del usuario */}

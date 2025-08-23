@@ -21,7 +21,7 @@ interface Props {
 }
 
 const iconForService = (nombre: string) => {
-  const lower = nombre.toLowerCase();
+  const lower = nombre?.toLowerCase() || '';
   if (lower.includes('corte')) return <FaCut style={{color:'#64b5f6', fontSize:'1.4rem'}} />;
   if (lower.includes('tinte')) return <FaPaintBrush style={{color:'#64b5f6', fontSize:'1.4rem'}} />;
   if (lower.includes('mecha')) return <FaMagic style={{color:'#4caf50', fontSize:'1.4rem'}} />;

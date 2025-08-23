@@ -1397,8 +1397,8 @@ const Configuracion: React.FC = () => {
                 }}>
                   {usuarios
                     .filter(usuario => 
-                      usuario.nombre.toLowerCase().includes(busquedaUsuarioAdd.toLowerCase()) ||
-                      usuario.email.toLowerCase().includes(busquedaUsuarioAdd.toLowerCase())
+                      (usuario.nombre?.toLowerCase() || '').includes(busquedaUsuarioAdd.toLowerCase()) ||
+                      (usuario.email?.toLowerCase() || '').includes(busquedaUsuarioAdd.toLowerCase())
                     )
                     .map(usuario => (
                       <div
@@ -1445,7 +1445,7 @@ const Configuracion: React.FC = () => {
                           boxShadow: '0 2px 8px rgba(100, 181, 246, 0.3)',
                           border: '2px solid rgba(255,255,255,0.1)'
                         }}>
-                          {usuario.nombre.charAt(0).toUpperCase()}
+                          {(usuario.nombre?.charAt(0) || 'U').toUpperCase()}
                         </div>
                         
                         {/* Información del usuario */}
@@ -1487,8 +1487,8 @@ const Configuracion: React.FC = () => {
                   
                   {/* Mensaje si no hay resultados */}
                   {usuarios.filter(usuario => 
-                    usuario.nombre.toLowerCase().includes(busquedaUsuarioAdd.toLowerCase()) ||
-                    usuario.email.toLowerCase().includes(busquedaUsuarioAdd.toLowerCase())
+                    (usuario.nombre?.toLowerCase() || '').includes(busquedaUsuarioAdd.toLowerCase()) ||
+                    (usuario.email?.toLowerCase() || '').includes(busquedaUsuarioAdd.toLowerCase())
                   ).length === 0 && (
                     <div style={{
                       padding: '20px 16px',
@@ -1953,8 +1953,8 @@ const Configuracion: React.FC = () => {
                     {usuariosList
                       .filter(usuario => 
                         (usuariosModal === 'banear' ? !usuario.baneado : usuario.baneado) &&
-                        (usuario.nombre.toLowerCase().includes(busquedaUsuarioBan.toLowerCase()) ||
-                         usuario.email.toLowerCase().includes(busquedaUsuarioBan.toLowerCase()))
+                        ((usuario.nombre?.toLowerCase() || '').includes(busquedaUsuarioBan.toLowerCase()) ||
+                         (usuario.email?.toLowerCase() || '').includes(busquedaUsuarioBan.toLowerCase()))
                       )
                       .map(usuario => (
                         <div
@@ -2005,7 +2005,7 @@ const Configuracion: React.FC = () => {
                               : '0 2px 8px rgba(100, 181, 246, 0.3)',
                             border: '2px solid rgba(255,255,255,0.1)'
                           }}>
-                            {usuario.nombre.charAt(0).toUpperCase()}
+                            {(usuario.nombre?.charAt(0) || 'U').toUpperCase()}
                           </div>
                           
                           {/* Información del usuario */}
@@ -2066,8 +2066,8 @@ const Configuracion: React.FC = () => {
                     {/* Mensaje si no hay resultados */}
                     {usuariosList.filter(usuario => 
                       (usuariosModal === 'banear' ? !usuario.baneado : usuario.baneado) &&
-                      (usuario.nombre.toLowerCase().includes(busquedaUsuarioBan.toLowerCase()) ||
-                       usuario.email.toLowerCase().includes(busquedaUsuarioBan.toLowerCase()))
+                      ((usuario.nombre?.toLowerCase() || '').includes(busquedaUsuarioBan.toLowerCase()) ||
+                       (usuario.email?.toLowerCase() || '').includes(busquedaUsuarioBan.toLowerCase()))
                     ).length === 0 && (
                       <div style={{
                         padding: '20px 16px',
