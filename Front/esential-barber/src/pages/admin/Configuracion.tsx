@@ -353,11 +353,21 @@ const Configuracion: React.FC = () => {
     setCancelarVacacionesModal(false);
     
     setUsuariosModal(type);
-    fetchUsuariosList();
-    setUsuarioSeleccionado(null);
-    setUsuarioActionMsg(null);
-    setBusquedaUsuarioBan(''); // Limpiar campo de búsqueda
-    setMostrarDropdownBan(false); // Cerrar dropdown
+    
+    // Solo cargar lista de usuarios si no es el modal de crear
+    if (type !== 'crear') {
+      fetchUsuariosList();
+      setUsuarioSeleccionado(null);
+      setUsuarioActionMsg(null);
+      setBusquedaUsuarioBan(''); // Limpiar campo de búsqueda
+      setMostrarDropdownBan(false); // Cerrar dropdown
+    } else {
+      // Limpiar formulario de crear usuario
+      setCrearUsuarioForm({
+        nombre: '', email: '', password: '', telefono: '', rol: 'CLIENTE'
+      });
+      setCrearUsuarioMsg(null);
+    }
   };
 
   // Función para obtener lista de usuarios
@@ -1857,8 +1867,8 @@ const Configuracion: React.FC = () => {
           </div>
         </div>
 
-        {/* Modal de Gestión de Usuarios */}
-        {usuariosModal && (
+        {/* Modal de Gestión de Usuarios (Banear/Desbanear) */}
+        {usuariosModal && usuariosModal !== 'crear' && (
           <div className={styles.modal}>
             <div className={styles.modalHeader}>
               {usuariosModal === 'banear' ? (
@@ -2157,25 +2167,6 @@ const Configuracion: React.FC = () => {
               <h3>Crear Nuevo Usuario</h3>
             </div>
             <form className={styles.formModal} onSubmit={handleCrearUsuarioSubmit}>
-              {/* Información sobre usuarios sin email */}
-              <div style={{
-                padding: '12px 16px',
-                backgroundColor: 'rgba(100, 181, 246, 0.1)',
-                borderRadius: '8px',
-                border: '1px solid rgba(100, 181, 246, 0.3)',
-                marginBottom: '20px',
-                color: '#64b5f6'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '1.2rem' }}>ℹ️</span>
-                  <strong>Información importante</strong>
-                </div>
-                <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.4' }}>
-                  Puedes crear usuarios con solo nombre para personas mayores sin email. 
-                  Los recordatorios de citas para estos usuarios se gestionarán manualmente.
-                </p>
-              </div>
-
               <input
                 name="nombre"
                 type="text"
