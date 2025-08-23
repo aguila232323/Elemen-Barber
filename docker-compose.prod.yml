@@ -1,0 +1,54 @@
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: elemen-barber-db
+    environment:
+      POSTGRES_DB: elemenbarber
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ElemenBarber2024!
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./Backend/springboot.app/apply-database-indexes.sql:/docker-entrypoint-initdb.d/01-init.sql
+    networks:
+      - elemen-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d elemenbarber"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Aplicación Spring Boot
+  backend:
+    build:
+      context: .
+      dockerfile: Backend/springboot.app/Dockerfile
+    container_name: elemen-barber-backend
+    env_file:
+      - Backend/springboot.app/env.production.enhanced
+    ports:
+      - "127.0.0.1:8080:8080"  # Solo expuesto a localhost (Nginx hará de proxy)
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - elemen-network
+    restart: unless-stopped
+    volumes:
+      - ./Backend/springboot.app/logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  elemen-network:
+    driver: bridge
