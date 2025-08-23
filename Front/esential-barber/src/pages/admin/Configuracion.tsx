@@ -138,12 +138,19 @@ const Configuracion: React.FC = () => {
   const [bookingMsg, setBookingMsg] = useState<string | null>(null);
 
   // Estados para gestión de usuarios
-  const [usuariosModal, setUsuariosModal] = useState<'banear' | 'desbanear' | null>(null);
+  const [usuariosModal, setUsuariosModal] = useState<'banear' | 'desbanear' | 'crear' | null>(null);
   const [usuariosList, setUsuariosList] = useState<Usuario[]>([]);
   const [usuariosLoading, setUsuariosLoading] = useState(false);
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<number | null>(null);
   const [usuarioActionLoading, setUsuarioActionLoading] = useState(false);
   const [usuarioActionMsg, setUsuarioActionMsg] = useState<string | null>(null);
+  
+  // Estados para crear usuario
+  const [crearUsuarioForm, setCrearUsuarioForm] = useState({
+    nombre: '', email: '', password: '', telefono: '', rol: 'CLIENTE'
+  });
+  const [crearUsuarioLoading, setCrearUsuarioLoading] = useState(false);
+  const [crearUsuarioMsg, setCrearUsuarioMsg] = useState<string | null>(null);
 
   // Estados para búsqueda de usuarios en gestión de usuarios
   const [busquedaUsuarioBan, setBusquedaUsuarioBan] = useState<string>('');
@@ -337,7 +344,7 @@ const Configuracion: React.FC = () => {
   };
 
   // Función para abrir modal de gestión de usuarios
-  const openUsuariosModal = (type: 'banear' | 'desbanear') => {
+  const openUsuariosModal = (type: 'banear' | 'desbanear' | 'crear') => {
     // Cerrar otros modales antes de abrir uno nuevo
     setModal(null);
     setCitasModal(null);
@@ -405,6 +412,64 @@ const Configuracion: React.FC = () => {
       setUsuarioActionMsg(err.message || 'Error al procesar la acción');
     } finally {
       setUsuarioActionLoading(false);
+    }
+  };
+
+  // Función para manejar cambios en el formulario de crear usuario
+  const handleCrearUsuarioChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setCrearUsuarioForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Función para manejar la creación de usuario
+  const handleCrearUsuarioSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!crearUsuarioForm.nombre.trim()) {
+      setCrearUsuarioMsg('El nombre es obligatorio');
+      return;
+    }
+
+    setCrearUsuarioLoading(true);
+    setCrearUsuarioMsg(null);
+    
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch(`${config.API_BASE_URL}/api/auth/create-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(crearUsuarioForm)
+      });
+
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Error al crear usuario');
+      }
+
+      setCrearUsuarioMsg('Usuario creado exitosamente');
+      
+      // Limpiar formulario
+      setCrearUsuarioForm({
+        nombre: '', email: '', password: '', telefono: '', rol: 'CLIENTE'
+      });
+
+      // Recargar lista de usuarios
+      fetchUsuariosList();
+
+      setTimeout(() => {
+        setUsuariosModal(null);
+        setCrearUsuarioMsg(null);
+      }, 1500);
+    } catch (err: any) {
+      setCrearUsuarioMsg(err.message || 'Error al crear usuario');
+    } finally {
+      setCrearUsuarioLoading(false);
     }
   };
 
@@ -1762,6 +1827,10 @@ const Configuracion: React.FC = () => {
           </div>
           
           <div className={styles.buttonGroup}>
+            <button className={`${styles.configBtn} ${styles.addBtn}`} onClick={() => openUsuariosModal('crear')}>
+              <FaUserPlus className={styles.btnIcon} />
+              <span>Crear Usuario</span>
+            </button>
             <button className={`${styles.configBtn} ${styles.deleteBtn}`} onClick={() => openUsuariosModal('banear')}>
               <FaTrash className={styles.btnIcon} />
               <span>Banear Usuario</span>
@@ -2074,6 +2143,109 @@ const Configuracion: React.FC = () => {
               {usuarioActionMsg && (
                 <div className={`${styles.message} ${usuarioActionMsg.includes('correctamente') ? styles.success : styles.error}`}>
                   {usuarioActionMsg}
+                </div>
+              )}
+            </form>
+          </div>
+        )}
+
+        {/* Modal de Crear Usuario */}
+        {usuariosModal === 'crear' && (
+          <div className={styles.modal}>
+            <div className={styles.modalHeader}>
+              <FaUserPlus className={styles.modalIcon} />
+              <h3>Crear Nuevo Usuario</h3>
+            </div>
+            <form className={styles.formModal} onSubmit={handleCrearUsuarioSubmit}>
+              {/* Información sobre usuarios sin email */}
+              <div style={{
+                padding: '12px 16px',
+                backgroundColor: 'rgba(100, 181, 246, 0.1)',
+                borderRadius: '8px',
+                border: '1px solid rgba(100, 181, 246, 0.3)',
+                marginBottom: '20px',
+                color: '#64b5f6'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '1.2rem' }}>ℹ️</span>
+                  <strong>Información importante</strong>
+                </div>
+                <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.4' }}>
+                  Puedes crear usuarios con solo nombre para personas mayores sin email. 
+                  Los recordatorios de citas para estos usuarios se gestionarán manualmente.
+                </p>
+              </div>
+
+              <input
+                name="nombre"
+                type="text"
+                placeholder="Nombre del usuario *"
+                value={crearUsuarioForm.nombre}
+                onChange={handleCrearUsuarioChange}
+                required
+                className={styles.input}
+              />
+              
+              <input
+                name="email"
+                type="email"
+                placeholder="Email (opcional)"
+                value={crearUsuarioForm.email}
+                onChange={handleCrearUsuarioChange}
+                className={styles.input}
+              />
+              
+              <input
+                name="password"
+                type="password"
+                placeholder="Contraseña (opcional - se genera automáticamente)"
+                value={crearUsuarioForm.password}
+                onChange={handleCrearUsuarioChange}
+                className={styles.input}
+              />
+              
+              <input
+                name="telefono"
+                type="tel"
+                placeholder="Teléfono (opcional)"
+                value={crearUsuarioForm.telefono}
+                onChange={handleCrearUsuarioChange}
+                className={styles.input}
+              />
+              
+              <select
+                name="rol"
+                value={crearUsuarioForm.rol}
+                onChange={handleCrearUsuarioChange}
+                className={styles.input}
+              >
+                <option value="CLIENTE">Cliente</option>
+                <option value="ADMIN">Administrador</option>
+              </select>
+
+              <div className={styles.modalBtnGroup}>
+                <button 
+                  className={styles.saveBtn} 
+                  type="submit" 
+                  disabled={crearUsuarioLoading}
+                >
+                  <FaSave className={styles.btnIcon} />
+                  {crearUsuarioLoading ? 'Creando...' : 'Crear Usuario'}
+                </button>
+                <button 
+                  className={styles.cancelBtn} 
+                  type="button" 
+                  onClick={() => setUsuariosModal(null)} 
+                  disabled={crearUsuarioLoading}
+                >
+                  <FaTimes className={styles.btnIcon} />
+                  Cancelar
+                </button>
+              </div>
+              
+              {crearUsuarioMsg && (
+                <div className={`${styles.message} ${crearUsuarioMsg.includes('exitosamente') ? styles.success : styles.error}`}>
+                  {crearUsuarioMsg}
                 </div>
               )}
             </form>
