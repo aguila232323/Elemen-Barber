@@ -147,7 +147,7 @@ const Configuracion: React.FC = () => {
   
   // Estados para crear usuario
   const [crearUsuarioForm, setCrearUsuarioForm] = useState({
-    nombre: '', email: '', password: '', telefono: '', rol: 'CLIENTE'
+    nombre: '', email: '', password: '', telefono: ''
   });
   const [crearUsuarioLoading, setCrearUsuarioLoading] = useState(false);
   const [crearUsuarioMsg, setCrearUsuarioMsg] = useState<string | null>(null);
@@ -364,7 +364,7 @@ const Configuracion: React.FC = () => {
     } else {
       // Limpiar formulario de crear usuario
       setCrearUsuarioForm({
-        nombre: '', email: '', password: '', telefono: '', rol: 'CLIENTE'
+        nombre: '', email: '', password: '', telefono: ''
       });
       setCrearUsuarioMsg(null);
     }
@@ -466,7 +466,7 @@ const Configuracion: React.FC = () => {
       
       // Limpiar formulario
       setCrearUsuarioForm({
-        nombre: '', email: '', password: '', telefono: '', rol: 'CLIENTE'
+        nombre: '', email: '', password: '', telefono: ''
       });
 
       // Recargar lista de usuarios
@@ -2204,15 +2204,7 @@ const Configuracion: React.FC = () => {
                 className={styles.input}
               />
               
-              <select
-                name="rol"
-                value={crearUsuarioForm.rol}
-                onChange={handleCrearUsuarioChange}
-                className={styles.input}
-              >
-                <option value="CLIENTE">Cliente</option>
-                <option value="ADMIN">Administrador</option>
-              </select>
+
 
               <div className={styles.modalBtnGroup}>
                 <button 
