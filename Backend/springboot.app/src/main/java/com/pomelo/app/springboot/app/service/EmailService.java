@@ -39,6 +39,16 @@ public class EmailService {
     @Async
     public void enviarConfirmacionCita(Cita cita) {
         try {
+            // Verificar si el cliente tiene email
+            if (cita.getCliente().getEmail() == null || cita.getCliente().getEmail().trim().isEmpty()) {
+                System.out.println("⚠️ Cliente sin email - No se puede enviar confirmación por email");
+                System.out.println("👤 Cliente: " + cita.getCliente().getNombre() + " (ID: " + cita.getCliente().getId() + ")");
+                System.out.println("📅 Cita confirmada para: " + cita.getFechaHora());
+                System.out.println("📋 Servicio: " + cita.getServicio().getNombre());
+                System.out.println("ℹ️ La confirmación deberá ser gestionada manualmente por el administrador");
+                return; // Salir sin enviar email
+            }
+            
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
@@ -72,6 +82,16 @@ public class EmailService {
             System.out.println("📧 Email destino: " + cita.getCliente().getEmail());
             System.out.println("📅 Fecha cita: " + cita.getFechaHora());
             System.out.println("📋 Servicio: " + cita.getServicio().getNombre());
+            
+            // Verificar si el cliente tiene email
+            if (cita.getCliente().getEmail() == null || cita.getCliente().getEmail().trim().isEmpty()) {
+                System.out.println("⚠️ Cliente sin email - No se puede enviar recordatorio por email");
+                System.out.println("👤 Cliente: " + cita.getCliente().getNombre() + " (ID: " + cita.getCliente().getId() + ")");
+                System.out.println("📅 Cita programada para: " + cita.getFechaHora());
+                System.out.println("📋 Servicio: " + cita.getServicio().getNombre());
+                System.out.println("ℹ️ El recordatorio deberá ser gestionado manualmente por el administrador");
+                return; // Salir sin enviar email
+            }
             
             // Verificar que mailSender esté disponible
             if (mailSender == null) {

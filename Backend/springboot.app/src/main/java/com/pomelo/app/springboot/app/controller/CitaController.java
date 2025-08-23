@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.ArrayList;
 import java.time.DayOfWeek;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/citas")
@@ -628,6 +629,54 @@ public class CitaController {
             Map<String, String> errorResponse = new java.util.HashMap<>();
             errorResponse.put("error", "Error al obtener disponibilidad mensual");
             errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    /**
+     * Endpoint para obtener citas de usuarios sin email (para recordatorios manuales)
+     */
+    @GetMapping("/sin-email")
+    public ResponseEntity<?> obtenerCitasSinEmail(@AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            // Verificar que el usuario actual sea admin
+            Usuario adminUser = usuarioService.findByEmail(userDetails.getUsername());
+            if (adminUser == null || !"ADMIN".equals(adminUser.getRol())) {
+                return ResponseEntity.status(403).body(Map.of("error", "Solo los administradores pueden acceder a esta información"));
+            }
+
+            // Obtener todas las citas
+            List<Cita> todasCitas = citaService.listarTodasLasCitas();
+            
+            // Filtrar citas de usuarios sin email que están confirmadas o pendientes
+            List<Map<String, Object>> citasSinEmail = todasCitas.stream()
+                .filter(cita -> cita.getCliente().getEmail() == null || cita.getCliente().getEmail().trim().isEmpty())
+                .filter(cita -> "confirmada".equals(cita.getEstado()) || "pendiente".equals(cita.getEstado()))
+                .map(cita -> {
+                    Map<String, Object> citaInfo = new java.util.HashMap<>();
+                    citaInfo.put("id", cita.getId());
+                    citaInfo.put("clienteNombre", cita.getCliente().getNombre());
+                    citaInfo.put("clienteId", cita.getCliente().getId());
+                    citaInfo.put("clienteTelefono", cita.getCliente().getTelefono());
+                    citaInfo.put("servicioNombre", cita.getServicio().getNombre());
+                    citaInfo.put("fechaHora", cita.getFechaHora());
+                    citaInfo.put("estado", cita.getEstado());
+                    citaInfo.put("comentario", cita.getComentario());
+                    citaInfo.put("recordatorioEnviado", cita.isRecordatorioCitaEnviado());
+                    return citaInfo;
+                })
+                .collect(Collectors.toList());
+            
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("citas", citasSinEmail);
+            response.put("total", citasSinEmail.size());
+            response.put("message", "Citas de usuarios sin email obtenidas correctamente");
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new java.util.HashMap<>();
+            errorResponse.put("error", "Error al obtener citas de usuarios sin email: " + e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }

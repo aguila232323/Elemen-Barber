@@ -4,6 +4,7 @@ import com.pomelo.app.springboot.app.dto.LoginRequest;
 import com.pomelo.app.springboot.app.dto.RegisterRequest;
 import com.pomelo.app.springboot.app.dto.GoogleAuthRequest;
 import com.pomelo.app.springboot.app.dto.JwtResponse;
+import com.pomelo.app.springboot.app.dto.CreateUserRequest;
 import com.pomelo.app.springboot.app.entity.Usuario;
 import com.pomelo.app.springboot.app.service.AuthService;
 import com.pomelo.app.springboot.app.service.GoogleAuthService;
@@ -16,6 +17,9 @@ import com.pomelo.app.springboot.app.config.JwtUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import java.util.HashMap;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -447,6 +451,39 @@ public class AuthController {
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", "Error al debuggear usuario: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Endpoint para que el admin cree usuarios con solo nombre y campos opcionales
+     */
+    @PostMapping("/create-user")
+    public ResponseEntity<?> createUser(@RequestBody CreateUserRequest request, @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            // Verificar que el usuario actual sea admin
+            Usuario adminUser = usuarioService.findByEmail(userDetails.getUsername());
+            if (adminUser == null || !"ADMIN".equals(adminUser.getRol())) {
+                return ResponseEntity.status(403).body(Map.of("error", "Solo los administradores pueden crear usuarios"));
+            }
+
+            // Crear el usuario
+            Usuario nuevoUsuario = authService.createUserByAdmin(request);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Usuario creado exitosamente");
+            response.put("usuario", Map.of(
+                "id", nuevoUsuario.getId(),
+                "nombre", nuevoUsuario.getNombre(),
+                "email", nuevoUsuario.getEmail(),
+                "telefono", nuevoUsuario.getTelefono(),
+                "rol", nuevoUsuario.getRol(),
+                "emailVerificado", nuevoUsuario.getIsEmailVerified()
+            ));
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Error al crear usuario: " + e.getMessage()));
         }
     }
 
