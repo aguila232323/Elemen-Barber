@@ -48,12 +48,73 @@ public class AuthService {
             throw new RuntimeException("Tu cuenta ha sido suspendida. Contacta con el administrador para más información.");
         }
         
-        // Verificar que el email esté verificado
-        if (!Boolean.TRUE.equals(usuario.getIsEmailVerified())) {
+        // Verificar que el email esté verificado (solo si tiene email)
+        if (usuario.getEmail() != null && !Boolean.TRUE.equals(usuario.getIsEmailVerified())) {
             throw new RuntimeException("Tu cuenta no está verificada. Por favor, verifica tu correo electrónico antes de iniciar sesión.");
         }
         
         String token = jwtUtils.generateJwtToken(request.getEmail(), usuario.getNombre());
         return new JwtResponse(token);
+    }
+
+    public Usuario createUserByAdmin(CreateUserRequest request) {
+        // Validar que el nombre sea obligatorio
+        if (request.getNombre() == null || request.getNombre().trim().isEmpty()) {
+            throw new RuntimeException("El nombre es obligatorio");
+        }
+
+        // Si se proporciona email, verificar que sea único
+        if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
+            if (usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
+                throw new RuntimeException("Ya existe un usuario con este email");
+            }
+        }
+
+        Usuario usuario = new Usuario();
+        usuario.setNombre(request.getNombre().trim());
+        
+        // Email opcional
+        if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
+            usuario.setEmail(request.getEmail().trim());
+            usuario.setIsEmailVerified(false); // Por defecto no verificado
+        } else {
+            usuario.setEmail(null);
+            usuario.setIsEmailVerified(true); // Si no hay email, se considera "verificado"
+        }
+        
+        // Teléfono opcional
+        if (request.getTelefono() != null && !request.getTelefono().trim().isEmpty()) {
+            usuario.setTelefono(request.getTelefono().trim());
+        } else {
+            usuario.setTelefono(null);
+        }
+        
+        // Contraseña opcional - si no se proporciona, generar una aleatoria
+        if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
+            usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+        } else {
+            // Generar contraseña aleatoria de 8 caracteres
+            String randomPassword = generateRandomPassword();
+            usuario.setPassword(passwordEncoder.encode(randomPassword));
+        }
+        
+        // Rol por defecto CLIENTE si no se especifica
+        if (request.getRol() != null && !request.getRol().trim().isEmpty()) {
+            usuario.setRol(request.getRol().toUpperCase());
+        } else {
+            usuario.setRol("CLIENTE");
+        }
+        
+        return usuarioRepository.save(usuario);
+    }
+
+    private String generateRandomPassword() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder sb = new StringBuilder();
+        java.util.Random random = new java.util.Random();
+        for (int i = 0; i < 8; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 }

@@ -14,82 +14,41 @@
         </root>
         
         <logger name="com.pomelo.app" level="DEBUG" />
+        
+        <!-- Suprimir logs de excepciones JWT esperadas -->
+        <logger name="io.jsonwebtoken" level="WARN" />
+        <logger name="org.springframework.security" level="WARN" />
     </springProfile>
     
-    <!-- Perfil de producción -->
+    <!-- Perfil de producción - SOLO CONSOLA -->
     <springProfile name="prod">
-        <!-- Appender para archivo de logs -->
-        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <file>logs/elemen-barber.log</file>
-            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>logs/elemen-barber.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                    <maxFileSize>100MB</maxFileSize>
-                </timeBasedFileNamingAndTriggeringPolicy>
-                <maxHistory>30</maxHistory>
-            </rollingPolicy>
-            
-            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{requestId}] [%X{clientIp}] - %msg%n</pattern>
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
             </encoder>
         </appender>
-        
-        <!-- Appender para errores -->
-        <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <file>logs/elemen-barber-error.log</file>
-            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-                <level>ERROR</level>
-            </filter>
-            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>logs/elemen-barber-error.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                    <maxFileSize>100MB</maxFileSize>
-                </timeBasedFileNamingAndTriggeringPolicy>
-                <maxHistory>30</maxHistory>
-            </rollingPolicy>
-            
-            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{requestId}] [%X{clientIp}] - %msg%n</pattern>
-            </encoder>
-        </appender>
-        
-        <!-- Appender para auditoría -->
-        <appender name="AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <file>logs/elemen-barber-audit.log</file>
-            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>logs/elemen-barber-audit.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                    <maxFileSize>100MB</maxFileSize>
-                </timeBasedFileNamingAndTriggeringPolicy>
-                <maxHistory>90</maxHistory>
-            </rollingPolicy>
-            
-            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [AUDIT] [%X{requestId}] [%X{clientIp}] [%X{userId}] - %msg%n</pattern>
-            </encoder>
-        </appender>
-        
-        <!-- Logger para auditoría -->
-        <logger name="com.pomelo.app.audit" level="INFO" additivity="false">
-            <appender-ref ref="AUDIT_FILE" />
-        </logger>
-        
+
         <!-- Logger para la aplicación -->
         <logger name="com.pomelo.app" level="INFO" />
-        
+
         <!-- Logger para Spring Security -->
         <logger name="org.springframework.security" level="WARN" />
-        
+
         <!-- Logger para Hibernate -->
         <logger name="org.hibernate" level="WARN" />
-        
+
         <!-- Logger para Spring -->
         <logger name="org.springframework" level="WARN" />
         
-        <!-- Root logger -->
+        <!-- Suprimir logs de excepciones JWT esperadas -->
+        <logger name="io.jsonwebtoken" level="ERROR" />
+        
+        <!-- Suprimir logs de excepciones de autenticación esperadas -->
+        <logger name="org.springframework.security.authentication" level="ERROR" />
+
+        <!-- Root logger - SOLO CONSOLA -->
         <root level="INFO">
-            <appender-ref ref="FILE" />
-            <appender-ref ref="ERROR_FILE" />
+            <appender-ref ref="CONSOLE" />
         </root>
     </springProfile>
     

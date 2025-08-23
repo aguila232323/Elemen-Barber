@@ -13,7 +13,7 @@ public class Usuario {
     @Column(nullable = false, length = 100)
     private String nombre;
 
-    @Column(unique = true, nullable = false, length = 100)
+    @Column(unique = true, nullable = true, length = 100)
     private String email;
 
     @Column(length = 20)

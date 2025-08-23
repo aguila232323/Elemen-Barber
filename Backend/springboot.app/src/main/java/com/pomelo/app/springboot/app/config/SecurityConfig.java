@@ -26,15 +26,18 @@ public class SecurityConfig {
     private final CorsConfigurationSource corsConfigurationSource;
     private final OncePerRequestFilter securityHeadersFilter;
     private final OncePerRequestFilter rateLimitFilter;
+    private final JwtExceptionHandlerFilter jwtExceptionHandlerFilter;
 
     public SecurityConfig(JwtFilter jwtFilter, 
                          CorsConfigurationSource corsConfigurationSource,
                          OncePerRequestFilter securityHeadersFilter,
-                         OncePerRequestFilter rateLimitFilter) {
+                         OncePerRequestFilter rateLimitFilter,
+                         JwtExceptionHandlerFilter jwtExceptionHandlerFilter) {
         this.jwtFilter = jwtFilter;
         this.corsConfigurationSource = corsConfigurationSource;
         this.securityHeadersFilter = securityHeadersFilter;
         this.rateLimitFilter = rateLimitFilter;
+        this.jwtExceptionHandlerFilter = jwtExceptionHandlerFilter;
     }
 
     @Bean
@@ -52,6 +55,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
+            .addFilterBefore(jwtExceptionHandlerFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(securityHeadersFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth

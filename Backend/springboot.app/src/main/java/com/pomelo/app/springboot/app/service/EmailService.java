@@ -11,6 +11,7 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.MessagingException;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Locale;
 
 @Service
@@ -19,9 +20,35 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    /**
+     * Método helper para formatear fechas con zona horaria de Madrid
+     */
+    private String formatearFechaConZonaHoraria(LocalDateTime fechaHora) {
+        try {
+            ZoneId zonaMadrid = ZoneId.of("Europe/Madrid");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM 'de' yyyy 'a las' HH:mm", new Locale("es", "ES"))
+                .withZone(zonaMadrid);
+            return fechaHora.atZone(zonaMadrid).format(formatter);
+        } catch (Exception e) {
+            // Fallback a formato simple si falla el formateo complejo
+            ZoneId zonaMadrid = ZoneId.of("Europe/Madrid");
+            return fechaHora.atZone(zonaMadrid).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        }
+    }
+
     @Async
     public void enviarConfirmacionCita(Cita cita) {
         try {
+            // Verificar si el cliente tiene email
+            if (cita.getCliente().getEmail() == null || cita.getCliente().getEmail().trim().isEmpty()) {
+                System.out.println("⚠️ Cliente sin email - No se puede enviar confirmación por email");
+                System.out.println("👤 Cliente: " + cita.getCliente().getNombre() + " (ID: " + cita.getCliente().getId() + ")");
+                System.out.println("📅 Cita confirmada para: " + cita.getFechaHora());
+                System.out.println("📋 Servicio: " + cita.getServicio().getNombre());
+                System.out.println("ℹ️ La confirmación deberá ser gestionada manualmente por el administrador");
+                return; // Salir sin enviar email
+            }
+            
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
@@ -29,15 +56,8 @@ public class EmailService {
             helper.setSubject("✅ Confirmación de Cita - Elemen");
             helper.setFrom("Elemen Barber <elemenbarber@gmail.com>");
             
-            // Formatear fecha y hora de forma segura
-            String fechaFormateada;
-            try {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM 'de' yyyy 'a las' HH:mm", new Locale("es", "ES"));
-                fechaFormateada = cita.getFechaHora().format(formatter);
-            } catch (Exception e) {
-                // Fallback a formato simple si falla el formateo complejo
-                fechaFormateada = cita.getFechaHora().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-            }
+            // Formatear fecha y hora con zona horaria de Madrid
+            String fechaFormateada = formatearFechaConZonaHoraria(cita.getFechaHora());
             
             // Crear contenido HTML del email
             String htmlContent = crearEmailConfirmacionHTML(cita.getCliente().getNombre(), cita.getServicio().getNombre(), 
@@ -63,6 +83,16 @@ public class EmailService {
             System.out.println("📅 Fecha cita: " + cita.getFechaHora());
             System.out.println("📋 Servicio: " + cita.getServicio().getNombre());
             
+            // Verificar si el cliente tiene email
+            if (cita.getCliente().getEmail() == null || cita.getCliente().getEmail().trim().isEmpty()) {
+                System.out.println("⚠️ Cliente sin email - No se puede enviar recordatorio por email");
+                System.out.println("👤 Cliente: " + cita.getCliente().getNombre() + " (ID: " + cita.getCliente().getId() + ")");
+                System.out.println("📅 Cita programada para: " + cita.getFechaHora());
+                System.out.println("📋 Servicio: " + cita.getServicio().getNombre());
+                System.out.println("ℹ️ El recordatorio deberá ser gestionado manualmente por el administrador");
+                return; // Salir sin enviar email
+            }
+            
             // Verificar que mailSender esté disponible
             if (mailSender == null) {
                 System.err.println("❌ ERROR: JavaMailSender no está disponible");
@@ -76,15 +106,8 @@ public class EmailService {
             helper.setSubject("⏰ Recordatorio de Cita - Elemen");
             helper.setFrom("Elemen Barber <elemenbarber@gmail.com>");
             
-            // Formatear fecha y hora de forma segura
-            String fechaFormateada;
-            try {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM 'de' yyyy 'a las' HH:mm", new Locale("es", "ES"));
-                fechaFormateada = cita.getFechaHora().format(formatter);
-            } catch (Exception e) {
-                // Fallback a formato simple si falla el formateo complejo
-                fechaFormateada = cita.getFechaHora().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-            }
+            // Formatear fecha y hora con zona horaria de Madrid
+            String fechaFormateada = formatearFechaConZonaHoraria(cita.getFechaHora());
             
             System.out.println("📝 Fecha formateada: " + fechaFormateada);
             
@@ -1133,15 +1156,8 @@ public class EmailService {
             helper.setSubject("❌ Cita Cancelada - Elemen");
             helper.setFrom("Elemen Barber <elemenbarber@gmail.com>");
             
-            // Formatear fecha y hora de forma segura
-            String fechaFormateada;
-            try {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM 'de' yyyy 'a las' HH:mm", new Locale("es", "ES"));
-                fechaFormateada = fechaHora.format(formatter);
-            } catch (Exception e) {
-                // Fallback a formato simple si falla el formateo complejo
-                fechaFormateada = fechaHora.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-            }
+            // Formatear fecha y hora con zona horaria de Madrid
+            String fechaFormateada = formatearFechaConZonaHoraria(fechaHora);
             
             // Crear contenido HTML del email de cancelación
             String htmlContent = crearEmailCancelacionHTML(nombreCliente, nombreServicio, 

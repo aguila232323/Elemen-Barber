@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -255,6 +256,43 @@ public class UsuarioController {
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("message", "Error al actualizar la imagen de Google: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    /**
+     * Endpoint para obtener usuarios sin email (para recordatorios manuales)
+     */
+    @GetMapping("/sin-email")
+    public ResponseEntity<?> obtenerUsuariosSinEmail(@AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            // Verificar que el usuario actual sea admin
+            Usuario adminUser = usuarioService.findByEmail(userDetails.getUsername());
+            if (adminUser == null || !"ADMIN".equals(adminUser.getRol())) {
+                return ResponseEntity.status(403).body(Map.of("error", "Solo los administradores pueden acceder a esta información"));
+            }
+
+            List<Usuario> usuariosSinEmail = usuarioRepository.findByEmailIsNull();
+            
+            List<Map<String, Object>> usuariosInfo = usuariosSinEmail.stream()
+                .map(usuario -> Map.of(
+                    "id", usuario.getId(),
+                    "nombre", usuario.getNombre(),
+                    "telefono", usuario.getTelefono(),
+                    "rol", usuario.getRol()
+                ))
+                .collect(java.util.stream.Collectors.toList());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("usuarios", usuariosInfo);
+            response.put("total", usuariosInfo.size());
+            response.put("message", "Usuarios sin email obtenidos correctamente");
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Error al obtener usuarios sin email: " + e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }

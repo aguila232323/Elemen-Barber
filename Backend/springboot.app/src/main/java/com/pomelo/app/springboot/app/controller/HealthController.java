@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.core.env.Environment;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -19,6 +20,9 @@ public class HealthController {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    
+    @Autowired
+    private Environment environment;
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> healthCheck() {
@@ -29,6 +33,47 @@ public class HealthController {
         health.put("version", "1.0.0");
         
         return ResponseEntity.ok(health);
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<Map<String, Object>> profileInfo() {
+        Map<String, Object> profileInfo = new HashMap<>();
+        
+        // Obtener perfil activo
+        String[] activeProfiles = environment.getActiveProfiles();
+        String[] defaultProfiles = environment.getDefaultProfiles();
+        
+        profileInfo.put("timestamp", LocalDateTime.now());
+        profileInfo.put("activeProfiles", activeProfiles.length > 0 ? activeProfiles : new String[]{"default"});
+        profileInfo.put("defaultProfiles", defaultProfiles);
+        profileInfo.put("environment", environment.getProperty("spring.profiles.active", "No configurado"));
+        
+        // Información adicional del entorno
+        Map<String, String> envInfo = new HashMap<>();
+        envInfo.put("server.port", environment.getProperty("server.port", "8080"));
+        envInfo.put("spring.application.name", environment.getProperty("spring.application.name", "springboot.app"));
+        envInfo.put("spring.jpa.show-sql", environment.getProperty("spring.jpa.show-sql", "false"));
+        
+        // Configuración de memoria
+        MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+        envInfo.put("heap.max", formatBytes(memoryBean.getHeapMemoryUsage().getMax()));
+        envInfo.put("heap.used", formatBytes(memoryBean.getHeapMemoryUsage().getUsed()));
+        
+        profileInfo.put("configuration", envInfo);
+        
+        // Determinar si es desarrollo o producción
+        boolean isProduction = false;
+        for (String profile : activeProfiles) {
+            if ("prod".equals(profile)) {
+                isProduction = true;
+                break;
+            }
+        }
+        
+        profileInfo.put("environment", isProduction ? "PRODUCCIÓN" : "DESARROLLO");
+        profileInfo.put("isProduction", isProduction);
+        
+        return ResponseEntity.ok(profileInfo);
     }
 
     @GetMapping("/db")

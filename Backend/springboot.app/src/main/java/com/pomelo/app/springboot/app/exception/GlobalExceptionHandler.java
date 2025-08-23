@@ -1,5 +1,8 @@
 package com.pomelo.app.springboot.app.exception;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -42,6 +45,18 @@ public class GlobalExceptionHandler {
         errorResponse.put("timestamp", java.time.LocalDateTime.now().toString());
         
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
+
+    // Manejador específico para excepciones JWT - Log silencioso
+    @ExceptionHandler({ExpiredJwtException.class, MalformedJwtException.class, UnsupportedJwtException.class})
+    public ResponseEntity<Map<String, String>> handleJwtException(Exception ex, WebRequest request) {
+        // Log silencioso - no es necesario loggear como error ya que es comportamiento esperado
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "Token inválido");
+        errorResponse.put("message", "El token de autenticación no es válido o ha expirado");
+        errorResponse.put("timestamp", java.time.LocalDateTime.now().toString());
+        
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)

@@ -37,7 +37,7 @@ public class GoogleCalendarService {
     @Value("${admin.google.calendar.enabled:true}")
     private boolean adminCalendarEnabled;
 
-    private static final String APPLICATION_NAME = "Esential Barber";
+    private static final String APPLICATION_NAME = "Elemen Barber";
     private static NetHttpTransport HTTP_TRANSPORT;
     private static final GsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static boolean HTTP_TRANSPORT_INITIALIZED = false;
@@ -423,8 +423,8 @@ public class GoogleCalendarService {
             ZonedDateTime endDateTime = zonedDateTime.plusMinutes(duracionMinutos);
             
             JsonObject event = new JsonObject();
-            event.addProperty("summary", "Cita en Esential Barber - " + cita.getServicio().getNombre());
-            event.addProperty("location", "Esential Barber");
+            event.addProperty("summary", "Cita en Elemen Barber - " + cita.getServicio().getNombre());
+            event.addProperty("location", "Elemen Barber");
             event.addProperty("description", "Cita para el servicio: " + cita.getServicio().getNombre() + 
                             "\nComentario: " + (cita.getComentario() != null ? cita.getComentario() : "Sin comentarios"));
             
@@ -518,7 +518,7 @@ public class GoogleCalendarService {
                 "timeMin=%s&timeMax=%s&q=%s",
                 java.net.URLEncoder.encode(timeMin, "UTF-8"),
                 java.net.URLEncoder.encode(timeMax, "UTF-8"),
-                java.net.URLEncoder.encode("Cita en Esential Barber", "UTF-8")
+                java.net.URLEncoder.encode("Cita en Elemen Barber", "UTF-8")
             );
             
             // Crear la petición HTTP para buscar eventos
@@ -543,7 +543,7 @@ public class GoogleCalendarService {
                         String summary = event.has("summary") ? event.get("summary").getAsString() : "";
                         
                         // Verificar si es el evento que queremos eliminar
-                        if (summary.contains("Cita en Esential Barber") && 
+                        if (summary.contains("Cita en Elemen Barber") && 
                             summary.contains(cita.getServicio().getNombre())) {
                             
                             // Crear petición para eliminar el evento
@@ -626,7 +626,7 @@ public class GoogleCalendarService {
             
             JsonObject event = new JsonObject();
             event.addProperty("summary", "📅 CITA - " + cita.getServicio().getNombre() + " - " + cliente.getNombre());
-            event.addProperty("location", "Esential Barber");
+            event.addProperty("location", "Elemen Barber");
             event.addProperty("description", 
                 "Cliente: " + cliente.getNombre() + "\n" +
                 "Email: " + cliente.getEmail() + "\n" +
