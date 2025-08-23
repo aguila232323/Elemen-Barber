@@ -98,12 +98,8 @@ public class AuthService {
             usuario.setPassword(passwordEncoder.encode(randomPassword));
         }
         
-        // Rol por defecto CLIENTE si no se especifica
-        if (request.getRol() != null && !request.getRol().trim().isEmpty()) {
-            usuario.setRol(request.getRol().toUpperCase());
-        } else {
-            usuario.setRol("CLIENTE");
-        }
+        // SEGURIDAD: Siempre crear como CLIENTE para evitar brechas de seguridad
+        usuario.setRol("CLIENTE");
         
         return usuarioRepository.save(usuario);
     }

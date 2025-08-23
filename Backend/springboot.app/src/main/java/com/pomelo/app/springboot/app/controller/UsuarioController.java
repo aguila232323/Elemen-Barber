@@ -275,12 +275,14 @@ public class UsuarioController {
             List<Usuario> usuariosSinEmail = usuarioRepository.findByEmailIsNull();
             
             List<Map<String, Object>> usuariosInfo = usuariosSinEmail.stream()
-                .map(usuario -> Map.of(
-                    "id", usuario.getId(),
-                    "nombre", usuario.getNombre(),
-                    "telefono", usuario.getTelefono(),
-                    "rol", usuario.getRol()
-                ))
+                .map(usuario -> {
+                    Map<String, Object> usuarioInfo = new HashMap<>();
+                    usuarioInfo.put("id", usuario.getId());
+                    usuarioInfo.put("nombre", usuario.getNombre());
+                    usuarioInfo.put("telefono", usuario.getTelefono());
+                    usuarioInfo.put("rol", usuario.getRol());
+                    return usuarioInfo;
+                })
                 .collect(java.util.stream.Collectors.toList());
             
             Map<String, Object> response = new HashMap<>();

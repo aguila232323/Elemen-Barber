@@ -455,7 +455,8 @@ public class AuthController {
     }
 
     /**
-     * Endpoint para que el admin cree usuarios con solo nombre y campos opcionales
+     * Endpoint para que el admin cree usuarios CLIENTE con solo nombre y campos opcionales
+     * SEGURIDAD: Solo se pueden crear usuarios CLIENTE, nunca ADMIN
      */
     @PostMapping("/create-user")
     public ResponseEntity<?> createUser(@RequestBody CreateUserRequest request, @AuthenticationPrincipal UserDetails userDetails) {
@@ -471,14 +472,16 @@ public class AuthController {
             
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Usuario creado exitosamente");
-            response.put("usuario", Map.of(
-                "id", nuevoUsuario.getId(),
-                "nombre", nuevoUsuario.getNombre(),
-                "email", nuevoUsuario.getEmail(),
-                "telefono", nuevoUsuario.getTelefono(),
-                "rol", nuevoUsuario.getRol(),
-                "emailVerificado", nuevoUsuario.getIsEmailVerified()
-            ));
+            
+            Map<String, Object> usuarioInfo = new HashMap<>();
+            usuarioInfo.put("id", nuevoUsuario.getId());
+            usuarioInfo.put("nombre", nuevoUsuario.getNombre());
+            usuarioInfo.put("email", nuevoUsuario.getEmail());
+            usuarioInfo.put("telefono", nuevoUsuario.getTelefono());
+            usuarioInfo.put("rol", nuevoUsuario.getRol());
+            usuarioInfo.put("emailVerificado", nuevoUsuario.getIsEmailVerified());
+            
+            response.put("usuario", usuarioInfo);
             
             return ResponseEntity.ok(response);
             
