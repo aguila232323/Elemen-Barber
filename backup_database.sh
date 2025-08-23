@@ -9,7 +9,8 @@ BACKUP_DIR="/home/backups"
 CONTAINER_NAME="elemen-barber-db"
 DB_NAME="elemenbarber"
 DB_USER="admin"
-RETENTION_DAYS=30
+DB_PASSWORD="ElemenBarber2024!"
+RETENTION_DAYS=15
 
 # Crear directorio de backup si no existe
 mkdir -p $BACKUP_DIR
@@ -30,7 +31,7 @@ if ! docker ps | grep -q $CONTAINER_NAME; then
 fi
 
 # Realizar el backup
-if docker exec $CONTAINER_NAME pg_dump -U $DB_USER -d $DB_NAME | gzip > $FULL_BACKUP_PATH; then
+if PGPASSWORD=$DB_PASSWORD docker exec $CONTAINER_NAME pg_dump -U $DB_USER -d $DB_NAME | gzip > $FULL_BACKUP_PATH; then
     echo "$(date): Backup completado exitosamente: $BACKUP_FILE" >> $BACKUP_DIR/backup.log
     
     # Obtener tamaño del archivo
