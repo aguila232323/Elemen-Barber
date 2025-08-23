@@ -35,8 +35,8 @@ public class RateLimitConfig {
                 String clientIp = getClientIpAddress(request);
                 String requestPath = request.getRequestURI();
                 
-                // Excluir endpoints de login del rate limiting general
-                if (!requestPath.contains("/api/auth/login") && !requestPath.contains("/api/auth/google")) {
+                // Excluir endpoints de login y creación de usuarios del rate limiting general
+                if (!requestPath.contains("/api/auth/login") && !requestPath.contains("/api/auth/google") && !requestPath.contains("/api/auth/create-user")) {
                     // Rate limiting general
                     if (isGeneralRateLimited(clientIp)) {
                         response.setStatus(429); // Too Many Requests
