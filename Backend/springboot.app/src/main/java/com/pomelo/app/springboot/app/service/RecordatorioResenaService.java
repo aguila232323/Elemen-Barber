@@ -50,6 +50,15 @@ public class RecordatorioResenaService {
                 } catch (Exception e) {
                     System.err.println("❌ Error enviando recordatorio de reseña para cita ID " + cita.getId() + ": " + e.getMessage());
                     e.printStackTrace();
+                    // Evitar reintentos para fallos permanentes (buzón lleno / cuota)
+                    String msg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+                    boolean errorBuzonLleno = msg.contains("mailbox full") || msg.contains("5.2.2") || msg.contains("552") || msg.contains("quota exceeded");
+                    if (errorBuzonLleno) {
+                        System.err.println("🚫 Detectado error permanente en reseña (buzón lleno). Marcando como enviado para evitar reintentos.");
+                        cita.setRecordatorioResenaEnviado(true);
+                        cita.setFechaRecordatorioResena(LocalDateTime.now(zonaMadrid));
+                        citaRepository.save(cita);
+                    }
                 }
             }
         } catch (Exception e) {

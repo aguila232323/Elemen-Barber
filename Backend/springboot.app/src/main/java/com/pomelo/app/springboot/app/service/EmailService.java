@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Async;
 
 import jakarta.mail.internet.MimeMessage;
-import jakarta.mail.MessagingException;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -71,6 +70,7 @@ public class EmailService {
         } catch (Exception e) {
             System.err.println("❌ Error al enviar email de confirmación: " + e.getMessage());
             e.printStackTrace();
+            throw new RuntimeException("Fallo enviando confirmación", e);
         }
     }
 
@@ -128,6 +128,8 @@ public class EmailService {
             System.err.println("❌ Error al enviar email de recordatorio: " + e.getMessage());
             System.err.println("🔍 Detalles del error:");
             e.printStackTrace();
+            // Re-lanzar para que la capa superior decida si reintentar o marcar como no reenviar
+            throw new RuntimeException("Fallo enviando recordatorio", e);
         }
     }
 
@@ -152,6 +154,7 @@ public class EmailService {
         } catch (Exception e) {
             System.err.println("❌ Error al enviar email de verificación: " + e.getMessage());
             e.printStackTrace();
+            throw new RuntimeException("Fallo enviando verificación", e);
         }
     }
 
@@ -174,6 +177,7 @@ public class EmailService {
         } catch (Exception e) {
             System.err.println("❌ Error al enviar email de recuperación de contraseña: " + e.getMessage());
             e.printStackTrace();
+            throw new RuntimeException("Fallo enviando recuperación", e);
         }
     }
 
@@ -199,6 +203,7 @@ public class EmailService {
         } catch (Exception e) {
             System.err.println("❌ Error al enviar email de notificación de cita periódica: " + e.getMessage());
             e.printStackTrace();
+            throw new RuntimeException("Fallo enviando notificación periódica", e);
         }
     }
 
@@ -220,6 +225,7 @@ public class EmailService {
         } catch (Exception e) {
             System.err.println("❌ Error al enviar email de recordatorio de reseña: " + e.getMessage());
             e.printStackTrace();
+            throw new RuntimeException("Fallo enviando recordatorio de reseña", e);
         }
     }
 
@@ -1170,6 +1176,7 @@ public class EmailService {
         } catch (Exception e) {
             System.err.println("❌ Error al enviar email de cancelación: " + e.getMessage());
             e.printStackTrace();
+            throw new RuntimeException("Fallo enviando cancelación", e);
         }
     }
 
@@ -1195,6 +1202,7 @@ public class EmailService {
         } catch (Exception e) {
             System.err.println("❌ Error al enviar email de cancelación de cita periódica: " + e.getMessage());
             e.printStackTrace();
+            throw new RuntimeException("Fallo enviando cancelación periódica", e);
         }
     }
 

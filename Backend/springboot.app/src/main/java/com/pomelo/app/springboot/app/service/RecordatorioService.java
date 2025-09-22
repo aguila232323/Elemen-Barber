@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -35,7 +34,7 @@ public class RecordatorioService {
             // Usar zona horaria de Madrid para evitar problemas de hora
             ZoneId zonaMadrid = ZoneId.of("Europe/Madrid");
             LocalDateTime ahora = LocalDateTime.now(zonaMadrid);
-            LocalDateTime unaHoraDespues = ahora.plusHours(1);
+            LocalDateTime unaHoraDespues = ahora.plusHours(4);
             
 
             
@@ -58,18 +57,17 @@ public class RecordatorioService {
             System.out.println("📅 Citas encontradas para recordatorio: " + citasProximas.size());
             
             if (citasProximas.isEmpty()) {
-                System.out.println("ℹ️ No hay citas programadas para dentro de 1 hora que requieran recordatorio");
+                System.out.println("ℹ️ No hay citas programadas para dentro de 4 hora que requieran recordatorio");
             } else {
                 for (Cita cita : citasProximas) {
                     try {
                         if (esEstadoElegible(cita.getEstado())) {
                             System.out.println("📧 Enviando recordatorio para cita ID: " + cita.getId());
-                            // cliente y servicio vienen join-fetch, es seguro acceder
                             System.out.println("👤 Cliente: " + cita.getCliente().getNombre());
                             System.out.println("📅 Fecha: " + cita.getFechaHora().format(formatter));
                             System.out.println("📧 Email: " + cita.getCliente().getEmail());
                             System.out.println("📋 Estado: " + cita.getEstado());
-                            
+
                             emailService.enviarRecordatorioCita(cita);
                             // Marcar como enviado para evitar duplicados
                             cita.setRecordatorioCitaEnviado(true);
@@ -83,7 +81,15 @@ public class RecordatorioService {
                         }
                     } catch (Exception e) {
                         System.err.println("❌ Error al enviar recordatorio para cita ID " + cita.getId() + ": " + e.getMessage());
-                        e.printStackTrace();
+                        // Si el error es permanente (por ejemplo, buzón lleno 552/5.2.2), marcar como enviado para no reintentar
+                        String msg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+                        boolean errorBuzonLleno = msg.contains("mailbox full") || msg.contains("5.2.2") || msg.contains("552") || msg.contains("quota exceeded");
+                        if (errorBuzonLleno) {
+                            System.err.println("🚫 Detectado error permanente (buzón lleno). Marcando recordatorio como enviado para evitar reintentos.");
+                            cita.setRecordatorioCitaEnviado(true);
+                            cita.setFechaRecordatorioCita(LocalDateTime.now(zonaMadrid));
+                            citaRepository.save(cita);
+                        }
                     }
                 }
             }
