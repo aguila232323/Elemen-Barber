@@ -140,7 +140,7 @@ const Inicio: React.FC = () => {
             <span className={styles.infoTitle}>Horario</span>
                          <span className={styles.infoSubtitle}>
                <span className={styles.desktopText}>Mar-Sáb: 9:00-21:15 | Sáb: 9:00-15:00</span>
-               <span className={styles.mobileText}>Mar-Sáb: 9:00-21:15</span>
+               <span className={styles.mobileText}>Mar-Vie: 9:00-21:15</span>
              </span>
           </span>
         </span>

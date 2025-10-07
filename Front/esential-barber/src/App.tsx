@@ -127,6 +127,10 @@ function AppContent() {
           Política de Privacidad
         </a> | 
         Contacto: elemenbarber@gmail.com
+        <p>Imágenes cortesía de: 
+          <a href="https://es.vecteezy.com/fotos-gratis/peluquero">Vecteezy</a>
+        </p>
+
       </footer>
     </div>
   );

@@ -83,21 +83,30 @@ const CalendarDay = React.memo(({
                      (anio === fechaCalculos.anioActual && mes < fechaCalculos.mesActual) || 
                      (anio === fechaCalculos.anioActual && mes === fechaCalculos.mesActual && dia < fechaCalculos.hoy);
     
+    // Deshabilitar días con más de 1 mes de antelación
+    const fechaActual = new Date(fechaCalculos.anioActual, fechaCalculos.mesActual, fechaCalculos.hoy);
+    const fechaMaxima = new Date(fechaActual);
+    fechaMaxima.setMonth(fechaMaxima.getMonth() + 1);
+    
+    const fechaSeleccionada = new Date(anio, mes, dia);
+    const esDemasiadoFuturo = fechaSeleccionada > fechaMaxima;
+    
     // Deshabilitar días sin slots disponibles (para usuarios no-admin)
-    const sinSlotsDisponibles = user?.rol !== 'ADMIN' && libres === 0 && !esPasado;
-    const esSeleccionable = !esPasado && !sinSlotsDisponibles;
+    const sinSlotsDisponibles = user?.rol !== 'ADMIN' && libres === 0 && !esPasado && !esDemasiadoFuturo;
+    const esSeleccionable = !esPasado && !esDemasiadoFuturo && !sinSlotsDisponibles;
     
     return {
       libres,
       porcentaje,
       colorBarra,
       esPasado,
+      esDemasiadoFuturo,
       sinSlotsDisponibles,
       esSeleccionable
     };
   }, [dia, disponibilidadMes, diaSeleccionado, fechaCalculos, anio, mes, user?.rol]);
   
-  const { libres, porcentaje, colorBarra, esPasado, sinSlotsDisponibles, esSeleccionable } = dayState;
+  const { libres, porcentaje, colorBarra, esPasado, esDemasiadoFuturo, sinSlotsDisponibles, esSeleccionable } = dayState;
   
   return (
     <div 
@@ -121,9 +130,9 @@ const CalendarDay = React.memo(({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: diaSeleccionado === dia ? '#1976d2' : (esPasado || sinSlotsDisponibles) ? '#f5f5f5' : '#fff',
-        color: diaSeleccionado === dia ? '#fff' : (esPasado || sinSlotsDisponibles) ? '#999' : '#1976d2',
-        border: diaSeleccionado === dia ? '2px solid #1976d2' : (esPasado || sinSlotsDisponibles) ? '1.5px solid #ddd' : '1.5px solid #1976d2',
+        background: diaSeleccionado === dia ? '#1976d2' : (esPasado || esDemasiadoFuturo || sinSlotsDisponibles) ? '#f5f5f5' : '#fff',
+        color: diaSeleccionado === dia ? '#fff' : (esPasado || esDemasiadoFuturo || sinSlotsDisponibles) ? '#999' : '#1976d2',
+        border: diaSeleccionado === dia ? '2px solid #1976d2' : (esPasado || esDemasiadoFuturo || sinSlotsDisponibles) ? '1.5px solid #ddd' : '1.5px solid #1976d2',
         fontWeight: 800,
         marginBottom: 2,
         fontSize: '0.9rem',
@@ -137,7 +146,7 @@ const CalendarDay = React.memo(({
         width: '1.2rem',
         height: '0.25rem',
         borderRadius: 3,
-        background: (esPasado || sinSlotsDisponibles) ? '#ddd' : colorBarra,
+        background: (esPasado || esDemasiadoFuturo || sinSlotsDisponibles) ? '#ddd' : colorBarra,
         marginBottom: 2
       }}></div>
     </div>
@@ -752,7 +761,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
             fontSize: '0.85rem',
             color: '#856404'
           }}>
-            <strong>Recordatorio:</strong> Debes reservar con al menos {tiempoMinimo} {tiempoMinimo === 1 ? 'hora' : 'horas'} de antelación.
+            <strong>Recordatorio:</strong> Debes reservar con al menos {tiempoMinimo} {tiempoMinimo === 1 ? 'hora' : 'horas'} de antelación y máximo 1 mes de antelación.
           </div>
         )}
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
@@ -764,7 +773,29 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
           <span style={{flex:1, textAlign:'center', fontWeight:800, fontSize:'1.1rem', textTransform:'capitalize', color:'#1976d2', letterSpacing:1, margin:'0 1rem', display:'block'}}>
             {nombreMes}
           </span>
-          <button onClick={()=>cambiarMes(1)} style={{background:'none',border:'none',fontSize:18,cursor:'pointer',color:'#1976d2'}}>&gt;</button>
+          <button 
+            onClick={()=>cambiarMes(1)} 
+            style={{background:'none',border:'none',fontSize:18,cursor: (() => {
+              const fechaActual = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+              const fechaMaxima = new Date(fechaActual);
+              fechaMaxima.setMonth(fechaMaxima.getMonth() + 1);
+              const fechaSiguienteMes = new Date(anio, mes + 1, 1);
+              return fechaSiguienteMes <= fechaMaxima ? 'pointer' : 'not-allowed';
+            })(), color:'#1976d2', opacity: (() => {
+              const fechaActual = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+              const fechaMaxima = new Date(fechaActual);
+              fechaMaxima.setMonth(fechaMaxima.getMonth() + 1);
+              const fechaSiguienteMes = new Date(anio, mes + 1, 1);
+              return fechaSiguienteMes <= fechaMaxima ? 1 : 0.4;
+            })()}}
+            disabled={(() => {
+              const fechaActual = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+              const fechaMaxima = new Date(fechaActual);
+              fechaMaxima.setMonth(fechaMaxima.getMonth() + 1);
+              const fechaSiguienteMes = new Date(anio, mes + 1, 1);
+              return fechaSiguienteMes > fechaMaxima;
+            })()}
+          >&gt;</button>
         </div>
         <div style={{position: 'relative'}}>
           <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'0.25rem',marginBottom:8, opacity: loadingCalendario ? 0.6 : 1, transition: 'opacity 0.3s ease'}}>

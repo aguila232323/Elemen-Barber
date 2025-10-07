@@ -27,6 +27,8 @@
   animation: modalSlideIn 0.3s ease-out;
   display: flex;
   flex-direction: column;
+  /* Asegura que los hijos flex puedan hacer scroll */
+  min-height: 0;
 }
 
 @keyframes modalSlideIn {
@@ -85,7 +87,14 @@
 .modalBody {
   padding: 0 24px 24px 24px;
   flex: 1;
+  /* Permite scroll en el cuerpo del modal cuando hay muchos servicios */
   overflow-y: auto;
+  /* Necesario en contenedores flex para que el hijo pueda encogerse y habilitar scroll */
+  min-height: 0;
+  /* Mejora del scroll en iOS */
+  -webkit-overflow-scrolling: touch;
+  /* Evita que el scroll burbujee al fondo */
+  overscroll-behavior: contain;
 }
 
 /* Services Container */
@@ -241,6 +250,11 @@
   transition: all 0.3s ease;
   width: 100%;
   margin-top: 16px;
+  /* Mantener el botón visible al hacer scroll */
+  position: sticky;
+  bottom: 0;
+  /* Fondo para que no se superponga contenido por detrás cuando se fija */
+  background-clip: padding-box;
 }
 
 .continueButton:hover:not(:disabled) {
