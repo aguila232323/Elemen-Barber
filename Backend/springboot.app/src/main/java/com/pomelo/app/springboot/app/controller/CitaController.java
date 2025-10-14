@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.ArrayList;
 import java.time.DayOfWeek;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/citas")
@@ -412,7 +411,14 @@ public class CitaController {
                 LocalTime apertura = tramo[0];
                 LocalTime cierre = tramo[1];
                 for (LocalTime t = apertura; t.compareTo(cierre) < 0; t = t.plusMinutes(45)) {
-                    slots.add(t);
+                    // Para sábados, el slot de 14:15 solo está disponible para administradores
+                    if (dia.getDayOfWeek() == DayOfWeek.SATURDAY && t.equals(LocalTime.of(14, 15))) {
+                        if ("ADMIN".equals(userRole)) {
+                            slots.add(t);
+                        }
+                    } else {
+                        slots.add(t);
+                    }
                 }
             }
             
@@ -545,7 +551,14 @@ public class CitaController {
                     LocalTime apertura = tramo[0];
                     LocalTime cierre = tramo[1];
                     for (LocalTime t = apertura; t.compareTo(cierre) < 0; t = t.plusMinutes(45)) {
-                        slots.add(t);
+                        // Para sábados, el slot de 14:15 solo está disponible para administradores
+                        if (fecha.getDayOfWeek() == DayOfWeek.SATURDAY && t.equals(LocalTime.of(14, 15))) {
+                            if ("ADMIN".equals(userRole)) {
+                                slots.add(t);
+                            }
+                        } else {
+                            slots.add(t);
+                        }
                     }
                 }
                 
