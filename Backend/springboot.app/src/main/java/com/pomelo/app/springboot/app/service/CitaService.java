@@ -463,6 +463,23 @@ public class CitaService {
         }
     }
 
+    public void eliminarCita(Long id) {
+        try {
+            // Buscar la cita por ID
+            Cita cita = citaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cita no encontrada con ID: " + id));
+            
+            System.out.println("🗑️ Eliminando cita ID: " + id + " - Cliente: " + cita.getCliente().getNombre());
+            
+            // Eliminar la cita directamente de la base de datos
+            citaRepository.delete(cita);
+            
+            System.out.println("✅ Cita eliminada correctamente ID: " + id);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al eliminar cita: " + e.getMessage(), e);
+        }
+    }
+
     public List<Cita> disponibilidad(LocalDate fecha) {
         try {
             return citaRepository.findByFechaHora(fecha);

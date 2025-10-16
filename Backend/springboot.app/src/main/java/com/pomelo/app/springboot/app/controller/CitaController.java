@@ -366,6 +366,22 @@ public class CitaController {
         }
     }
 
+    @DeleteMapping("/eliminar/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> eliminarCita(@PathVariable Long id) {
+        try {
+            citaService.eliminarCita(id);
+            Map<String, String> response = new java.util.HashMap<>();
+            response.put("message", "Cita eliminada correctamente");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new java.util.HashMap<>();
+            errorResponse.put("error", "Error al eliminar cita");
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
     // (Constante no usada eliminada)
 
     @GetMapping("/disponibilidad")
