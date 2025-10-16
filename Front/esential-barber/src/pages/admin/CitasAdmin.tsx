@@ -4,7 +4,7 @@ import moment from 'moment';
 import 'moment/locale/es';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './CitasAdminCustom.css';
-import { FaCalendarAlt, FaTimes, FaSave, FaBars, FaChevronLeft, FaChevronRight, FaChevronDown, FaList } from 'react-icons/fa';
+import { FaCalendarAlt, FaTimes, FaSave, FaBars, FaChevronLeft, FaChevronRight, FaChevronDown, FaList, FaTrash } from 'react-icons/fa';
 import { useServicios } from '../../hooks/useServicios';
 import { config } from '../../config/config';
 
@@ -426,6 +426,11 @@ const CitasAdmin: React.FC = () => {
   const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
   const [citaToCancel, setCitaToCancel] = useState<any>(null);
 
+  // Estados para eliminar citas
+  const [deletingCita, setDeletingCita] = useState<number | null>(null);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [citaToDelete, setCitaToDelete] = useState<any>(null);
+
   // Verificar si es móvil
   useEffect(() => {
     const checkMobile = () => {
@@ -484,6 +489,55 @@ const CitasAdmin: React.FC = () => {
   const showCancelConfirmation = (cita: any) => {
     setCitaToCancel(cita);
     setShowCancelConfirmModal(true);
+  };
+
+  // Función para eliminar una cita (solo admin)
+  const handleDeleteCita = async (cita: any) => {
+    if (!cita || !cita.id) {
+      return;
+    }
+
+    try {
+      setDeletingCita(cita.id);
+      const token = localStorage.getItem('authToken');
+      
+      // Usar el endpoint específico para eliminar citas (admin)
+      const response = await fetch(`${config.API_BASE_URL}/api/citas/eliminar/${cita.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        // Actualizar la lista de citas
+        setCitas(prevCitas => prevCitas.filter(c => c.id !== cita.id));
+        
+        // Cerrar modales si están abiertos
+        setSelectedEvent(null);
+        setShowMobileCitaModal(false);
+        setSelectedMobileCita(null);
+        setShowDeleteConfirmModal(false);
+        setCitaToDelete(null);
+        
+        alert('Cita eliminada correctamente');
+      } else {
+        const errorData = await response.json();
+        alert(`Error al eliminar la cita: ${errorData.message || 'Error desconocido'}`);
+      }
+    } catch (error: any) {
+      console.error('Error al eliminar cita:', error);
+      alert(`Error al eliminar la cita: ${error.message}`);
+    } finally {
+      setDeletingCita(null);
+    }
+  };
+
+  // Función para mostrar el modal de confirmación de eliminación
+  const showDeleteConfirmation = (cita: any) => {
+    setCitaToDelete(cita);
+    setShowDeleteConfirmModal(true);
   };
 
   // Función para determinar el estado dinámico de una cita
@@ -1236,6 +1290,28 @@ const CitasAdmin: React.FC = () => {
                 Cancelar Cita
               </button>
               
+              {/* Botón de eliminar cita */}
+              <button 
+                className="mobile-cita-delete-btn"
+                onClick={() => {
+                  setShowMobileCitaModal(false);
+                  showDeleteConfirmation(selectedMobileCita);
+                }}
+                disabled={deletingCita === selectedMobileCita.id}
+              >
+                {deletingCita === selectedMobileCita.id ? (
+                  <>
+                    <span className="loading-spinner"></span>
+                    Eliminando...
+                  </>
+                ) : (
+                  <>
+                    <FaTrash />
+                    Eliminar Cita
+                  </>
+                )}
+              </button>
+              
               <button 
                 className="mobile-cita-close-btn"
                 onClick={() => setShowMobileCitaModal(false)}
@@ -1425,6 +1501,79 @@ const CitasAdmin: React.FC = () => {
                 className="cancel-confirm-btn cancel-cancel-btn"
                 onClick={() => setShowCancelConfirmModal(false)}
                 disabled={cancelingCita === citaToCancel.id}
+              >
+                No, Mantener Cita
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación de eliminación */}
+      {showDeleteConfirmModal && citaToDelete && (
+        <div className="modal-overlay" onClick={() => setShowDeleteConfirmModal(false)}>
+          <div className="modal-content delete-confirm-modal" onClick={e => e.stopPropagation()}>
+            <div className="delete-confirm-header">
+              <div className="delete-confirm-icon">🗑️</div>
+              <div className="delete-confirm-title">
+                <h3>Confirmar Eliminación</h3>
+                <p>¿Estás seguro de que quieres eliminar permanentemente esta cita?</p>
+              </div>
+            </div>
+            
+            <div className="delete-confirm-info">
+              <div className="cita-summary">
+                <div className="cita-summary-item">
+                  <span className="summary-label">Cliente:</span>
+                  <span className="summary-value">{citaToDelete.usuario?.nombre}</span>
+                </div>
+                <div className="cita-summary-item">
+                  <span className="summary-label">Servicio:</span>
+                  <span className="summary-value">{citaToDelete.servicio?.nombre}</span>
+                </div>
+                <div className="cita-summary-item">
+                  <span className="summary-label">Fecha:</span>
+                  <span className="summary-value">{moment(citaToDelete.start).format('dddd, D [de] MMMM [de] YYYY')}</span>
+                </div>
+                <div className="cita-summary-item">
+                  <span className="summary-label">Hora:</span>
+                  <span className="summary-value">{moment(citaToDelete.start).format('HH:mm')} - {moment(citaToDelete.end).format('HH:mm')}</span>
+                </div>
+              </div>
+              
+              <div className="delete-warning">
+                <p><strong>⚠️ Importante:</strong></p>
+                <ul>
+                  <li>La cita se eliminará permanentemente de la base de datos</li>
+                  <li>Esta acción no se puede deshacer</li>
+                  <li>No se enviará notificación al cliente</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="delete-confirm-actions">
+              <button 
+                className="delete-confirm-btn delete-btn"
+                onClick={() => handleDeleteCita(citaToDelete)}
+                disabled={deletingCita === citaToDelete.id}
+              >
+                {deletingCita === citaToDelete.id ? (
+                  <>
+                    <span className="loading-spinner"></span>
+                    Eliminando...
+                  </>
+                ) : (
+                  <>
+                    <FaTrash />
+                    Sí, Eliminar Cita
+                  </>
+                )}
+              </button>
+              
+              <button 
+                className="delete-confirm-btn delete-cancel-btn"
+                onClick={() => setShowDeleteConfirmModal(false)}
+                disabled={deletingCita === citaToDelete.id}
               >
                 No, Mantener Cita
               </button>
@@ -1924,6 +2073,24 @@ const CitasAdmin: React.FC = () => {
                   </>
                 )}
               </button>
+              
+              <button 
+                className="event-delete-btn"
+                onClick={() => showDeleteConfirmation(selectedEvent)}
+                disabled={deletingCita === selectedEvent.id}
+              >
+                {deletingCita === selectedEvent.id ? (
+                  <>
+                    <span className="loading-spinner"></span>
+                    Eliminando...
+                  </>
+                ) : (
+                  <>
+                    <FaTrash />
+                    Eliminar Cita
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -2078,6 +2245,28 @@ const CitasAdmin: React.FC = () => {
                   Hacer Periódica
                 </button>
               )}
+              
+              {/* Botón de eliminar cita */}
+              <button 
+                className="mobile-cita-delete-btn"
+                onClick={() => {
+                  setShowMobileCitaModal(false);
+                  showDeleteConfirmation(selectedMobileCita);
+                }}
+                disabled={deletingCita === selectedMobileCita.id}
+              >
+                {deletingCita === selectedMobileCita.id ? (
+                  <>
+                    <span className="loading-spinner"></span>
+                    Eliminando...
+                  </>
+                ) : (
+                  <>
+                    <FaTrash />
+                    Eliminar Cita
+                  </>
+                )}
+              </button>
               
               <button 
                 className="mobile-cita-close-btn"

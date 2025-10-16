@@ -6612,3 +6612,258 @@
 .rbc-time-header .rbc-header:first-child {
   border-left: none !important;
 }
+
+/* ===== ESTILOS PARA BOTÓN DE ELIMINAR CITA ===== */
+
+/* Botón de eliminar en modal desktop */
+.event-delete-btn {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+  margin-top: 8px;
+}
+
+.event-delete-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.event-delete-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.event-delete-btn svg {
+  font-size: 14px;
+}
+
+/* Botón de eliminar en modal móvil */
+.mobile-cita-delete-btn {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+  border: none;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.mobile-cita-delete-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4);
+}
+
+.mobile-cita-delete-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.mobile-cita-delete-btn svg {
+  font-size: 18px;
+}
+
+/* ===== ESTILOS PARA MODAL DE CONFIRMACIÓN DE ELIMINACIÓN ===== */
+
+.delete-confirm-modal {
+  max-width: 500px;
+  width: 90%;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.delete-confirm-header {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.delete-confirm-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.delete-confirm-title h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.delete-confirm-title p {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.delete-confirm-info {
+  padding: 24px;
+}
+
+.delete-warning {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.delete-warning p {
+  margin: 0 0 8px 0;
+  color: #856404;
+  font-weight: 600;
+}
+
+.delete-warning ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #856404;
+}
+
+.delete-warning li {
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.delete-confirm-actions {
+  padding: 0 24px 24px 24px;
+  display: flex;
+  gap: 12px;
+}
+
+.delete-confirm-btn {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.delete-btn {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+}
+
+.delete-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.delete-cancel-btn {
+  background: #f8f9fa;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
+}
+
+.delete-cancel-btn:hover:not(:disabled) {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.delete-confirm-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.delete-confirm-btn svg {
+  font-size: 14px;
+}
+
+/* Responsive para modal de eliminación */
+@media (max-width: 768px) {
+  .delete-confirm-modal {
+    width: 95%;
+    max-width: none;
+  }
+  
+  .delete-confirm-header {
+    padding: 20px;
+  }
+  
+  .delete-confirm-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+  
+  .delete-confirm-title h3 {
+    font-size: 18px;
+  }
+  
+  .delete-confirm-title p {
+    font-size: 13px;
+  }
+  
+  .delete-confirm-info {
+    padding: 20px;
+  }
+  
+  .delete-confirm-actions {
+    padding: 0 20px 20px 20px;
+    flex-direction: column;
+  }
+  
+  .delete-confirm-btn {
+    padding: 14px 20px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .delete-confirm-modal {
+    width: 98%;
+  }
+  
+  .delete-confirm-header {
+    padding: 16px;
+  }
+  
+  .delete-confirm-info {
+    padding: 16px;
+  }
+  
+  .delete-confirm-actions {
+    padding: 0 16px 16px 16px;
+  }
+}
