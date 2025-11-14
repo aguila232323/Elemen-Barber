@@ -83,13 +83,14 @@ const CalendarDay = React.memo(({
                      (anio === fechaCalculos.anioActual && mes < fechaCalculos.mesActual) || 
                      (anio === fechaCalculos.anioActual && mes === fechaCalculos.mesActual && dia < fechaCalculos.hoy);
     
-    // Deshabilitar días con más de 1 mes de antelación
+    // Deshabilitar días con más de 1 mes de antelación (solo para usuarios no-admin)
     const fechaActual = new Date(fechaCalculos.anioActual, fechaCalculos.mesActual, fechaCalculos.hoy);
     const fechaMaxima = new Date(fechaActual);
     fechaMaxima.setMonth(fechaMaxima.getMonth() + 1);
     
     const fechaSeleccionada = new Date(anio, mes, dia);
-    const esDemasiadoFuturo = fechaSeleccionada > fechaMaxima;
+    // Solo aplicar restricción de 1 mes si NO es admin
+    const esDemasiadoFuturo = user?.rol !== 'ADMIN' && fechaSeleccionada > fechaMaxima;
     
     // Deshabilitar días sin slots disponibles (para usuarios no-admin)
     const sinSlotsDisponibles = user?.rol !== 'ADMIN' && libres === 0 && !esPasado && !esDemasiadoFuturo;
@@ -776,12 +777,16 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
           <button 
             onClick={()=>cambiarMes(1)} 
             style={{background:'none',border:'none',fontSize:18,cursor: (() => {
+              // Si es admin, permitir navegación sin límite
+              if (user?.rol === 'ADMIN') return 'pointer';
               const fechaActual = new Date(today.getFullYear(), today.getMonth(), today.getDate());
               const fechaMaxima = new Date(fechaActual);
               fechaMaxima.setMonth(fechaMaxima.getMonth() + 1);
               const fechaSiguienteMes = new Date(anio, mes + 1, 1);
               return fechaSiguienteMes <= fechaMaxima ? 'pointer' : 'not-allowed';
             })(), color:'#1976d2', opacity: (() => {
+              // Si es admin, permitir navegación sin límite
+              if (user?.rol === 'ADMIN') return 1;
               const fechaActual = new Date(today.getFullYear(), today.getMonth(), today.getDate());
               const fechaMaxima = new Date(fechaActual);
               fechaMaxima.setMonth(fechaMaxima.getMonth() + 1);
@@ -789,6 +794,8 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
               return fechaSiguienteMes <= fechaMaxima ? 1 : 0.4;
             })()}}
             disabled={(() => {
+              // Si es admin, permitir navegación sin límite
+              if (user?.rol === 'ADMIN') return false;
               const fechaActual = new Date(today.getFullYear(), today.getMonth(), today.getDate());
               const fechaMaxima = new Date(fechaActual);
               fechaMaxima.setMonth(fechaMaxima.getMonth() + 1);
