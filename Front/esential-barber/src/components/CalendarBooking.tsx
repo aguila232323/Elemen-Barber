@@ -213,6 +213,25 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
   const debouncedMes = useDebounce(mes, 300);
   const debouncedAnio = useDebounce(anio, 300);
 
+  const horasVisibles = useMemo(() => {
+    if (!diaSeleccionado) return horasLibres;
+    if (user?.rol === 'ADMIN') return horasLibres;
+
+    const diaSemana = new Date(anio, mes, diaSeleccionado).getDay(); // 0=domingo, 2=martes, 3=miércoles
+    const esMartesOMiercoles = diaSemana === 2 || diaSemana === 3;
+    if (!esMartesOMiercoles) return horasLibres;
+
+    const inicioBloqueado = 8 * 60 + 30; // 08:30
+    const finBloqueado = 9 * 60 + 15; // 09:15
+
+    return horasLibres.filter((hora) => {
+      const [h, m] = hora.split(':').map(Number);
+      if (Number.isNaN(h) || Number.isNaN(m)) return true;
+      const minutosHora = h * 60 + m;
+      return minutosHora < inicioBloqueado || minutosHora > finBloqueado;
+    });
+  }, [horasLibres, diaSeleccionado, anio, mes, user?.rol]);
+
   // Memoizar el nombre del mes para evitar recálculos
   const nombreMes = useMemo(() => new Date(anio, mes).toLocaleString('es-ES',{month:'long',year:'numeric'}), [anio, mes]);
 
@@ -868,7 +887,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
             <div style={{fontWeight:500,marginBottom:8}}>Horas disponibles para el {diaSeleccionado}:</div>
             {loadingHoras ? (
               <div style={{color:'#1976d2'}}>Cargando horas...</div>
-            ) : horasLibres.length === 0 ? (
+            ) : horasVisibles.length === 0 ? (
               <div style={{color:'#e74c3c'}}>
                 {user?.rol === 'ADMIN' ? 
                   'No hay horas libres para este día.' : 
@@ -877,7 +896,7 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
               </div>
             ) : (
             <div style={{display:'flex',gap:'0.5rem',flexWrap:'wrap'}}>
-              {horasLibres.map(hora=>{
+              {horasVisibles.map(hora=>{
                 // Deshabilitar horas en el pasado si es hoy
                 let esHoraPasada = false;
                 if (anio === fechaCalculos.anioActual && mes === fechaCalculos.mesActual && diaSeleccionado === fechaCalculos.hoy) {
