@@ -221,8 +221,8 @@ const CalendarBooking: React.FC<Props> = ({ servicio, onClose, onReservaCompleta
     const esMartesOMiercoles = diaSemana === 2 || diaSemana === 3;
     if (!esMartesOMiercoles) return horasLibres;
 
-    const inicioBloqueado = 8 * 60 + 30; // 08:30
-    const finBloqueado = 9 * 60 + 15; // 09:15
+    const inicioBloqueado = 20 * 60 + 30; // 20:30
+    const finBloqueado = 21 * 60 + 15; // 21:15
 
     return horasLibres.filter((hora) => {
       const [h, m] = hora.split(':').map(Number);
